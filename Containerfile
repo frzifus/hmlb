@@ -11,38 +11,37 @@ RUN rpm-ostree override remove \
     firefox \
     firefox-langpacks
 
+# https://github.com/fedora-silverblue/issue-tracker/issues/430
+RUN mkdir -p /etc/alternatives && mkdir -p /var/lib/alternatives
+
 RUN rpm-ostree install \
-    libvterm \
     emacs \
-    libtool \
     blueman \
     zsh \
-    gcc \
     make \
     ripgrep \
     fd-find \
-    lld \
     pam_yubico \
     yubikey-personalization-gui \
     strace \
     nmap \
     bat \
     eza \
+    fzf \
     restic \
-    kernel-headers \
+    htop \
     tldr \
     podman-compose \
     cloc \
-    gcc \
-    libbpf-devel \
+    vim \
+    tig \
     perf \
     podman-docker \
     nextcloud-client \
+    krb5-workstation \
+    keepassxc \
     gnome-shell-extension-forge \
-    gnome-shell-extension-appindicator \
-    glibc-static \
-    libstdc++-static \
-    binutils
+    gnome-shell-extension-appindicator
 
 RUN touch /etc/containers/nodocker
 
@@ -59,15 +58,20 @@ RUN rpm-ostree install \
     mako
 
 RUN rpm-ostree install \
+    kernel-headers \
+    lld \
+    gcc \
+    glibc-static \
+    libbpf-devel \
+    libstdc++-static \
+    libvterm \
     binutils \
     cmake \
     ImageMagick \
     wireshark \
-    krb5-workstation \
-    keepassxc
+    libtool
 
 RUN rpm-ostree install -y \
     libvirt \
     libvirt-daemon-kvm \
     qemu-kvm
-
