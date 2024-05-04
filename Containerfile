@@ -75,3 +75,5 @@ RUN rpm-ostree install -y \
     libvirt \
     libvirt-daemon-kvm \
     qemu-kvm
+
+RUN ostree container commit
