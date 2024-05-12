@@ -25,6 +25,9 @@ jobs:
         if: github.ref != 'refs/heads/main'
         run: exit 0
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
       - name: Build Image
         id: build_image
         uses: redhat-actions/buildah-build@v2
@@ -33,6 +36,7 @@ jobs:
             ./Containerfile
           image: ghcr.io/frzifus/desktop
           tags: latest
+          archs: amd64, arm64
           oci: false
 
       - id: docker_meta
