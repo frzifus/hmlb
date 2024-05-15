@@ -76,3 +76,7 @@ RUN rpm-ostree install -y \
     libvirt-daemon-kvm \
     qemu-kvm \
     fastboot
+
+COPY ./etc/yum.repos.d/_copr:copr.fedorainfracloud.org:packit:os-observability-redhat-opentelemetry-collector-63.repo /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:packit:os-observability-redhat-opentelemetry-collector-63.repo
+
+RUN rpm-ostree install -y opentelemetry-collector-0.99.0-1.20240514165826437302.pr63.7.g984bf2a.fc40.x86_64
