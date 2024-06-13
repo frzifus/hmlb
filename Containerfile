@@ -75,4 +75,5 @@ RUN rpm-ostree install -y \
     libvirt \
     libvirt-daemon-kvm \
     qemu-kvm \
+    android-tools \
     fastboot
