@@ -69,6 +69,7 @@ RUN rpm-ostree install \
     cmake \
     ImageMagick \
     wireshark \
+    openssl \
     libtool
 
 RUN rpm-ostree install -y \
