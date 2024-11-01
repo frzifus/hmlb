@@ -1,4 +1,4 @@
-FROM quay.io/fedora/fedora-silverblue:40
+FROM quay.io/fedora/fedora-silverblue:41
 
 COPY ./etc/rpm-ostreed.conf /etc/rpm-ostreed.conf
 
