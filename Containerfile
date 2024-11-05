@@ -20,6 +20,7 @@ RUN rpm-ostree install tailscale
 
 RUN rpm-ostree install \
     emacs \
+    age \
     blueman \
     zsh \
     make \
