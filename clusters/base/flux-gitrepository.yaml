@@ -5,7 +5,7 @@ metadata:
   name: homelab-repo
   namespace: flux-system
 spec:
-  interval: 1m
+  interval: 5m
   url: https://github.com/frzifus/ccm.git
   ref:
     branch: main

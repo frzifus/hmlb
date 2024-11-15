@@ -3,9 +3,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - https://github.com/cert-manager/cert-manager/releases/download/v1.16.0/cert-manager.yaml
-  - https://raw.githubusercontent.com/metallb/metallb/v0.14.8/config/manifests/metallb-native.yaml
-  - metallb-config.yaml
-  - https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.11.2/deploy/static/provider/baremetal/deploy.yaml
-  - https://github.com/open-telemetry/opentelemetry-operator/releases/download/v0.109.0/opentelemetry-operator.yaml
-  - prometheus
+  - cert-manager.yaml
+  - openebs.yaml
+  - nginx-ingress.yaml
+  - observability.yaml

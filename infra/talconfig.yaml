@@ -1,0 +1,57 @@
+---
+clusterName: homelab
+talosVersion: v1.8.0
+endpoint: https://192.168.5.2:6443
+allowSchedulingOnMasters: true
+additionalMachineCertSans:
+  - 192.168.5.2
+  - 192.168.5.3
+  - 192.168.5.4
+  - 100.119.181.2
+  - 100.69.104.31
+  - 100.106.250.118
+additionalApiServerCertSans:
+  - home-cluster.local
+
+controlPlane:
+  talosImageURL: factory.talos.dev/installer/1f3b7c825b44aad40388ffebcfabf8c4f1a30d76a6722d49452aa4fec01ef03f
+  machineSpec:
+    mode: metal
+    arch: amd64
+    secureboot: false
+    useUKI: false
+
+worker:
+  talosImageURL: factory.talos.dev/installer/1f3b7c825b44aad40388ffebcfabf8c4f1a30d76a6722d49452aa4fec01ef03f
+  machineSpec:
+    mode: metal
+    arch: amd64
+    secureboot: false
+    useUKI: false
+
+nodes:
+  - hostname: master1
+    ipAddress: 192.168.5.2
+    installDisk: /dev/sdb
+    controlPlane: true
+    machineSpec:
+      mode: metal
+      arch: amd64
+      useUKI: true
+      secureboot: true
+  - hostname: master2
+    ipAddress: 192.168.5.3
+    installDisk: /dev/sdb
+    controlPlane: true
+  - hostname: master3
+    ipAddress: 192.168.5.4
+    installDisk: /dev/sdb
+    controlPlane: true
+  - hostname: storage1
+    ipAddress: 192.168.5.5
+    installDisk: /dev/nvme0n1
+    controlPlane: false
+    # machineDisks:
+    #   - device: /dev/disk/by-id/ata-CT500MX500SSD1_2149E5EC1D9D
+    #     partitions:
+    #       - mountpoint: /var/mnt/sata
