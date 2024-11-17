@@ -24,6 +24,17 @@ controlPlane:
     arch: amd64
     secureboot: false
     useUKI: false
+  patches:
+    - |-
+      machine:
+        systemDiskEncryption:
+          state:
+            provider: luks2
+            keys:
+              - static:
+                  passphrase: ${diskEncryption}
+                slot: 0
+
 
 worker:
   talosImageURL: factory.talos.dev/installer/62059c39988403baff7e8edbdefdbebb344bf4179a1d999ddc59ff7bb3182344
@@ -42,22 +53,6 @@ nodes:
     ipAddress: 192.168.5.2
     installDisk: /dev/sda
     controlPlane: true
-    # NOTE: https://github.com/budimanjojo/talhelper/issues/713
-    patches:
-      - |-
-        machine:
-          systemDiskEncryption:
-            state:
-              provider: luks2
-              keys:
-                - static:
-                    passphrase: ${diskEncryption}
-                    slot: 0
-            # ephemeral:
-            #   provider: luks2
-            #     - static:
-            #         passphrase: ${diskEncryption}
-            #         slot: 1
   - hostname: master2
     ipAddress: 192.168.5.3
     installDisk: /dev/sda
@@ -74,6 +69,16 @@ nodes:
     ipAddress: 192.168.5.5
     installDisk: /dev/nvme0n1
     controlPlane: false
+    patches:
+      - |-
+        machine:
+          systemDiskEncryption:
+            ephemeral:
+              provider: luks2
+              keys:
+                - static:
+                    passphrase: ${diskEncryption}
+                  slot: 1
     # machineDisks:
     #   - device: /dev/disk/by-id/ata-CT500MX500SSD1_2149E5EC1D9D
     #     partitions:
