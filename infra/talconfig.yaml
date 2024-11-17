@@ -12,6 +12,16 @@ additionalMachineCertSans:
   - 100.106.250.118
 additionalApiServerCertSans:
   - home-cluster.local
+patches:
+  - |-
+    machine:
+      systemDiskEncryption:
+        state:
+          provider: luks2
+          keys:
+            - static:
+                passphrase: ${diskEncryption}
+              slot: 0
 
 controlPlane:
   talosImageURL: factory.talos.dev/installer/62059c39988403baff7e8edbdefdbebb344bf4179a1d999ddc59ff7bb3182344
@@ -24,17 +34,6 @@ controlPlane:
     arch: amd64
     secureboot: false
     useUKI: false
-  patches:
-    - |-
-      machine:
-        systemDiskEncryption:
-          state:
-            provider: luks2
-            keys:
-              - static:
-                  passphrase: ${diskEncryption}
-                slot: 0
-
 
 worker:
   talosImageURL: factory.talos.dev/installer/62059c39988403baff7e8edbdefdbebb344bf4179a1d999ddc59ff7bb3182344
