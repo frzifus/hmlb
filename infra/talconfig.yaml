@@ -19,29 +19,24 @@ patches:
         state:
           provider: luks2
           keys:
+            - tpm: {}
+              slot: 0
+        ephemeral:
+          provider: luks2
+          keys:
             - static:
                 passphrase: ${diskEncryption}
               slot: 0
 
 controlPlane:
-  talosImageURL: factory.talos.dev/installer/62059c39988403baff7e8edbdefdbebb344bf4179a1d999ddc59ff7bb3182344
+  talosImageURL:  factory.talos.dev/installer-secureboot/d679818c68e913b6a99dbb70319d14e91455d1c11dc6ba3ba5b2cae4a3fe9f67
   extensionServices:
     - name: tailscale
       environment:
         - TS_AUTHKEY=${tsAuth}
-  machineSpec:
-    mode: metal
-    arch: amd64
-    secureboot: false
-    useUKI: false
 
 worker:
-  talosImageURL: factory.talos.dev/installer/62059c39988403baff7e8edbdefdbebb344bf4179a1d999ddc59ff7bb3182344
-  machineSpec:
-    mode: metal
-    arch: amd64
-    secureboot: false
-    useUKI: false
+  talosImageURL: factory.talos.dev/installer-secureboot/d679818c68e913b6a99dbb70319d14e91455d1c11dc6ba3ba5b2cae4a3fe9f67
   extensionServices:
     - name: tailscale
       environment:
@@ -68,16 +63,6 @@ nodes:
     ipAddress: 192.168.5.5
     installDisk: /dev/nvme0n1
     controlPlane: false
-    patches:
-      - |-
-        machine:
-          systemDiskEncryption:
-            ephemeral:
-              provider: luks2
-              keys:
-                - static:
-                    passphrase: ${diskEncryption}
-                  slot: 1
     # machineDisks:
     #   - device: /dev/disk/by-id/ata-CT500MX500SSD1_2149E5EC1D9D
     #     partitions:
