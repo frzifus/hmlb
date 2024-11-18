@@ -9,9 +9,9 @@ COPY ./etc/yum.repos.d/tailscale.repo /etc/yum.repos.d/tailscale.repo
 # NOTE: init initramfs with de-nodeadkeys
 # RUN rpm-ostree initramfs-etc --track=/etc/vconsole.conf
 
-RUN rpm-ostree override remove \
-    firefox \
-    firefox-langpacks
+# RUN rpm-ostree override remove \
+#     firefox \
+#     firefox-langpacks
 
 # https://github.com/fedora-silverblue/issue-tracker/issues/430
 RUN mkdir -p /etc/alternatives && mkdir -p /var/lib/alternatives
