@@ -1,0 +1,9 @@
+---
+apiVersion: "openebs.io/v1beta2"
+kind: DiskPool
+metadata:
+  name: pool-on-storage1
+  namespace: openebs
+spec:
+  node: storage1
+  disks: ["aio:///dev/mapper/sda1-encrypted"]
