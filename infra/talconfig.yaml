@@ -3,15 +3,8 @@ clusterName: homelab
 talosVersion: v1.8.3
 endpoint: https://192.168.5.2:6443
 allowSchedulingOnMasters: true
-additionalMachineCertSans:
-  - 192.168.5.2
-  - 192.168.5.3
-  - 192.168.5.4
-  - 100.119.181.2
-  - 100.69.104.31
-  - 100.106.250.118
 additionalApiServerCertSans:
-  - home-cluster.local
+  - home-cluster
 patches:
   - |-
     machine:
@@ -27,6 +20,17 @@ patches:
             - static:
                 passphrase: ${diskEncryption}
               slot: 0
+  - |-
+    - op: add
+      path: /machine/kubelet/extraMounts
+      value:
+        - destination: /var/local
+          type: bind
+          source: /var/local
+          options:
+            - bind
+            - rshared
+            - rw
 
 controlPlane:
   talosImageURL:  factory.talos.dev/installer-secureboot/d679818c68e913b6a99dbb70319d14e91455d1c11dc6ba3ba5b2cae4a3fe9f67
@@ -63,6 +67,14 @@ nodes:
     ipAddress: 192.168.5.5
     installDisk: /dev/nvme0n1
     controlPlane: false
+    patches:
+      - |-
+        - op: add
+          path: /machine/sysctls
+          value:
+            vm.nr_hugepages: "1024"
+    nodeLabels:
+      openebs.io/engine: "mayastor"
     # machineDisks:
     #   - device: /dev/disk/by-id/ata-CT500MX500SSD1_2149E5EC1D9D
     #     partitions:

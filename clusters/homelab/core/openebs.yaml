@@ -3,6 +3,10 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: openebs
+  labels:
+    pod-security.kubernetes.io/audit: privileged
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/warn: privileged
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
@@ -23,7 +27,7 @@ spec:
     crds: CreateReplace
   upgrade:
     crds: CreateReplace
-  interval: 10m0s
+  interval: 1h
   targetNamespace: openebs
   chart:
     spec:
