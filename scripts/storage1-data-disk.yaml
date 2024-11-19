@@ -21,14 +21,14 @@ spec:
             - -c
             - |
               set -e
-              sleep 3600
               disk=/dev/sda
-              mount_point=/var/mnt/data-storage
+              partition="${disk}1"
+              partitionName=$(basename "$partition")
 
               passphrase=$(cat /etc/secrets/passphrase | tr -d '\n\t\r ')
 
-              if [[ -b /dev/sda1 ]]; then
-                  cryptsetup luksDump /dev/sda1
+              if cryptsetup isLuks "$partition"; then
+                  cryptsetup luksDump "$partition"
                   echo "Data partition already exists"
                   # Check if the LUKS device is already open
                   # NOTE: Close it manually..
@@ -39,41 +39,30 @@ spec:
                   # sgdisk --zap-all "${disk}"
                   # # Remove luks superblock
                   # dd if=/dev/zero of=/dev/sda1 bs=512 count=2048
-                  if cryptsetup status data-crypt > /dev/null 2>&1; then
+                  echo "Check cryptsetup status"
+                  if [[ -e "/dev/mapper/${partitionName}-encrypted" ]]; then
                       echo "LUKS device already open, skipping open step."
                   else
-                      echo "$passphrase" | cryptsetup open "${disk}1" data-crypt -
+                      echo "Try unlocking ${partition}"
+                      echo "$passphrase" | cryptsetup open "${partition}" "${partitionName}-encrypted" -
+                      echo "Partition exists, opend and available at /dev/mapper/${partitionName}-encrypted"
                   fi
 
-                  mkdir -p "$mount_point"
-
-                  if mount | grep -q "$mount_point"; then
-                      echo "Partition already mounted at $mount_point"
-                  else
-                      mount /dev/mapper/data-crypt "$mount_point"
-                      echo "Partition mounted at $mount_point"
-                  fi
-
+                  echo "Success!!"
                   exit 0
               fi
 
               echo "No data partition found"
-              # Create a new partition and label it "data"
               sgdisk -p "$disk"
+              # Create a new partition and label it "data"
               sgdisk --new=1:0:0 --change-name=1:data --typecode=1:8300 "$disk"
               # partprobe, NOTE: missing udevadm
               sgdisk -p "$disk"
 
-              # Encrypt the partition with LUKS2
-              echo -n "$passphrase" | cryptsetup luksFormat --type luks2 "${disk}1" -
-              echo -n "$passphrase" | cryptsetup open "${disk}1" data-crypt -
+              echo -n "$passphrase" | cryptsetup luksFormat --type luks2 "${partition}" -
+              echo -n "$passphrase" | cryptsetup open "${partition}" "${partitionName}-encrypted" -
 
-              mkfs.xfs /dev/mapper/data-crypt
-
-              mkdir -p "$mount_point"
-
-              mount /dev/mapper/data-crypt "$mount_point"
-              echo "Partition created, encrypted, formatted, and mounted at $mount_point"
+              echo "Partition created, encrypted, opend and available at /dev/mapper/${partitionName}-encrypted"
           volumeMounts:
             - mountPath: /etc/secrets
               name: luks-passphrase-secret
