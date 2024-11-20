@@ -3,6 +3,9 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: observability
+metadata:
+  labels:
+    pod-security.kubernetes.io/enforce=privileged
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
@@ -42,7 +45,8 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: ingest
+  name: backend
+  namespace: observability
 spec:
   selector:
     app: lgtm
@@ -78,6 +82,7 @@ spec:
       containers:
         - name: lgtm
           image: grafana/otel-lgtm:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 3000
             - containerPort: 4317
@@ -105,3 +110,205 @@ spec:
           emptyDir: {}
         - name: p8s-storage
           emptyDir: {}
+---
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: otel-hostfs-daemonset
+  namespace: observability
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: otel-kubelet
+rules:
+  - apiGroups: ['']
+    resources: ['nodes/stats']
+    verbs: ['get', 'watch', 'list']
+  - apiGroups: [""]
+    resources: ["nodes/proxy"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: otel-kubelet-binding
+subjects:
+  - kind: ServiceAccount
+    name: otel-hostfs-daemonset
+    namespace: observability
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: otel-kubelet
+---
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: otel-host-agent
+  namespace: observability
+spec:
+  managementState: managed
+  serviceAccount: otel-hostfs-daemonset
+  mode: daemonset
+  volumeMounts:
+    - mountPath: /hostfs
+      name: host
+      readOnly: true
+  volumes:
+    - name: host
+      hostPath:
+        path: /
+  env:
+    - name: K8S_NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+  config:
+    receivers:
+      otlp/workload:
+        protocols:
+          http:
+            endpoint: 0.0.0.0:4318
+          grpc:
+            endpoint: 0.0.0.0:4317
+      prometheus/self:
+        config:
+          scrape_configs:
+            - job_name: otel-host-agent
+              scrape_interval: 20s
+              static_configs:
+                - targets: [0.0.0.0:8888]
+      hostmetrics:
+        collection_interval: 30s
+        scrapers:
+          cpu:
+            metrics:
+              system.cpu.logical.count:
+                enabled: true
+          memory:
+            metrics:
+              system.memory.utilization:
+                enabled: true
+              system.memory.limit:
+                enabled: true
+          load: {}
+          disk: {}
+          filesystem:
+            metrics:
+              system.filesystem.utilization:
+                enabled: true
+          network: {}
+          paging: {}
+          processes: {}
+          process:
+            mute_process_user_error: true
+            metrics:
+              process.cpu.utilization:
+                enabled: true
+              process.memory.utilization:
+                enabled: true
+              process.threads:
+                enabled: true
+              process.paging.faults:
+                enabled: true
+      kubeletstats:
+        collection_interval: 30s
+        auth_type: "serviceAccount"
+        endpoint: "https://${env:K8S_NODE_NAME}:10250"
+        insecure_skip_verify: true
+      filelog:
+        include_file_path: true
+        include:
+          - /hostfs/var/log/pods/*/*/*.log
+        operators:
+          - id: container-parser
+            type: container
+    processors:
+      attributes/loki:
+        actions:
+         - action: insert
+           key: log_file_name
+           from_attribute: log.file.name
+         - action: insert
+           key: loki.attribute.labels
+           value: log_file_name
+      resourcedetection/system:
+        detectors: ["system"]
+        system:
+          hostname_sources: ["os"]
+      attributes:
+        actions:
+          - key: service.namespace
+            action: upsert
+            value: agent
+          - key: service.name
+            action: upsert
+            value: otel-host-agent
+      transform:
+        metric_statements:
+          - context: datapoint
+            statements:
+              - set(attributes["host.name"], resource.attributes["host.name"])
+              - set(attributes["process.command"], resource.attributes["process.command"])
+              - set(attributes["process.command_line"], resource.attributes["process.command_line"])
+              - set(attributes["process.executable.name"], resource.attributes["process.executable.name"])
+              - set(attributes["process.executable.path"], resource.attributes["process.executable.path"])
+              - set(attributes["process.owner"], resource.attributes["process.owner"])
+              - set(attributes["process.parent_pid"], resource.attributes["process.parent_pid"])
+              - set(attributes["process.pid"], resource.attributes["process.pid"])
+      batch: {}
+      resource:
+        attributes:
+          - action: upsert
+            key: service.namespace
+            value: agent
+    connectors:
+      count: {}
+    exporters:
+      otlp:
+        endpoint: backend.observability:4317
+        tls:
+          insecure: true
+
+    service:
+      telemetry:
+        metrics:
+          level: detailed
+      pipelines:
+        traces:
+          receivers: [otlp/workload]
+          processors: [resourcedetection/system, batch]
+          exporters: [otlp, count]
+        metrics:
+          receivers: [prometheus/self, hostmetrics, kubeletstats]
+          processors: [attributes, resourcedetection/system, transform, batch]
+          exporters: [otlp, count]
+        metrics/count:
+          receivers: [count]
+          processors: [batch]
+          exporters: [otlp]
+        logs:
+          receivers: [otlp/workload, filelog]
+          processors: [attributes/loki, resourcedetection/system, batch]
+          exporters: [otlp, count]
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingest
+  namespace: observability
+spec:
+  selector:
+    app.kubernetes.io/name: otel-host-agent-collector
+  ports:
+    - name: otel-grpc
+      protocol: TCP
+      port: 4317
+      targetPort: 4317
+    - name: otel-http
+      protocol: TCP
+      port: 4318
+      targetPort: 4318
