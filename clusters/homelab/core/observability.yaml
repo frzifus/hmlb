@@ -177,14 +177,6 @@ spec:
               static_configs:
                 - targets:
                     - "localhost:9102"
-      prometheus/self:
-        config:
-          scrape_configs:
-            - job_name: otel-host-agent
-              scrape_interval: 20s
-              scrape_timeout: 10s
-              static_configs:
-                - targets: [0.0.0.0:8888]
       hostmetrics:
         collection_interval: 30s
         scrapers:
@@ -279,11 +271,25 @@ spec:
 
     service:
       telemetry:
+        traces:
+          processors:
+            - batch:
+                schedule_delay: 1000
+                exporter:
+                  otlp:
+                    endpoint: http://backend.observability:4317
+                    protocol: grpc/protobuf
         metrics:
           level: detailed
+          readers:
+            - periodic:
+                exporter:
+                  otlp:
+                    endpoint: http://backend.observability:4317
+                    protocol: grpc/protobuf
       pipelines:
         metrics:
-          receivers: [prometheus/kepler, prometheus/self, hostmetrics, kubeletstats]
+          receivers: [prometheus/kepler, hostmetrics, kubeletstats]
           processors: [attributes, resourcedetection/system, transform, batch]
           exporters: [otlp, count]
         metrics/count:
