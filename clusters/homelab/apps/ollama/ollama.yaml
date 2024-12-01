@@ -33,7 +33,7 @@ metadata:
   name: open-webui-config
   namespace: ollama
 data:
-  OLLAMA_BASE_URL: "http://ollama"
+  OLLAMA_BASE_URL: "http://ollama:11434"
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -75,7 +75,7 @@ spec:
               name: ollama-data
           resources:
             limits:
-              cpu: "2"
+              cpu: "3"
               memory: "8192Mi"
             requests:
               memory: "4096Mi"
