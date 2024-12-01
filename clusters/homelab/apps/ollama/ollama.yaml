@@ -1,0 +1,153 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ollama
+# ---
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: ollama-data
+#   namespace: ollama
+# spec:
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 20Gi
+# ---
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: open-webui-data
+#   namespace: ollama
+# spec:
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 5Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: open-webui-config
+  namespace: ollama
+data:
+  OLLAMA_BASE_URL: "http://ollama"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ollama
+  namespace: ollama
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ollama
+  template:
+    metadata:
+      labels:
+        app: ollama
+    spec:
+      initContainers:
+        - name: download-llama
+          image: ollama/ollama:latest
+          # NOTE: Pull does not work without serve..
+          # https://github.com/ollama/ollama/issues/3369
+          command:
+            - /bin/sh
+            - -c
+            - |
+              ollama serve &
+              sleep 5 && ollama pull llama3.2 && echo "Killing 'ollama serve' process"
+              ps -ef | grep 'ollama serve' | grep -v grep | awk '{print $2}' | xargs -r kill -9
+          volumeMounts:
+            - mountPath: /root/.ollama
+              name: ollama-data
+      containers:
+        - name: ollama
+          image: ollama/ollama:latest
+          ports:
+            - containerPort: 11434
+          volumeMounts:
+            - mountPath: /root/.ollama
+              name: ollama-data
+          resources:
+            limits:
+              cpu: "2"
+              memory: "8192Mi"
+            requests:
+              memory: "4096Mi"
+              cpu: "2"
+      volumes:
+        - name: ollama-data
+          emptyDir: {}
+      # TODO: Replace temporary storage...
+      #   - name: ollama-data
+      #     persistentVolumeClaim:
+      #       claimName: ollama-data
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open-webui
+  namespace: ollama
+spec:
+  # NOTE: share volume before increasting..
+  replicas: 1
+  selector:
+    matchLabels:
+      app: open-webui
+  template:
+    metadata:
+      labels:
+        app: open-webui
+    spec:
+      containers:
+        - name: open-webui
+          image: ghcr.io/open-webui/open-webui:main
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: open-webui-config
+          # volumeMounts:
+          #   - mountPath: /app/backend/data
+          #     name: open-webui-data
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+      # volumes:
+      #   - name: open-webui-data
+      #     persistentVolumeClaim:
+      #       claimName: open-webui-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ollama
+  namespace: ollama
+spec:
+  selector:
+    app: ollama
+  ports:
+    - protocol: TCP
+      port: 11434
+      targetPort: 11434
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: open-webui
+  namespace: ollama
+spec:
+  selector:
+    app: open-webui
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 8080
+  type: ClusterIP
