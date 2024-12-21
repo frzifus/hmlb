@@ -2,35 +2,44 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: nginx-ingress
+  name: ingress-nginx
 ---
-apiVersion: source.toolkit.fluxcd.io/v1beta2
+apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: nginx
+  name: ingress-nginx
   namespace: flux-system
 spec:
-  url: https://charts.bitnami.com/bitnami
-  interval: 1h
+  url: https://kubernetes.github.io/ingress-nginx
+  interval: 1h0m0s
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: nginx
-  namespace: nginx-ingress
+  name: ingress-nginx
+  namespace: ingress-nginx
 spec:
-  interval: 5m
+  interval: 1h0m0s
   chart:
     spec:
-      chart: nginx
-      version: 18.2.4
+      chart: ingress-nginx
       sourceRef:
         kind: HelmRepository
-        name: nginx
+        name: ingress-nginx
         namespace: flux-system
+      version: "4.11.3"
   install:
     createNamespace: true
   values:
-    replicaCount: 3
-    service:
-      type: ClusterIP
+    controller:
+      admissionWebhooks:
+        certManager:
+          enabled: true
+      replicaCount: 2
+      service:
+        type: LoadBalancer
+        loadBalancerClass: metallb
+      metrics:
+        serviceMonitor:
+          enabled: true
+        enabled: true
