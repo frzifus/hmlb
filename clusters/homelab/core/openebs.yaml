@@ -20,7 +20,7 @@ spec:
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: openebs
+  name: mayastor
   namespace: openebs
 spec:
   install:
@@ -68,3 +68,25 @@ spec:
       storageClass:
         # we can't override reclaimPolicy so just make the classes explicit in base-config
         enabled: false
+---
+apiVersion: "openebs.io/v1beta2"
+kind: DiskPool
+metadata:
+  name: simple-small-ssd
+  namespace: openebs
+spec:
+  node: storage1
+  disks: ["/dev/disk/by-id/ata-SanDisk_SSD_PLUS_480GB_24036A805360"]
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: openebs-single-replica-ssd
+parameters:
+  protocol: nvmf
+  repl: "1"
+  thin: "true"
+  fsType: xfs
+allowVolumeExpansion: true
+provisioner: io.openebs.csi-mayastor
+reclaimPolicy: Delete # Retain
