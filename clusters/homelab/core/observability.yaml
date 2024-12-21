@@ -1,11 +1,11 @@
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: observability
-metadata:
-  labels:
-    pod-security.kubernetes.io/enforce=privileged
+# ---
+# apiVersion: v1
+# kind: Namespace
+# metadata:
+#   name: observability
+# metadata:
+#   labels:
+#     pod-security.kubernetes.io/enforce=privileged
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
@@ -64,6 +64,18 @@ spec:
       port: 4318
       targetPort: 4318
 ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: lgtm-observability
+spec:
+  storageClassName: openebs-single-replica-ssd
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -92,25 +104,21 @@ spec:
               command:
                 - cat
                 - /tmp/ready
-      # NOTE: By default OpenShift does not allow writing the root directory.
-      # Thats why the data dirs for grafana, prometheus and loki can not be
-      # created and the pod never becomes ready.
-      # See: https://github.com/grafana/docker-otel-lgtm/issues/132
           volumeMounts:
-            - name: grafana-data
-              mountPath: /otel-lgtm/grafana/data
-            - name: loki-storage
+            - name: obs-storage
+              mountPath: /data/tempo
+            - name: obs-storage
+              mountPath: /data/grafana
+            - name: obs-storage
+              mountPath: /data/loki
+            - name: obs-storage
               mountPath: /loki
-            - name: p8s-storage
+            - name: obs-storage
               mountPath: /data/prometheus
       volumes:
-        - name: grafana-data
-          emptyDir: {}
-        - name: loki-storage
-          emptyDir: {}
-        - name: p8s-storage
-          emptyDir: {}
----
+        - name: obs-storage
+          persistentVolumeClaim:
+            claimName: lgtm-observability
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -319,3 +327,105 @@ spec:
       protocol: TCP
       port: 4318
       targetPort: 4318
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: lgtm
+  namespace: observability
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: observability.homelab
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: backend
+            port:
+              number: 3000
+---
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: podmonitor-servicemonitor-lister
+rules:
+- apiGroups: [""]
+  resources: ["pods", "namespaces", "services", "nodes"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["monitoring.coreos.com"]
+  resources: ["podmonitors", "servicemonitors"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["discovery.k8s.io"]
+  resources: ["endpointslices"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: otel-collector-podmonitor-servicemonitor-lister
+subjects:
+- kind: ServiceAccount
+  name: otel-collector
+  namespace: ingress-nginx
+roleRef:
+  kind: ClusterRole
+  name: podmonitor-servicemonitor-lister
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: otel-collector
+subjects:
+  - kind: ServiceAccount
+    name: otel-collector
+    namespace: ingress-nginx
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-monitoring-view
+---
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: otel
+  namespace: ingress-nginx
+spec:
+  managementState: managed
+  mode: statefulset
+  targetAllocator:
+    enabled: true
+    serviceAccount: otel-collector
+    prometheusCR:
+      enabled: true
+      serviceMonitorSelector:
+        matchLabels:
+          "app.kubernetes.io/name": "ingress-nginx"
+  config:
+    exporters:
+      otlp:
+        endpoint: backend.observability:4317
+        tls:
+          insecure: true
+
+    receivers:
+      prometheus:
+        config:
+          scrape_configs:
+          - job_name: 'otel-ta-collector'
+            scrape_interval: 30s
+            static_configs:
+            - targets: [ '0.0.0.0:8888' ]
+    service:
+      telemetry:
+        metrics:
+          address: ":8888"
+      pipelines:
+        metrics:
+          receivers: [prometheus]
+          exporters: [otlp]
+
