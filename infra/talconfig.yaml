@@ -1,6 +1,6 @@
 ---
 clusterName: homelab
-talosVersion: v1.8.3
+talosVersion: v1.9.0
 endpoint: https://192.168.5.2:6443
 allowSchedulingOnMasters: true
 additionalApiServerCertSans:
@@ -33,14 +33,14 @@ patches:
             - rw
 
 controlPlane:
-  talosImageURL:  factory.talos.dev/installer-secureboot/d679818c68e913b6a99dbb70319d14e91455d1c11dc6ba3ba5b2cae4a3fe9f67
+  talosImageURL:  factory.talos.dev/installer-secureboot/08086db1d88ea52b2e873f0b0c64562af7ae98f6ed83da5ee478871bbe52abd6
   extensionServices:
     - name: tailscale
       environment:
         - TS_AUTHKEY=${tsAuth}
 
 worker:
-  talosImageURL: factory.talos.dev/installer-secureboot/d679818c68e913b6a99dbb70319d14e91455d1c11dc6ba3ba5b2cae4a3fe9f67
+  talosImageURL: factory.talos.dev/installer-secureboot/08086db1d88ea52b2e873f0b0c64562af7ae98f6ed83da5ee478871bbe52abd6
   extensionServices:
     - name: tailscale
       environment:
@@ -76,6 +76,9 @@ nodes:
     nodeLabels:
       openebs.io/engine: "mayastor"
     # machineDisks:
-    #   - device: /dev/disk/by-id/ata-CT500MX500SSD1_2149E5EC1D9D
+    #   - device: /dev/disk/by-id/ata-ST22000NT001-3LS101_ZX21V8H5 # HDD 22TB
     #     partitions:
-    #       - mountpoint: /var/mnt/sata
+    #       - mountpoint: /var/local/disks/sata1
+    #   - device: /dev/disk/by-id/ata-SanDisk_SSD_PLUS_480GB_24036A805360 # SSD 480GB
+    #     partitions:
+    #       - mountpoint: /var/local/disks/sata2
