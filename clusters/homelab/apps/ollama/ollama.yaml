@@ -2,30 +2,32 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: ollama
-# ---
-# apiVersion: v1
-# kind: PersistentVolumeClaim
-# metadata:
-#   name: ollama-data
-#   namespace: ollama
-# spec:
-#   accessModes:
-#     - ReadWriteOnce
-#   resources:
-#     requests:
-#       storage: 20Gi
-# ---
-# apiVersion: v1
-# kind: PersistentVolumeClaim
-# metadata:
-#   name: open-webui-data
-#   namespace: ollama
-# spec:
-#   accessModes:
-#     - ReadWriteOnce
-#   resources:
-#     requests:
-#       storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ollama-data
+  namespace: ollama
+spec:
+  storageClassName: openebs-single-replica-ssd-rwx
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: open-webui-data
+  namespace: ollama
+spec:
+  storageClassName: openebs-single-replica-ssd-rwx
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 3Gi
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -82,11 +84,8 @@ spec:
               cpu: "2"
       volumes:
         - name: ollama-data
-          emptyDir: {}
-      # TODO: Replace temporary storage...
-      #   - name: ollama-data
-      #     persistentVolumeClaim:
-      #       claimName: ollama-data
+          persistentVolumeClaim:
+            claimName: ollama-data
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -94,8 +93,7 @@ metadata:
   name: open-webui
   namespace: ollama
 spec:
-  # NOTE: share volume before increasting..
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: open-webui
@@ -112,17 +110,17 @@ spec:
           envFrom:
             - configMapRef:
                 name: open-webui-config
-          # volumeMounts:
-          #   - mountPath: /app/backend/data
-          #     name: open-webui-data
+          volumeMounts:
+            - mountPath: /app/backend/data
+              name: open-webui-data
           resources:
             requests:
               memory: "512Mi"
               cpu: "250m"
-      # volumes:
-      #   - name: open-webui-data
-      #     persistentVolumeClaim:
-      #       claimName: open-webui-data
+      volumes:
+        - name: open-webui-data
+          persistentVolumeClaim:
+            claimName: open-webui-data
 ---
 apiVersion: v1
 kind: Service
@@ -151,3 +149,22 @@ spec:
       port: 3000
       targetPort: 8080
   type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: open-webui
+  namespace: ollama
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: ollama.homelab
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: open-webui
+            port:
+              number: 3000
