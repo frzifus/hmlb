@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ombi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ombi
+  template:
+    metadata:
+      labels:
+        app: ombi
+    spec:
+      containers:
+      - name: ombi
+        image: lscr.io/linuxserver/ombi:latest
+        env:
+        - name: TZ
+          value: Etc/UTC
+      #   volumeMounts:
+      #   - name: config
+      #     mountPath: /config
+      # volumes:
+      # - name: config
+      #   persistentVolumeClaim:
+      #     claimName: ombi-config-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ombi
+spec:
+  selector:
+    app: ombi
+  ports:
+  - protocol: TCP
+    port: 3579
+    targetPort: 3579
+---
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ombi
+  namespace: jellyfin
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: ombi.homelab
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ombi
+            port:
+              number: 3579
