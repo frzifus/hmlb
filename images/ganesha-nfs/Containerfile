@@ -1,0 +1,24 @@
+# Based on https://github.com/apnar/docker-image-nfs-ganesha
+# Based on https://github.com/vasilev/docker-image-nfs-ganesha
+
+FROM debian:12-slim
+
+LABEL org.opencontainers.image.source=https://github.com/frzifus/ccm/images/ganesha-nfs
+
+RUN apt update \
+ && apt install -y netbase nfs-common dbus nfs-ganesha nfs-ganesha-vfs glusterfs-common nfs-ganesha-mem \
+ && apt clean \
+ && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+ && mkdir -p /run/rpcbind /export /var/run/dbus \
+ && touch /run/rpcbind/rpcbind.xdr /run/rpcbind/portmap.xdr \
+ && chmod 755 /run/rpcbind/* \
+ && chown messagebus:messagebus /var/run/dbus \
+ && mkdir -p /var/run/ganesha \
+ && chmod 755 /var/run/ganesha
+
+COPY start.sh /
+RUN chmod +x /start.sh
+
+EXPOSE 2049 20048 111
+
+CMD ["/start.sh"]

@@ -1,3 +1,0 @@
-# ghcr.io/frzifus/gdisk:latest
-FROM debian:bookworm
-RUN apt-get update && apt-get install --no-install-recommends -y gdisk parted xfsprogs cryptsetup && apt-get clean

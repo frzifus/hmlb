@@ -1,0 +1,122 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: openebs-nfs-storage1-ssd
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs-pv-provisioning
+  namespace: openebs-nfs-storage1-ssd
+  labels:
+    app: nfs-pv-provisioning
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Gi # TODO: Increase after disk swap..
+  storageClassName: openebs-single-replica-ssd
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: nfs-server
+  namespace: openebs-nfs-storage1-ssd
+spec:
+  replicas: 1 # NOTE: Must because of RWO
+  serviceName: "nfs-storage1-ssd"
+  selector:
+    matchLabels:
+      app: nfs-server
+  template:
+    metadata:
+      labels:
+        app: nfs-server
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - storage1
+      initContainers:
+      - name: set-permissions
+        image: busybox
+        command: ["sh", "-c", "chmod 777 /export"]
+        volumeMounts:
+        - name: nfs-data
+          mountPath: /export
+      containers:
+      - name: ganesha-nfs
+        image: ghcr.io/frzifus/ganesha-nfs:latest
+        ports:
+        - containerPort: 2049 # NFSv4 default port
+          name: nfs
+        volumeMounts:
+        - name: nfs-data
+          mountPath: /export # Mount PVC to export directory
+        securityContext:
+          privileged: false
+        env:
+        - name: GANESHA_LOGFILE
+          value: "/var/log/ganesha.log" # Log file location
+        - name: GANESHA_CONFIGFILE
+          value: "/etc/ganesha/ganesha.conf" # Config file location
+        - name: GANESHA_OPTIONS
+          value: "" # Add options if necessary
+        - name: GANESHA_EPOCH
+          value: "1" # Ganesha epoch value
+        - name: GANESHA_EXPORT_ID
+          value: "101" # Unique export ID
+        - name: GANESHA_EXPORT
+          value: "/export" # Export location matching the PVC mount
+        - name: GANESHA_ACCESS
+          value: "*" # Allow access from all clients
+        - name: GANESHA_ROOT_ACCESS
+          value: "*" # Allow root access from all clients
+        - name: GANESHA_NFS_PROTOCOLS
+          value: "4" # Enable NFSv4
+        - name: GANESHA_TRANSPORTS
+          value: "TCP" # Use TCP for transport
+        - name: GANESHA_BOOTSTRAP_CONFIG
+          value: "yes" # Write fresh config file on start
+        - name: GANESHA_GRACELESS
+          value: "true" # Disable NFSv4 grace period
+      volumes:
+        - name: nfs-data
+          persistentVolumeClaim:
+            claimName: nfs-pv-provisioning
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: nfs-server
+  namespace: openebs-nfs-storage1-ssd
+spec:
+  selector:
+    app: nfs-server
+  clusterIP: 10.109.204.207
+  ports:
+    - name: nfs
+      port: 2049
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-openebs-single-replica-ssd-rwx
+spec:
+  persistentVolumeReclaimPolicy: Delete
+  capacity:
+    storage: 500Mi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 10.109.204.207
+    path: "/"
+  mountOptions:
+    - nfsvers=4.2
