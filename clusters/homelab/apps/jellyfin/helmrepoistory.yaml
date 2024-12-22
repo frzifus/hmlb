@@ -1,9 +1,0 @@
----
-apiVersion: source.toolkit.fluxcd.io/v1beta2
-kind: HelmRepository
-metadata:
-  name: jellyfin
-  namespace: flux-system  # Or your Flux installation namespace
-spec:
-  url: https://charts.bitnami.com/bitnami  # URL for Bitnami's Helm chart repository
-  interval: 1h
