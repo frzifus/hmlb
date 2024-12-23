@@ -57,6 +57,13 @@ spec:
         ports:
         - containerPort: 2049 # NFSv4 default port
           name: nfs
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1"
+          limits:
+            memory: "4Gi"
+            cpu: "2.5"
         volumeMounts:
         - name: nfs-data
           mountPath: /export # Mount PVC to export directory

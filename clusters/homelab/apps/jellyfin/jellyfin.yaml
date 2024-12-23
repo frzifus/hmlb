@@ -68,7 +68,13 @@ spec:
           name: discovery-udp
           protocol: UDP
         resources:
+          requests:
+            cpu: "2.5"
+            memory: "6Gi"
+            gpu.intel.com/i915: 1
           limits:
+            cpu: "3.5"
+            memory: "10Gi"
             gpu.intel.com/i915: 1
         stdin: true
         tty: true

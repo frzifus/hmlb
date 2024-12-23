@@ -1,0 +1,74 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ark-overseer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ark-overseer
+  namespace: ark-overseer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ark-overseer
+  template:
+    metadata:
+      labels:
+        app: ark-overseer
+    spec:
+      containers:
+      - name: ark-overseer
+        image: ghcr.io/led0nk/ark-overseer:latest
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+        args:
+        - "/ark-overseer"
+        - "-addr=0.0.0.0:8080"
+        - "-grpc=backend.observability:4317"
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "250m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ark-overseer
+  namespace: ark-overseer
+spec:
+  selector:
+    app: ark-overseer
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ark-overseer
+  namespace: ark-overseer
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: ark-overseer.homelab
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ark-overseer
+            port:
+              number: 8080

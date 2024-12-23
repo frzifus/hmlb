@@ -9,9 +9,9 @@ metadata:
   name: ollama-data
   namespace: ollama
 spec:
-  storageClassName: openebs-single-replica-ssd-rwx
+  storageClassName: openebs-single-replica-ssd
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   resources:
     requests:
       storage: 20Gi
@@ -43,7 +43,7 @@ metadata:
   name: ollama
   namespace: ollama
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: ollama
@@ -93,7 +93,7 @@ metadata:
   name: open-webui
   namespace: ollama
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: open-webui
