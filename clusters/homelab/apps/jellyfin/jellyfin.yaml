@@ -46,6 +46,18 @@ spec:
       #   hostPath:
       #      path: /dev/video12
       containers:
+      - image: hurlenko/filebrowser
+        name: filebrowser
+        env:
+        - name: FB_BASEURL
+          value: "/data"
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /data
+          name: nfs-jellyfin-data
       - env:
         - name: TZ
           value: Europe/Berlin
@@ -69,7 +81,7 @@ spec:
           protocol: UDP
         resources:
           requests:
-            cpu: "2.5"
+            cpu: "2.75"
             memory: "6Gi"
             gpu.intel.com/i915: 1
           limits:
@@ -101,6 +113,20 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  name: filebrowser
+  namespace: jellyfin
+spec:
+  selector:
+    app: jellyfin
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
   name: jellyfin
   namespace: jellyfin
 spec:
@@ -117,8 +143,6 @@ kind: Ingress
 metadata:
   name: jellyfin
   namespace: jellyfin
-  # annotations:
-  #   kubernetes.io/ingress.class: "nginx"
 spec:
   ingressClassName: nginx
   rules:

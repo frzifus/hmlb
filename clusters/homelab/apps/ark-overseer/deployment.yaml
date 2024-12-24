@@ -22,11 +22,11 @@ spec:
       containers:
       - name: ark-overseer
         image: ghcr.io/led0nk/ark-overseer:latest
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
         args:
         - "/ark-overseer"
         - "-addr=0.0.0.0:8080"
@@ -35,11 +35,11 @@ spec:
         - containerPort: 8080
         resources:
           requests:
-            memory: "128Mi"
-            cpu: "250m"
+            memory: "64Mi"
+            cpu: "125m"
           limits:
             memory: "256Mi"
-            cpu: "500m"
+            cpu: "250m"
 ---
 apiVersion: v1
 kind: Service

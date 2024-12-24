@@ -62,7 +62,7 @@ spec:
             - -c
             - |
               ollama serve &
-              sleep 5 && ollama pull llama3.2 && echo "Killing 'ollama serve' process"
+              sleep 5 && ollama pull llama3.2:3b && echo "Killing 'ollama serve' process"
               ps -ef | grep 'ollama serve' | grep -v grep | awk '{print $2}' | xargs -r kill -9
           volumeMounts:
             - mountPath: /root/.ollama
@@ -76,12 +76,13 @@ spec:
             - mountPath: /root/.ollama
               name: ollama-data
           resources:
+            requests:
+              memory: "4096Mi"
+              cpu: "1"
             limits:
               cpu: "3"
               memory: "8192Mi"
-            requests:
-              memory: "4096Mi"
-              cpu: "2"
+
       volumes:
         - name: ollama-data
           persistentVolumeClaim:
@@ -115,8 +116,11 @@ spec:
               name: open-webui-data
           resources:
             requests:
-              memory: "512Mi"
+              memory: "256Mi"
+              cpu: "125m"
+            limits:
               cpu: "250m"
+              memory: "512Mi"
       volumes:
         - name: open-webui-data
           persistentVolumeClaim:
