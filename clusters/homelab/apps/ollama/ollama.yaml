@@ -22,9 +22,9 @@ metadata:
   name: open-webui-data
   namespace: ollama
 spec:
-  storageClassName: openebs-single-replica-ssd-rwx
+  storageClassName: openebs-single-replica-ssd
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   resources:
     requests:
       storage: 3Gi
@@ -62,7 +62,7 @@ spec:
             - -c
             - |
               ollama serve &
-              sleep 5 && ollama pull llama3.2:3b && echo "Killing 'ollama serve' process"
+              sleep 5 && ollama pull llama3.2:3b && ollama pull codellama && echo "Killing 'ollama serve' process"
               ps -ef | grep 'ollama serve' | grep -v grep | awk '{print $2}' | xargs -r kill -9
           volumeMounts:
             - mountPath: /root/.ollama
@@ -116,8 +116,8 @@ spec:
               name: open-webui-data
           resources:
             limits:
-              cpu: "250m"
-              memory: "512Mi"
+              cpu: "1"
+              memory: "1Gi"
       volumes:
         - name: open-webui-data
           persistentVolumeClaim:
@@ -169,3 +169,19 @@ spec:
             name: open-webui
             port:
               number: 3000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: open-webui-tailscale
+  namespace: ollama
+spec:
+  defaultBackend:
+    service:
+      name: open-webui
+      port:
+        number: 3000
+  ingressClassName: tailscale
+  tls:
+    - hosts:
+        - ollama

@@ -72,21 +72,26 @@ spec:
 apiVersion: "openebs.io/v1beta2"
 kind: DiskPool
 metadata:
-  name: simple-small-ssd
+  name: simple-small-cache-ssd
   namespace: openebs
 spec:
   node: storage1
   disks: ["/dev/disk/by-id/ata-SanDisk_SSD_PLUS_480GB_24036A805360"]
+  topology:
+    labelled:
+      type: cache
 ---
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: openebs-single-replica-ssd
+  name: openebs-single-replica-cache-ssd
 parameters:
   protocol: nvmf
   repl: "1"
   thin: "true"
   fsType: xfs
+  poolAffinityTopologyLabel: |
+    type: cache
 allowVolumeExpansion: true
 provisioner: io.openebs.csi-mayastor
 reclaimPolicy: Delete # Retain

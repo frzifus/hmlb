@@ -355,6 +355,22 @@ spec:
             port:
               number: 3000
 ---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: lgtm-tailscale
+  namespace: observability
+spec:
+  defaultBackend:
+    service:
+      name: backend
+      port:
+        number: 3000
+  ingressClassName: tailscale
+  tls:
+    - hosts:
+        - observability
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:

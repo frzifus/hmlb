@@ -91,3 +91,19 @@ spec:
                 name: lets-party
                 port:
                   number: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: lets-party-tailscale
+  namespace: lets-party
+spec:
+  defaultBackend:
+    service:
+      name: lets-party
+      port:
+        number: 8080
+  ingressClassName: tailscale
+  tls:
+    - hosts:
+        - lets-party

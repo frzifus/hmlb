@@ -4,6 +4,20 @@ kind: Namespace
 metadata:
   name: ark-overseer
 ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ark-database
+  namespace: ark-overseer
+spec:
+  storageClassName: openebs-single-replica-ssd
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 1Gi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -31,6 +45,10 @@ spec:
         - "/ark-overseer"
         - "-addr=0.0.0.0:8080"
         - "-grpc=backend.observability:4317"
+        - "-domain=ark-overseer.monkey-capella.ts.net"
+        - "-blacklist=/data"
+        - "-db=/data"
+        - "-config=/data"
         ports:
         - containerPort: 8080
         resources:
@@ -40,6 +58,49 @@ spec:
           limits:
             memory: "256Mi"
             cpu: "250m"
+        volumeMounts:
+        - mountPath: /data
+          name: database
+      - name: oauth2-proxy
+        image: quay.io/oauth2-proxy/oauth2-proxy:latest
+        ports:
+        - containerPort: 4180
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "125m"
+          limits:
+            memory: "128Mi"
+            cpu: "250m"
+        env:
+        - name: OAUTH2_PROXY_COOKIE_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: oauth2-proxy-secret
+              key: cookie-secret
+        - name: OAUTH2_PROXY_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: oauth2-proxy-secret
+              key: client-id
+        - name: OAUTH2_PROXY_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: oauth2-proxy-secret
+              key: client-secret
+        volumeMounts:
+        - mountPath: /data
+          name: database
+        args:
+        - "--provider=github"
+        - "--github-org=quixsi"
+        - "--email-domain=*"
+        - "--upstream=http://localhost:8080"
+        - "--http-address=0.0.0.0:4180"
+      volumes:
+        - name: database
+          persistentVolumeClaim:
+            claimName: ark-database
 ---
 apiVersion: v1
 kind: Service
@@ -52,7 +113,7 @@ spec:
   ports:
   - protocol: TCP
     port: 8080
-    targetPort: 8080
+    targetPort: 4180
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -72,3 +133,21 @@ spec:
             name: ark-overseer
             port:
               number: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ark-overseer-tailscale
+  namespace: ark-overseer
+  annotations:
+    tailscale.com/funnel: "true"
+spec:
+  defaultBackend:
+    service:
+      name: ark-overseer
+      port:
+        number: 8080
+  ingressClassName: tailscale
+  tls:
+    - hosts:
+        - ark-overseer

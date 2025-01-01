@@ -7,7 +7,6 @@ metadata:
     pod-security.kubernetes.io/audit: privileged
     pod-security.kubernetes.io/enforce: privileged
     pod-security.kubernetes.io/warn: privileged
-
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: GitRepository
@@ -18,7 +17,7 @@ spec:
   interval: 30m
   url: https://github.com/kubernetes-sigs/node-feature-discovery
   ref:
-    tag: v0.16.6
+    tag: v0.17.0
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization

@@ -509,11 +509,12 @@ spec:
           requests:
             cpu: "2.5"
             memory: "6Gi"
-            gpu.intel.com/i915: 1
+            amd.com/gpu: 1 # requesting 1 GPU
           limits:
             cpu: "3.5"
             memory: "10Gi"
-            gpu.intel.com/i915: 1
+            amd.com/gpu: 1 # requesting 1 GPU
+           # gpu.intel.com/i915: 1
         stdin: true
         tty: true
         volumeMounts:
@@ -596,3 +597,35 @@ spec:
             name: jellyfin
             port:
               number: 8096
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jellyfin-tailscale
+  namespace: jellyfin
+spec:
+  defaultBackend:
+    service:
+      name: jellyfin
+      port:
+        number: 8096
+  ingressClassName: tailscale
+  tls:
+    - hosts:
+        - jellyfin
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nzbget-tailscale
+  namespace: jellyfin
+spec:
+  defaultBackend:
+    service:
+      name: nzbget
+      port:
+        number: 6789
+  ingressClassName: tailscale
+  tls:
+    - hosts:
+        - nzbget
