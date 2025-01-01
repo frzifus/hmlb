@@ -1,6 +1,6 @@
 ---
 clusterName: homelab
-talosVersion: v1.9.0
+talosVersion: v1.9.1
 endpoint: https://192.168.5.2:6443
 allowSchedulingOnMasters: true
 additionalApiServerCertSans:
@@ -40,7 +40,7 @@ controlPlane:
         - TS_AUTHKEY=${tsAuth}
 
 worker:
-  talosImageURL: factory.talos.dev/installer-secureboot/08086db1d88ea52b2e873f0b0c64562af7ae98f6ed83da5ee478871bbe52abd6
+  talosImageURL:  factory.talos.dev/installer-secureboot/623cd04071580f9ac9ecdc12e29da02f0c7b29f70ac776dc0368b15a0d23063d
   extensionServices:
     - name: tailscale
       environment:
