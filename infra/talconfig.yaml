@@ -51,18 +51,20 @@ nodes:
     ipAddress: 192.168.5.2
     installDisk: /dev/sda
     controlPlane: true
+    nodeLabels:
+      role: "storage-mon"
   - hostname: master2
     ipAddress: 192.168.5.3
     installDisk: /dev/sda
     controlPlane: true
+    nodeLabels:
+      role: "storage-mon"
   - hostname: master3
     ipAddress: 192.168.5.4
     installDisk: /dev/sda
     controlPlane: true
-    machineSpec:
-      mode: metal
-      arch: amd64
-      secureboot: false
+    nodeLabels:
+      role: "storage-mon"
   - hostname: storage1
     ipAddress: 192.168.5.5
     installDisk: /dev/nvme0n1
@@ -74,11 +76,8 @@ nodes:
           value:
             vm.nr_hugepages: "1024"
     nodeLabels:
-      openebs.io/engine: "mayastor"
-    # machineDisks:
-    #   - device: /dev/disk/by-id/ata-ST22000NT001-3LS101_ZX21V8H5 # HDD 22TB
-    #     partitions:
-    #       - mountpoint: /var/local/disks/sata1
-    #   - device: /dev/disk/by-id/ata-SanDisk_SSD_PLUS_480GB_24036A805360 # SSD 480GB
-    #     partitions:
-    #       - mountpoint: /var/local/disks/sata2
+      role: "storage-node"
+    taints:
+      - key: "role"
+        value: "storage-node"
+        effect: "NoSchedule"
