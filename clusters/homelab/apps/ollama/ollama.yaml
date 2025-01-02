@@ -9,7 +9,7 @@ metadata:
   name: ollama-data
   namespace: ollama
 spec:
-  storageClassName: openebs-single-replica-ssd
+  storageClassName: simple-and-fast-block
   accessModes:
     - ReadWriteOnce
   resources:
@@ -22,7 +22,7 @@ metadata:
   name: open-webui-data
   namespace: ollama
 spec:
-  storageClassName: openebs-single-replica-ssd
+  storageClassName: simple-and-fast-block
   accessModes:
     - ReadWriteOnce
   resources:

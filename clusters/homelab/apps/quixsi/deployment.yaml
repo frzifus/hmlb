@@ -9,7 +9,7 @@ metadata:
   name: quixsi-database
   namespace: lets-party
 spec:
-  storageClassName: openebs-single-replica-ssd
+  storageClassName: simple-and-fast-block
   accessModes:
     - ReadWriteOnce
   volumeMode: Filesystem

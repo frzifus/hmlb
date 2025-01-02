@@ -1,19 +1,3 @@
---- # NOTE: media storage first
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: nfs-openebs-single-replica-media-rwx
-spec:
-  persistentVolumeReclaimPolicy: Delete
-  capacity:
-    storage: 20Ti
-  accessModes:
-    - ReadWriteMany
-  nfs:
-    server: 10.109.204.207
-    path: "/"
-  mountOptions:
-    - nfsvers=4.2
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -21,22 +5,21 @@ metadata:
   name: jellyfin-pvc-data
   namespace: jellyfin
 spec:
-  volumeName: nfs-openebs-single-replica-media-rwx
-  storageClassName: ""
+  storageClassName: media-storage1-fs
   accessModes:
     - ReadWriteMany
   volumeMode: Filesystem
   resources:
     requests:
       storage: 20Ti
---- # NOTE: media storage end
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: jellyfin-pvc-config
   namespace: jellyfin
 spec:
-  storageClassName: openebs-single-replica-media-hdd
+  storageClassName: simple-and-fast-block
   accessModes:
     - ReadWriteOnce
   volumeMode: Filesystem
@@ -50,7 +33,7 @@ metadata:
   name: filebrowser-db
   namespace: jellyfin
 spec:
-  storageClassName: openebs-single-replica-media-hdd
+  storageClassName: simple-and-fast-block
   accessModes:
     - ReadWriteOnce
   resources:
@@ -63,7 +46,7 @@ metadata:
   name: filebrowser-config
   namespace: jellyfin
 spec:
-  storageClassName: openebs-single-replica-media-hdd
+  storageClassName: simple-and-fast-block
   accessModes:
     - ReadWriteOnce
   resources:
@@ -81,4 +64,4 @@ spec:
     requests:
       storage: 250Gi
   volumeMode: Filesystem
-  storageClassName: openebs-single-replica-cache-ssd
+  storageClassName: simple-and-fast-block

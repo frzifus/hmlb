@@ -10,7 +10,7 @@ metadata:
   name: ark-database
   namespace: ark-overseer
 spec:
-  storageClassName: openebs-single-replica-ssd
+  storageClassName: simple-and-fast-block
   accessModes:
     - ReadWriteOnce
   volumeMode: Filesystem

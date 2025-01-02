@@ -507,14 +507,14 @@ spec:
           protocol: UDP
         resources:
           requests:
-            cpu: "2.5"
-            memory: "6Gi"
-            amd.com/gpu: 1 # requesting 1 GPU
+            cpu: "2"
+            memory: "2Gi"
+           # amd.com/gpu: 1 # requesting 1 GPU
           limits:
             cpu: "3.5"
             memory: "10Gi"
-            amd.com/gpu: 1 # requesting 1 GPU
-           # gpu.intel.com/i915: 1
+           # amd.com/gpu: 1 # requesting 1 GPU
+            #gpu.intel.com/i915: 1
         stdin: true
         tty: true
         volumeMounts:
