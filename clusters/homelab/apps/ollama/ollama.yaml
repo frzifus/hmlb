@@ -52,6 +52,15 @@ spec:
       labels:
         app: ollama
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: "kubernetes.io/hostname"
+                operator: "NotIn"
+                values:
+                - "storage1"
       initContainers:
         - name: download-llama
           image: ollama/ollama:latest
