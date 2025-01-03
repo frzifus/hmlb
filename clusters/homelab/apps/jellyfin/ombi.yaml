@@ -14,17 +14,17 @@ spec:
     spec:
       containers:
       - name: ombi
-        image: lscr.io/linuxserver/ombi:latest
+        image: lscr.io/linuxserver/ombi:4.44.1
         env:
         - name: TZ
           value: Etc/UTC
-      #   volumeMounts:
-      #   - name: config
-      #     mountPath: /config
-      # volumes:
-      # - name: config
-      #   persistentVolumeClaim:
-      #     claimName: ombi-config-pvc
+        volumeMounts:
+        - name: config
+          mountPath: /config
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: ombi-config
 ---
 apiVersion: v1
 kind: Service

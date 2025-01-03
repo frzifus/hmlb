@@ -65,3 +65,16 @@ spec:
       storage: 250Gi
   volumeMode: Filesystem
   storageClassName: simple-and-fast-block
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ombi-config
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  volumeMode: Filesystem
+  storageClassName: simple-and-fast-block
