@@ -57,6 +57,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: inter-downloads-and-history
+  namespace: jellyfin
 spec:
   accessModes:
     - ReadWriteOnce
@@ -69,7 +70,8 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: ombi-config
+  name: jellyseerr-config
+  namespace: jellyfin
 spec:
   accessModes:
     - ReadWriteOnce

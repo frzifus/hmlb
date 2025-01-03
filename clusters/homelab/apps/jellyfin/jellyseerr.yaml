@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jellyseerr
+  namespace: jellyfin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jellyseerr
+  template:
+    metadata:
+      labels:
+        app: jellyseerr
+    spec:
+      containers:
+      - name: jellyseerr
+        image: ghcr.io/fallenbagel/jellyseerr:develop
+        env:
+        - name: TZ
+          value: Etc/UTC
+        volumeMounts:
+        - name: config
+          mountPath: /app/config
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: jellyseerr-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jellyseerr
+  namespace: jellyfin
+spec:
+  selector:
+    app: jellyseerr
+  ports:
+  - protocol: TCP
+    port: 5055
+    targetPort: 5055
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jellyseerr
+  namespace: jellyfin
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: jellyseerr.homelab
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: jellyseerr
+            port:
+              number: 5055
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jellyseerr-tailscale
+  namespace: jellyfin
+spec:
+  defaultBackend:
+    service:
+      name: jellyseerr
+      port:
+        number: 5055
+  ingressClassName: tailscale
+  tls:
+    - hosts:
+        - jellyseerr
