@@ -377,24 +377,67 @@ kind: ClusterRole
 metadata:
   name: podmonitor-servicemonitor-lister
 rules:
-- apiGroups: [""]
-  resources: ["pods", "namespaces", "services", "nodes"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: ["monitoring.coreos.com"]
-  resources: ["podmonitors", "servicemonitors"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: ["discovery.k8s.io"]
-  resources: ["endpointslices"]
-  verbs: ["get", "list", "watch"]
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - nodes
+  - nodes/metrics
+  - services
+  - endpoints
+  - namespaces
+  - configmaps
+  verbs:
+  - get
+  - watch
+  - list
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingresses
+  verbs:
+  - get
+  - watch
+  - list
+- nonResourceURLs:
+  - /metrics
+  - /metrics/cadvisor
+  verbs:
+  - get
+- apiGroups:
+  - monitoring.coreos.com
+  resources:
+  - servicemonitors
+  - podmonitors
+  - scrapeconfigs
+  - probes
+  verbs:
+  - '*'
+- apiGroups:
+  - discovery.k8s.io
+  resources:
+    - endpointslices
+  verbs:
+    - get
+    - list
+    - watch
+- apiGroups:
+    - ""
+  resources:
+  - namespaces
+  verbs:
+    - get
+    - list
+    - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: otel-collector-podmonitor-servicemonitor-lister
+  name: prom-collector-podmonitor-servicemonitor-lister
 subjects:
 - kind: ServiceAccount
-  name: otel-collector
-  namespace: ingress-nginx
+  name: prom-collector
+  namespace: observability
 roleRef:
   kind: ClusterRole
   name: podmonitor-servicemonitor-lister
@@ -403,11 +446,11 @@ roleRef:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: otel-collector
+  name: prom-collector
 subjects:
   - kind: ServiceAccount
-    name: otel-collector
-    namespace: ingress-nginx
+    name: prom-collector
+    namespace: observability
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -416,19 +459,18 @@ roleRef:
 apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
-  name: otel
-  namespace: ingress-nginx
+  name: prom
+  namespace: observability
 spec:
   managementState: managed
   mode: statefulset
   targetAllocator:
     enabled: true
-    serviceAccount: otel-collector
+    serviceAccount: prom-collector
     prometheusCR:
       enabled: true
-      serviceMonitorSelector:
-        matchLabels:
-          "app.kubernetes.io/name": "ingress-nginx"
+      podMonitorSelector: {}
+      serviceMonitorSelector: {}
   config:
     exporters:
       otlp:
@@ -441,7 +483,7 @@ spec:
         config:
           scrape_configs:
           - job_name: 'otel-ta-collector'
-            scrape_interval: 30s
+            scrape_interval: 5s
             static_configs:
             - targets: [ '0.0.0.0:8888' ]
     service:
