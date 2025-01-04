@@ -372,6 +372,15 @@ spec:
         persistentVolumeClaim:
           claimName: inter-downloads-and-history
       containers:
+      - image: frebib/nzbget-exporter
+        name: nzbget-exporter
+        ports:
+          - name: http
+            containerPort: 9452
+            protocol: TCP
+        env:
+          - name: NZBGET_HOST
+            value: "http://nzbget:6789"
       - image: nzbgetcom/nzbget:v24.5
         name: nzbget
         command:
@@ -469,6 +478,39 @@ spec:
       port: 6789
       targetPort: 6789
   type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nzbget-monitoring
+  namespace: jellyfin
+spec:
+  selector:
+    app: nzbget
+  ports:
+    - name: prometheus
+      protocol: TCP
+      port: 9452
+      targetPort: 9452
+  type: ClusterIP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: nzbget-service-monitor
+  namespace: jellyfin
+spec:
+  selector:
+    matchLabels:
+      app: nzbget
+  namespaceSelector:
+    matchNames:
+      - jellyfin
+  endpoints:
+    - port: prometheus
+      interval: 30s
+      path: /metrics
+      scrapeTimeout: 10s
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
