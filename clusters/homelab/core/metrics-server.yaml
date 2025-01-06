@@ -1,0 +1,38 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: metrics-server
+  namespace: flux-system
+spec:
+  url: https://kubernetes-sigs.github.io/metrics-server/
+  interval: 10h
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: metrics-server
+  namespace: kube-system
+spec:
+  interval: 10h
+  chart:
+    spec:
+      chart: metrics-server
+      version: "3.12.2"
+      sourceRef:
+        kind: HelmRepository
+        name: metrics-server
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  values:
+    args:
+      - --kubelet-insecure-tls
+    apiService:
+      insecureSkipTLSVerify: true
+    replicaCount: 1
+    metrics:
+      enabled: true
+    serviceMonitor:
+      enabled: true
