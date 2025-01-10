@@ -117,6 +117,9 @@ spec:
           image: ghcr.io/open-webui/open-webui:v0.5.4
           ports:
             - containerPort: 8080
+          env:
+            - name: ENABLE_WEBSOCKET_SUPPORT
+              value: "0"
           envFrom:
             - configMapRef:
                 name: open-webui-config
