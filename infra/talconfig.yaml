@@ -40,7 +40,7 @@ controlPlane:
         - TS_AUTHKEY=${tsAuth}
 
 worker:
-  talosImageURL:  factory.talos.dev/installer-secureboot/623cd04071580f9ac9ecdc12e29da02f0c7b29f70ac776dc0368b15a0d23063d
+  talosImageURL:  factory.talos.dev/installer-secureboot/2ffbcbedc61ac5530fabbec9ec4e565e78014b4d20218d60616f863512a42f4e
   extensionServices:
     - name: tailscale
       environment:
