@@ -81,21 +81,27 @@ spec:
           image: ollama/ollama:latest
           ports:
             - containerPort: 11434
+          securityContext:
+            privileged: true
           volumeMounts:
             - mountPath: /root/.ollama
               name: ollama-data
+            - mountPath: /dev/dri
+              name: host
           resources:
             requests:
               memory: "4096Mi"
               cpu: "1"
             limits:
-              cpu: "3"
+              cpu: "6"
               memory: "8192Mi"
-
       volumes:
         - name: ollama-data
           persistentVolumeClaim:
             claimName: ollama-data
+        - name: host
+          hostPath:
+            path: /dev/dri
 ---
 apiVersion: apps/v1
 kind: Deployment
