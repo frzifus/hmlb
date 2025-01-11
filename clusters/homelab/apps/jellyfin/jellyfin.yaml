@@ -80,12 +80,12 @@ spec:
           requests:
             cpu: "1"
             memory: "2Gi"
-           # amd.com/gpu: 1 # requesting 1 GPU
           limits:
             cpu: "3"
-            memory: "80Gi"
-           # amd.com/gpu: 1 # requesting 1 GPU
-            #gpu.intel.com/i915: 1
+            memory: "8Gi"
+            # amd.com/gpu: 1
+            # gpu.intel.com/i915: 1
+            # gpu.intel.com/xe: 1
         stdin: true
         tty: true
         volumeMounts:
