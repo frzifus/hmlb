@@ -40,7 +40,7 @@ controlPlane:
         - TS_AUTHKEY=${tsAuth}
 
 worker:
-  talosImageURL:  factory.talos.dev/installer-secureboot/2ffbcbedc61ac5530fabbec9ec4e565e78014b4d20218d60616f863512a42f4e
+  talosImageURL:  factory.talos.dev/installer-secureboot/7890e460a0f27ba20a6a76e300d280775ec2d5a18912c202dc6a8ef3d24fe824
   extensionServices:
     - name: tailscale
       environment:
@@ -66,7 +66,7 @@ nodes:
     nodeLabels:
       role: "storage-mon"
   - hostname: storage1
-    ipAddress: 192.168.5.5
+    ipAddress: 192.168.5.5 # + 192.168.5.6
     installDisk: /dev/nvme0n1
     controlPlane: false
     patches:
@@ -81,3 +81,71 @@ nodes:
       - key: "role"
         value: "storage-node"
         effect: "NoSchedule"
+  - hostname: storage2
+    ipAddress: 192.168.5.7 # + 192.168.5.8
+    installDisk: /dev/nvme0n1
+    controlPlane: false
+    patches:
+      - |-
+        - op: add
+          path: /machine/sysctls
+          value:
+            vm.nr_hugepages: "1024"
+    nodeLabels:
+      role: "storage-node"
+    taints:
+      - key: "role"
+        value: "storage-node"
+        effect: "NoSchedule"
+  - hostname: worker1
+    ipAddress: 192.168.5.9
+    installDisk: /dev/nvme0n1
+    controlPlane: false
+###### NOTE: testing
+  - hostname: gpu1
+    ipAddress: 192.168.1.15
+    installDisk: /dev/sda
+    controlPlane: false
+    patches: # NOTE: Old machine, has no TPM, but also no disk.
+      - |-
+        - op: replace
+          path: /machine/systemDiskEncryption/state/keys/0
+          value:
+            - static:
+                passphrase: ${diskEncryptionInsecure}
+              slot: 0
+        - op: replace
+          path: /machine/systemDiskEncryption/ephemeral/keys/0
+          value:
+            - static:
+                passphrase: ${diskEncryptionInsecure}
+              slot: 0
+  - hostname: gpu2
+    ipAddress: 192.168.1.48
+    installDisk: /dev/sda
+    controlPlane: false
+    patches: # NOTE: Old machine, has no TPM, but also no disk.
+      - |-
+        - op: replace
+          path: /machine/systemDiskEncryption/state/keys/0
+          value:
+            - static:
+                passphrase: ${diskEncryptionInsecure}
+              slot: 0
+        - op: replace
+          path: /machine/systemDiskEncryption/ephemeral/keys/0
+          value:
+            - static:
+                passphrase: ${diskEncryptionInsecure}
+              slot: 0
+######################
+### NOTE: Image
+### customization:
+###     systemExtensions:
+###         officialExtensions:
+###             - siderolabs/amd-ucode
+###             - siderolabs/amdgpu
+###             - siderolabs/i915
+###             - siderolabs/intel-ucode
+###             - siderolabs/mei
+###             - siderolabs/tailscale

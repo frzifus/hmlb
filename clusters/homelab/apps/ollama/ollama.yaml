@@ -65,6 +65,11 @@ spec:
                 operator: "NotIn"
                 values:
                 - "storage1"
+              # NOTE: testing intel arc
+              - key: "kubernetes.io/hostname"
+                operator: "In"
+                values:
+                - "gpu2"
       # initContainers:
       #   - name: download-llama
       #     image: ollama/ollama:latest

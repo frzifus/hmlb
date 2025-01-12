@@ -31,6 +31,11 @@ spec:
                 operator: "NotIn"
                 values:
                 - "storage1"
+                # NOTE: testing
+              - key: "kubernetes.io/hostname"
+                operator: "In"
+                values:
+                - "gpu2"
       volumes:
       - name: nfs-jellyfin-config
         persistentVolumeClaim:

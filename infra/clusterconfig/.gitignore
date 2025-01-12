@@ -3,3 +3,5 @@ homelab-master2.yaml
 homelab-master3.yaml
 homelab-storage1.yaml
 talosconfig
+homelab-gpu1.yaml
+homelab-gpu2.yaml
