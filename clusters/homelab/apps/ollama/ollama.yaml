@@ -110,7 +110,7 @@ spec:
               memory: "4096Mi"
               cpu: "1"
             limits:
-              cpu: "3"
+              cpu: "2"
               memory: "8192Mi"
       volumes:
         - name: ollama-data

@@ -81,8 +81,8 @@ spec:
             cpu: "1"
             memory: "2Gi"
           limits:
-            cpu: "3"
-            memory: "8Gi"
+            cpu: "2"
+            memory: "6Gi"
             # amd.com/gpu: 1
             # gpu.intel.com/i915: 1
             # gpu.intel.com/xe: 1
