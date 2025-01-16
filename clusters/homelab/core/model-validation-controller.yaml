@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: model-validation-controller
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: model-validation-controller
+  namespace: model-validation-controller
+spec:
+  interval: 5m
+  url: https://github.com/miyunari/model-validation-controller
+  ref:
+    branch: main
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: model-validation-controller
+  namespace: model-validation-controller
+spec:
+  interval: 5m
+  path: "./manifests"
+  sourceRef:
+    kind: GitRepository
+    name: model-validation-controller
+  targetNamespace: model-validation-controller
+  prune: true
