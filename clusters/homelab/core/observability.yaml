@@ -121,13 +121,23 @@ spec:
             - name: obs-storage
               mountPath: /data/loki
             - name: obs-storage
-              mountPath: /loki
-            - name: obs-storage
               mountPath: /data/prometheus
+            - name: config-files
+              mountPath: /otel-lgtm/grafana-dashboard-jvm-metrics.json
+              subPath: grafana-cephfs-opentelemetry.json
+            - name: config-files
+              mountPath: /otel-lgtm/grafana-dashboard-red-metrics-classic.json
+              subPath: grafana-homelab-opentelemetry.json
+            - name: config-files
+              mountPath: /otel-lgtm/grafana-dashboard-red-metrics-native.json
+              subPath: grafana-kepler.json
       volumes:
         - name: obs-storage
           persistentVolumeClaim:
             claimName: lgtm-observability
+        - name: config-files
+          configMap:
+            name: grafana-dashboards
 ---
 apiVersion: v1
 kind: ServiceAccount
