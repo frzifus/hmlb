@@ -16,9 +16,7 @@ COPY ./etc/yum.repos.d/tailscale.repo /etc/yum.repos.d/tailscale.repo
 # https://github.com/fedora-silverblue/issue-tracker/issues/430
 RUN mkdir -p /etc/alternatives && mkdir -p /var/lib/alternatives
 
-RUN rpm --import https://packages.microsoft.com/keys/microsoft.asc
-
-RUN rpm-ostree install -y https://packages.microsoft.com/config/rhel/9.0/packages-microsoft-prod.rpm
+RUN curl -L https://aka.ms/InstallAzureCli -o /opt/install_azure_cli.sh && chmod +x /opt/install_azure_cli.sh && /opt/install_azure_cli.sh
 
 RUN rpm-ostree install tailscale
 
