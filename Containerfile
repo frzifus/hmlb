@@ -16,9 +16,9 @@ COPY ./etc/yum.repos.d/tailscale.repo /etc/yum.repos.d/tailscale.repo
 # https://github.com/fedora-silverblue/issue-tracker/issues/430
 RUN mkdir -p /etc/alternatives && mkdir -p /var/lib/alternatives
 
-RUN rpm-ostree install tailscale
+RUN dnf install -y tailscale
 
-RUN rpm-ostree install \
+RUN dnf install -y \
     emacs \
     gnome-terminal \
     age \
@@ -51,7 +51,7 @@ RUN rpm-ostree install \
 
 RUN touch /etc/containers/nodocker
 
-RUN rpm-ostree install \
+RUN dnf install -y \
     sway \
     axel \
     pavucontrol \
@@ -63,7 +63,7 @@ RUN rpm-ostree install \
     swappy \
     mako
 
-RUN rpm-ostree install \
+RUN dnf install -y \
     kernel-headers \
     lld \
     gcc \
@@ -78,14 +78,14 @@ RUN rpm-ostree install \
     openssl \
     libtool
 
-RUN rpm-ostree install -y \
+RUN dnf install -y \
     libvirt \
     libvirt-daemon-kvm \
     qemu-kvm \
     android-tools \
     fastboot
 
-RUN rpm-ostree install -y \
+RUN dnf install -y \
     mesa-libGL-devel \
     mesa-libGLES-devel \
     libXrandr-devel \
