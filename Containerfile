@@ -1,5 +1,8 @@
 FROM quay.io/fedora/fedora-silverblue:41
 
+# NOTE: Just to test RHEL9 version
+# FROM registry.redhat.io/rhel9/rhel-bootc:9.5
+
 COPY ./etc/rpm-ostreed.conf /etc/rpm-ostreed.conf
 
 COPY ./etc/vconsole.conf /etc/vconsole.conf
@@ -15,6 +18,10 @@ COPY ./etc/yum.repos.d/tailscale.repo /etc/yum.repos.d/tailscale.repo
 
 # https://github.com/fedora-silverblue/issue-tracker/issues/430
 RUN mkdir -p /etc/alternatives && mkdir -p /var/lib/alternatives
+
+RUN rpm --import https://packages.microsoft.com/keys/microsoft.asc
+
+RUN dnf install -y azure-cli
 
 RUN dnf install -y tailscale
 
