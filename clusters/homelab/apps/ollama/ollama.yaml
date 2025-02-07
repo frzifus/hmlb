@@ -18,7 +18,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 20Gi
+      storage: 50Gi
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -115,8 +115,8 @@ spec:
               memory: "4096Mi"
               cpu: "1"
             limits:
-              cpu: "2"
-              memory: "8192Mi"
+              cpu: "3"
+              memory: "10Gi"
       volumes:
         - name: ollama-data
           persistentVolumeClaim:
