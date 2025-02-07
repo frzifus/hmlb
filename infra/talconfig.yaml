@@ -1,6 +1,6 @@
 ---
 clusterName: homelab
-talosVersion: v1.9.1
+talosVersion: v1.9.3
 endpoint: https://192.168.5.2:6443
 allowSchedulingOnMasters: true
 additionalApiServerCertSans:
@@ -33,14 +33,14 @@ patches:
             - rw
 
 controlPlane:
-  talosImageURL:  factory.talos.dev/installer-secureboot/08086db1d88ea52b2e873f0b0c64562af7ae98f6ed83da5ee478871bbe52abd6
+  talosImageURL:  factory.talos.dev/installer-secureboot/1c938a455e64de0a762e469a5f723ec42b1bab39cadd763fdb16ef8baddbddb7
   extensionServices:
     - name: tailscale
       environment:
         - TS_AUTHKEY=${tsAuth}
 
 worker:
-  talosImageURL:  factory.talos.dev/installer-secureboot/7890e460a0f27ba20a6a76e300d280775ec2d5a18912c202dc6a8ef3d24fe824
+  talosImageURL:  factory.talos.dev/installer-secureboot/1c938a455e64de0a762e469a5f723ec42b1bab39cadd763fdb16ef8baddbddb7
   extensionServices:
     - name: tailscale
       environment:
@@ -148,4 +148,5 @@ nodes:
 ###             - siderolabs/i915
 ###             - siderolabs/intel-ucode
 ###             - siderolabs/mei
+###             - siderolabs/qemu-guest-agent
 ###             - siderolabs/tailscale
