@@ -115,13 +115,7 @@ spec:
                 - /tmp/ready
           volumeMounts:
             - name: obs-storage
-              mountPath: /data/tempo
-            - name: obs-storage
-              mountPath: /data/grafana
-            - name: obs-storage
-              mountPath: /data/loki
-            - name: obs-storage
-              mountPath: /data/prometheus
+              mountPath: /data
             - name: config-files
               mountPath: /otel-lgtm/grafana-dashboard-jvm-metrics.json
               subPath: grafana-cephfs-opentelemetry.json

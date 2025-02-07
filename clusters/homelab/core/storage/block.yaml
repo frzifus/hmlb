@@ -14,7 +14,9 @@ spec:
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-   name: simple-and-fast-block
+  name: simple-and-fast-block
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
 # Change "rook-ceph" provisioner prefix to match the operator namespace if needed
 provisioner: rook-ceph.rbd.csi.ceph.com
 parameters:
