@@ -31,6 +31,7 @@ spec:
         kind: HelmRepository
         name: open-telemetry
         namespace: observability
+      version: "0.79.0"
   install:
     createNamespace: true
   values:
