@@ -99,4 +99,5 @@ RUN dnf install -y \
     libXi-devel \
     libXxf86vm-devel \
     alsa-lib-devel \
-    pkg-config
+    pkg-config \
+    distrobox
