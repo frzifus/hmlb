@@ -69,7 +69,7 @@ spec:
           value: Europe/Berlin
         securityContext:
           privileged: true # Container must run as privileged inside of the pod, required for hardware acceleration
-        image: jellyfin/jellyfin:10.10.5 # Note: this image in particular has the OpenCL runtime
+        image: jellyfin/jellyfin:10.10.6 # Note: this image in particular has the OpenCL runtime
         imagePullPolicy: Always
         name: jellyfin
         ports:
