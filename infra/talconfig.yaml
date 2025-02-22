@@ -5,6 +5,10 @@ endpoint: https://192.168.5.2:6443
 allowSchedulingOnMasters: true
 additionalApiServerCertSans:
   - home-cluster
+cniConfig:
+  name: custom
+  urls:
+    - https://raw.githubusercontent.com/frzifus/ccm/main/infra/cilium.yaml
 patches:
   - |-
     machine:
