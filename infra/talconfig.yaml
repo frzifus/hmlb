@@ -133,19 +133,21 @@ patches:
                       - --set
                       - k8sServicePort=7445
 
-schematic:
-  customization:
-    systemExtensions:
-      officialExtensions:
-        - siderolabs/iscsi-tools
-        - siderolabs/util-linux-tool
-        - siderolabs/amd-ucode
-        - siderolabs/amdgpu
-        - siderolabs/i915
-        - siderolabs/intel-ucode
-        - siderolabs/mei
-        - siderolabs/qemu-guest-agent
-        - siderolabs/tailscale
+image: factory.talos.dev/installer-secureboot/9621690bbe0294af298c41e871b4fd4c7f0c49e7039ba8990b7cf587d1e852ef
+# NOTE: Contains
+# schematic:
+#   customization:
+#     systemExtensions:
+#       officialExtensions:
+#         - siderolabs/iscsi-tools
+#         - siderolabs/util-linux-tool
+#         - siderolabs/amd-ucode
+#         - siderolabs/amdgpu
+#         - siderolabs/i915
+#         - siderolabs/intel-ucode
+#         - siderolabs/mei
+#         - siderolabs/qemu-guest-agent
+#         - siderolabs/tailscale
 
 controlPlane:
   extensionServices:
