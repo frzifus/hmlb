@@ -70,7 +70,7 @@ patches:
             spec:
               backoffLimit: 10
               template:
-                 metadata:
+                metadata:
                   labels:
                     app: cilium-install
                 spec:
