@@ -1,6 +1,6 @@
 ---
 clusterName: homelab
-talosVersion: v1.9.3
+talosVersion: v1.9.4
 endpoint: https://192.168.5.2:6443
 allowSchedulingOnMasters: true
 additionalApiServerCertSans:
@@ -24,23 +24,34 @@ patches:
     - op: add
       path: /machine/kubelet/extraMounts
       value:
-        - destination: /var/local
+        - destination: /var/lib/longhorn
           type: bind
-          source: /var/local
+          source: /var/lib/longhorn
           options:
             - bind
             - rshared
             - rw
+schematic:
+  customization:
+    systemExtensions:
+      officialExtensions:
+        - siderolabs/iscsi-tools
+        - siderolabs/util-linux-tool
+        - siderolabs/amd-ucode
+        - siderolabs/amdgpu
+        - siderolabs/i915
+        - siderolabs/intel-ucode
+        - siderolabs/mei
+        - siderolabs/qemu-guest-agent
+        - siderolabs/tailscale
 
 controlPlane:
-  talosImageURL:  factory.talos.dev/installer-secureboot/1c938a455e64de0a762e469a5f723ec42b1bab39cadd763fdb16ef8baddbddb7
   extensionServices:
     - name: tailscale
       environment:
         - TS_AUTHKEY=${tsAuth}
 
 worker:
-  talosImageURL:  factory.talos.dev/installer-secureboot/1c938a455e64de0a762e469a5f723ec42b1bab39cadd763fdb16ef8baddbddb7
   extensionServices:
     - name: tailscale
       environment:
@@ -51,20 +62,14 @@ nodes:
     ipAddress: 192.168.5.2
     installDisk: /dev/sda
     controlPlane: true
-    nodeLabels:
-      role: "storage-mon"
   - hostname: master2
     ipAddress: 192.168.5.3
     installDisk: /dev/sda
     controlPlane: true
-    nodeLabels:
-      role: "storage-mon"
   - hostname: master3
     ipAddress: 192.168.5.4
     installDisk: /dev/sda
     controlPlane: true
-    nodeLabels:
-      role: "storage-mon"
   - hostname: storage1
     ipAddress: 192.168.5.5 # + 192.168.5.6
     installDisk: /dev/nvme0n1
@@ -101,52 +106,15 @@ nodes:
     ipAddress: 192.168.5.9
     installDisk: /dev/nvme0n1
     controlPlane: false
-###### NOTE: testing
+  - hostname: worker2
+    ipAddress: 192.168.5.10
+    installDisk: /dev/nvme0n1
+    controlPlane: false
   - hostname: gpu1
-    ipAddress: 192.168.1.15
+    ipAddress: 192.168.5.11
     installDisk: /dev/sda
     controlPlane: false
-    patches: # NOTE: Old machine, has no TPM, but also no disk.
-      - |-
-        - op: replace
-          path: /machine/systemDiskEncryption/state/keys/0
-          value:
-            - static:
-                passphrase: ${diskEncryptionInsecure}
-              slot: 0
-        - op: replace
-          path: /machine/systemDiskEncryption/ephemeral/keys/0
-          value:
-            - static:
-                passphrase: ${diskEncryptionInsecure}
-              slot: 0
   - hostname: gpu2
-    ipAddress: 192.168.1.48
+    ipAddress: 192.168.5.12
     installDisk: /dev/sda
     controlPlane: false
-    patches: # NOTE: Old machine, has no TPM, but also no disk.
-      - |-
-        - op: replace
-          path: /machine/systemDiskEncryption/state/keys/0
-          value:
-            - static:
-                passphrase: ${diskEncryptionInsecure}
-              slot: 0
-        - op: replace
-          path: /machine/systemDiskEncryption/ephemeral/keys/0
-          value:
-            - static:
-                passphrase: ${diskEncryptionInsecure}
-              slot: 0
-######################
-### NOTE: Image
-### customization:
-###     systemExtensions:
-###         officialExtensions:
-###             - siderolabs/amd-ucode
-###             - siderolabs/amdgpu
-###             - siderolabs/i915
-###             - siderolabs/intel-ucode
-###             - siderolabs/mei
-###             - siderolabs/qemu-guest-agent
-###             - siderolabs/tailscale
