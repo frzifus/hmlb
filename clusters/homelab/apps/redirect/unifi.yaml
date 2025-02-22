@@ -1,0 +1,62 @@
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unifi
+  namespace: redirect
+  labels:
+    app: unifi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: unifi
+  template:
+    metadata:
+      labels:
+        app: unifi
+    spec:
+      containers:
+      - name: socat
+        image: alpine/socat
+        args: ["-v", "tcp-listen:443,reuseaddr,fork", "tcp:192.168.1.1:443"]
+        ports:
+        - containerPort: 443
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0
+          allowPrivilegeEscalation: false
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: unifi
+  namespace: redirect
+  labels:
+    app: unifi
+spec:
+  selector:
+    app: unifi
+  ports:
+    - protocol: TCP
+      port: 443
+      targetPort: 443
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: unifi-tailscale
+  namespace: redirect
+spec:
+  defaultBackend:
+    service:
+      name: unifi
+      port:
+        number: 443
+  ingressClassName: tailscale
+  tls:
+    - hosts:
+        - unifi
