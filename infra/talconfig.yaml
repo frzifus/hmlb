@@ -30,9 +30,9 @@ patches:
     - op: add
       path: /machine/kubelet/extraMounts
       value:
-        - destination: /var/lib/longhorn
+        - destination: /var/local
           type: bind
-          source: /var/lib/longhorn
+          source: /var/local
           options:
             - bind
             - rshared
@@ -256,6 +256,7 @@ nodes:
           value:
             vm.nr_hugepages: "1024"
     nodeLabels:
+      openebs.io/engine: mayastor
       role: "storage-node"
     taints:
       - key: "role"
@@ -273,6 +274,7 @@ nodes:
             vm.nr_hugepages: "1024"
     nodeLabels:
       role: "storage-node"
+      openebs.io/engine: mayastor
     taints:
       - key: "role"
         value: "storage-node"
