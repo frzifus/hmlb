@@ -102,6 +102,70 @@ patches:
                   serviceAccount: cilium-install
                   serviceAccountName: cilium-install
                   hostNetwork: true
+                  initContainers:
+                  - name: get-node-pod-cidr
+                    image: bitnami/kubectl:latest
+                    securityContext:
+                      allowPrivilegeEscalation: false
+                      capabilities:
+                        drop: [ALL]
+                      runAsNonRoot: true
+                      readOnlyRootFilesystem: true
+                      seccompProfile:
+                        type: RuntimeDefault
+                    command: [sh, -c]
+                    args:
+                      - |
+                        set -e
+                        kubectl get nodes $(NODE_NAME) -o json > /mnt/share-pod-cidr/node_json
+                        cat /mnt/share-pod-cidr/node_json | jq -r '.spec.podCIDRs | join(",")' > /mnt/share-pod-cidr/out
+                    env:
+                      - name: NODE_NAME
+                        valueFrom:
+                          fieldRef:
+                            fieldPath: spec.nodeName
+                      - name: KUBERNETES_SERVICE_HOST
+                        value: "localhost"
+                      - name: KUBERNETES_SERVICE_PORT
+                        value: "7445"
+                    volumeMounts:
+                      - mountPath: /mnt/share-pod-cidr
+                        name: share-pod-cidr
+                  - name: set-tailscale-advertise-routes
+                    image: tailscale/tailscale:latest
+                    securityContext:
+                      allowPrivilegeEscalation: false
+                      capabilities:
+                        drop: [ALL]
+                      runAsNonRoot: false
+                      readOnlyRootFilesystem: true
+                      seccompProfile:
+                        type: RuntimeDefault
+                    command: [sh, -c]
+                    args: ["tailscale set --advertise-routes $(cat /mnt/share-pod-cidr/out)"]
+                    volumeMounts:
+                      - mountPath: /var/run/tailscale/tailscaled.sock
+                        name: tailscaled-socket
+                      - mountPath: /mnt/share-pod-cidr
+                        name: share-pod-cidr
+                  - name: set-tailscale-optimizations
+                    image: chainguard/curl:latest
+                    securityContext:
+                      allowPrivilegeEscalation: false
+                      capabilities:
+                        drop: [ALL]
+                      runAsNonRoot: false
+                      runAsUser: 0
+                      readOnlyRootFilesystem: true
+                      seccompProfile:
+                        type: RuntimeDefault
+                    args:
+                      - "--unix-socket"
+                      - "/var/run/tailscale/tailscaled.sock"
+                      - "http://local-tailscaled.sock/localapi/v0/set-udp-gro-forwarding"
+                    volumeMounts:
+                      - mountPath: /var/run/tailscale/tailscaled.sock
+                        name: tailscaled-socket
                   containers:
                   - name: cilium-install
                     image: quay.io/cilium/cilium-cli-ci:v1.17
@@ -132,8 +196,13 @@ patches:
                       - k8sServiceHost=localhost
                       - --set
                       - k8sServicePort=7445
+                  volumes:
+                  - name: tailscaled-socket
+                    hostPath:
+                      path: /var/run/tailscale/tailscaled.sock
+                  - name: share-pod-cidr
+                    emptyDir: {}
 
-image: factory.talos.dev/installer-secureboot/9621690bbe0294af298c41e871b4fd4c7f0c49e7039ba8990b7cf587d1e852ef
 # NOTE: Contains
 # schematic:
 #   customization:
@@ -150,12 +219,14 @@ image: factory.talos.dev/installer-secureboot/9621690bbe0294af298c41e871b4fd4c7f
 #         - siderolabs/tailscale
 
 controlPlane:
+  talosImageURL: factory.talos.dev/installer-secureboot/d1dcbd874be717cf1c5706bbe5c102bce507a1041f997d06f70dffc0556fe3a4
   extensionServices:
     - name: tailscale
       environment:
         - TS_AUTHKEY=${tsAuth}
 
 worker:
+  talosImageURL: factory.talos.dev/installer-secureboot/d1dcbd874be717cf1c5706bbe5c102bce507a1041f997d06f70dffc0556fe3a4
   extensionServices:
     - name: tailscale
       environment:
