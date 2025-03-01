@@ -6,7 +6,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 5m
-  url: https://github.com/frzifus/ccm.git
+  url: https://github.com/frzifus/hmlb.git
   ref:
     branch: main
 
