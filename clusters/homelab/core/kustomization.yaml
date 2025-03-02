@@ -12,7 +12,9 @@ resources:
   - kepler.yaml
   - cert-manager.yaml
   - nginx-ingress.yaml
-#  - storage/openebs.yaml
+  - storage/openebs.yaml
+  - storage/disks.yaml
+
 #  - metallb.yaml
 #  - model-validation-controller.yaml
 #  - observability.yaml

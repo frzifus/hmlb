@@ -1,0 +1,21 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: homelab-disks
+  namespace: openebs
+spec:
+  path: ./clusters/homelab/core/storage
+  sourceRef:
+    kind: GitRepository
+    name: homelab-repo
+  dependsOn:
+    - name: mayastor
+      namespace: openebs
+  healthChecks:
+    - kind: HelmRelease
+      name: mayastor
+  prune: true
+  interval: 10m
+  retryInterval: 1m
+
