@@ -28,6 +28,9 @@ spec:
         name: ingress-nginx
         namespace: flux-system
       version: "4.12.0"
+  dependsOn:
+    - name: metallb
+      namespace: metallb-system
   install:
     createNamespace: true
   values:
@@ -40,6 +43,6 @@ spec:
         type: LoadBalancer
         loadBalancerClass: metallb
       metrics:
+        enabled: true
         serviceMonitor:
           enabled: true
-        enabled: true
