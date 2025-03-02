@@ -1,0 +1,42 @@
+---
+apiVersion: "openebs.io/v1beta2"
+kind: DiskPool
+metadata:
+  name: storage1-crucial
+  namespace: openebs
+spec:
+  node: storage1
+  # TODO:  Add other disks.
+  disks: ["/dev/disk/by-id/ata-Samsung_SSD_870_QVO_2TB_S5RPNF0T340180H"]
+  topology:
+    labelled:
+      type: crucial
+# ---
+# TODO
+# apiVersion: "openebs.io/v1beta2"
+# kind: DiskPool
+# metadata:
+#   name: storage2-crucial
+#   namespace: openebs
+# spec:
+#   node: storage1
+#   # TODO:  Add other disks.
+#   disks: []
+#   topology:
+#     labelled:
+#       type: crucial
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: openebs-crucial
+parameters:
+  protocol: nvmf
+  repl: "1"
+  thin: "true"
+  fsType: xfs
+  poolAffinityTopologyLabel: |
+    type: crucial
+allowVolumeExpansion: true
+provisioner: io.openebs.csi-mayastor
+reclaimPolicy: Delete # Retain

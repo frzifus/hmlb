@@ -1,0 +1,27 @@
+---
+apiVersion: "openebs.io/v1beta2"
+kind: DiskPool
+metadata:
+  name: storage2-media-hdd
+  namespace: openebs
+spec:
+  node: storage2
+  disks: ["/dev/disk/by-id/ata-ST22000NT001-3LS101_ZX21V8H5"]
+  topology:
+    labelled:
+      type: media
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: openebs-media
+parameters:
+  protocol: nvmf
+  repl: "1"
+  thin: "true"
+  fsType: xfs
+  poolAffinityTopologyLabel: |
+    type: media
+allowVolumeExpansion: true
+provisioner: io.openebs.csi-mayastor
+reclaimPolicy: Delete # Retain
