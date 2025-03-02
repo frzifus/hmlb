@@ -36,22 +36,3 @@ spec:
     createNamespace: true
   values:
     loadBalancerClass: metallb
----
-apiVersion: metallb.io/v1beta1
-kind: IPAddressPool
-metadata:
-  name: default
-  namespace: metallb-system
-spec:
-  addresses:
-    - 192.168.5.110-192.168.5.110
-  autoAssign: true
----
-apiVersion: metallb.io/v1beta1
-kind: L2Advertisement
-metadata:
-  name: default
-  namespace: metallb-system
-spec:
-  ipAddressPools:
-  - default

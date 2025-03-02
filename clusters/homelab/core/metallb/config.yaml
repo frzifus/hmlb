@@ -1,0 +1,19 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: homelab-metallb
+  namespace: metallb
+spec:
+  path: ./clusters/homelab/core/metallb
+  sourceRef:
+    kind: GitRepository
+    name: homelab-repo
+    namespace: flux-system
+  prune: true
+  interval: 10m
+  # NOTE: dependsOn across across different resource kinds does not work.
+  # We do a few retries instead:
+  # See: https://github.com/fluxcd/flux2/discussions/1599
+  retryInterval: 1m
+

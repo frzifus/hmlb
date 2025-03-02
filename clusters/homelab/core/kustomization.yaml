@@ -14,8 +14,9 @@ resources:
   - nginx-ingress.yaml
   - storage/openebs.yaml
   - storage/disks.yaml
+  - metallb/metallb.yaml
+  - metallb/config.yaml
 
-#  - metallb.yaml
 #  - model-validation-controller.yaml
 #  - observability.yaml
 #  - grafana-dashboards.yaml
