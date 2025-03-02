@@ -32,7 +32,7 @@ spec:
         name: metallb
         namespace: flux-system
       version: "0.14.9"
-  install:
-    createNamespace: true
+  # install:
+  #   createNamespace: true
   values:
     loadBalancerClass: metallb

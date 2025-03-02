@@ -9,10 +9,10 @@ resources:
   - metrics-server.yaml
   - kepler.yaml
   - cert-manager.yaml
-  - nginx-ingress.yaml
   - storage/openebs.yaml
   - storage/disks.yaml
   - metallb/metallb.yaml
   - metallb/config.yaml
+  - nginx-ingress.yaml
   - observability/operator.yaml
   - observability/config.yaml
