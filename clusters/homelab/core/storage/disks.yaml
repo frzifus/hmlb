@@ -9,6 +9,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: homelab-repo
+    namespace: flux-system
   dependsOn:
     - name: mayastor
       namespace: openebs
