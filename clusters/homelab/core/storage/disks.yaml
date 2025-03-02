@@ -10,13 +10,13 @@ spec:
     kind: GitRepository
     name: homelab-repo
     namespace: flux-system
-  dependsOn:
-    - name: mayastor
-      namespace: openebs
   healthChecks:
     - kind: HelmRelease
       name: mayastor
   prune: true
   interval: 10m
+  # NOTE: dependsOn across across different resource kinds does not work.
+  # We do a few retries instead:
+  # See: https://github.com/fluxcd/flux2/discussions/1599
   retryInterval: 1m
 
