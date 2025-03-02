@@ -10,9 +10,6 @@ spec:
     kind: GitRepository
     name: homelab-repo
     namespace: flux-system
-  healthChecks:
-    - kind: HelmRelease
-      name: mayastor
   prune: true
   interval: 10m
   # NOTE: dependsOn across across different resource kinds does not work.
