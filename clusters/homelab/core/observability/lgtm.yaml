@@ -1,0 +1,128 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: lgtm-observability
+  namespace: observability
+spec:
+  storageClassName: openebs-cache
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lgtm
+  namespace: observability
+spec:
+  strategy:
+    type: Recreate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lgtm
+  template:
+    metadata:
+      labels:
+        app: lgtm
+    spec:
+      containers:
+        - name: lgtm
+          image: grafana/otel-lgtm:latest
+          imagePullPolicy: Always
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "50m"
+            limits:
+              memory: "6Gi"
+              cpu: "2"
+          ports:
+            - containerPort: 3000
+            - containerPort: 4317
+            - containerPort: 4318
+          readinessProbe:
+            exec:
+              command:
+                - cat
+                - /tmp/ready
+          volumeMounts:
+            - name: obs-storage
+              mountPath: /data
+            - name: config-files
+              mountPath: /otel-lgtm/grafana-dashboard-jvm-metrics.json
+              subPath: grafana-cephfs-opentelemetry.json
+            - name: config-files
+              mountPath: /otel-lgtm/grafana-dashboard-red-metrics-classic.json
+              subPath: grafana-homelab-opentelemetry.json
+            - name: config-files
+              mountPath: /otel-lgtm/grafana-dashboard-red-metrics-native.json
+              subPath: grafana-kepler.json
+      volumes:
+        - name: obs-storage
+          persistentVolumeClaim:
+            claimName: lgtm-observability
+        - name: config-files
+          configMap:
+            name: grafana-dashboards
+---
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: observability
+spec:
+  selector:
+    app: lgtm
+  ports:
+    - name: grafana
+      protocol: TCP
+      port: 3000
+      targetPort: 3000
+    - name: otel-grpc
+      protocol: TCP
+      port: 4317
+      targetPort: 4317
+    - name: otel-http
+      protocol: TCP
+      port: 4318
+      targetPort: 4318
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: lgtm
+  namespace: observability
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: observability.homelab
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: backend
+            port:
+              number: 3000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: lgtm-tailscale
+  namespace: observability
+spec:
+  defaultBackend:
+    service:
+      name: backend
+      port:
+        number: 3000
+  ingressClassName: tailscale
+  tls:
+    - hosts:
+        - observability
