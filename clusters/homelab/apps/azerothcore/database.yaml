@@ -1,0 +1,74 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+  storageClassName: openebs-crucial
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: azerothcore-mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: azerothcore-mysql
+  template:
+    metadata:
+      labels:
+        app: azerothcore-mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.3
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: "password"
+            - name: MYSQL_USER
+              value: "acore"
+            - name: MYSQL_PASSWORD
+              value: "acore"
+          ports:
+            - containerPort: 3306
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsUser: 999
+            capabilities:
+              drop: ["ALL"]
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /var/lib/mysql
+          resources:
+            requests:
+              cpu: "150m"
+              memory: "2Gi"
+            limits:
+              cpu: "1000m"
+              memory: "6Gi"
+      volumes:
+        - name: mysql-data
+          persistentVolumeClaim:
+            claimName: mysql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ac-database
+spec:
+  ports:
+    - port: 3306
+      targetPort: 3306
+      protocol: TCP
+      name: mysql
+  selector:
+    app: azerothcore-mysql

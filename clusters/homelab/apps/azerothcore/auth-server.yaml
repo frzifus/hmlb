@@ -1,0 +1,75 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: azerothcore-auth
+spec:
+  strategy:
+    type: Recreate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: azerothcore-auth
+  template:
+    metadata:
+      labels:
+        app: azerothcore-auth
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/worker: ""
+    containers:
+        - name: authserver
+          image: ghcr.io/frzifus/acore:v1
+          env:
+            # - name: AC_LOGIN_DATABASE_INFO
+            #   value: "ac-database;3306;acore;acore;acore_auth"
+            - name: AC_UPDATES_ENABLE_DATABASES
+              value: "1"
+          ports:
+            - containerPort: 3724  # Authserver port
+              name: auth-port
+          volumeMounts:
+            - name: authserver-config
+              mountPath: /azerothcore-wotlk/env/dist/etc/authserver.conf
+              subPath: authserver.conf
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            runAsNonRoot: false
+            seccompProfile:
+              type: RuntimeDefault
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Starting auth server..."
+              /azerothcore-wotlk/acore.sh run-authserver
+          resources:
+            requests:
+              cpu: "20m"
+              memory: "250Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+      volumes:
+        - name: authserver-config
+          configMap:
+            name: authserver-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth
+  # annotations:
+  #   tailscale.com/expose: "true"
+spec:
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+  ports:
+    - port: 3724
+      targetPort: 3724
+      protocol: TCP
+      name: auth-port
+  selector:
+    app: azerothcore-auth

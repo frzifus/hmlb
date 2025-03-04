@@ -1,0 +1,91 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: azerothcore-world
+spec:
+  strategy:
+    type: Recreate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: azerothcore-world
+  template:
+    metadata:
+      labels:
+        app: azerothcore-world
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/worker: ""
+      containers:
+        - name: worldserver
+          image: ghcr.io/frzifus/acore:v1
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Starting auth server..."
+              /azerothcore-wotlk/acore.sh run-worldserver
+          env:
+            - name: AC_UPDATES_ENABLE_DATABASES
+              value: "1"
+            - name: AC_LOGIN_DATABASE_INFO
+              value: "ac-database;3306;acore;acore;acore_auth"
+            - name: AC_WORLD_DATABASE_INFO
+              value: "ac-database;3306;acore;acore;acore_world"
+            - name: AC_CHARACTER_DATABASE_INFO
+              value: "ac-database;3306;acore;acore;acore_characters"
+            - name: AC_PLAYERBOTS_DATABASE_INFO
+              value: "ac-database;3306;acore;acore;acore_playerbots"
+          ports:
+            - containerPort: 8085  # Worldserver port
+              name: world-port
+            - containerPort: 3443 # Console port
+              name: console-port
+          volumeMounts:
+            - name: worldserver-config
+              mountPath: /azerothcore-wotlk/env/dist/etc/worldserver.conf
+              subPath: worldserver.conf
+            - name: playerbots-config
+              mountPath: /azerothcore-wotlk/env/dist/etc/modules/playerbots.conf.dist
+              subPath: playerbots.conf.dist
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            runAsNonRoot: false
+            seccompProfile:
+              type: RuntimeDefault
+          stdin: true
+          tty: true
+          resources:
+            requests:
+              cpu: "1000m"
+              memory: "6Gi"
+            limits:
+              cpu: "3500m"
+              memory: "12Gi"
+      volumes:
+        - name: worldserver-config
+          configMap:
+            name: worldserver-config
+        - name: playerbots-config
+          configMap:
+            name: playerbots-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: world
+  # annotations:
+  #   tailscale.com/expose: "true"
+spec:
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+  ports:
+    - port: 8085
+      targetPort: 8085
+      protocol: TCP
+      name: world-port
+  selector:
+    app: azerothcore-world
