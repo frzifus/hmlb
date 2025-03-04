@@ -19,31 +19,37 @@ RUN ./acore.sh compiler all
 
 RUN ./acore.sh client-data
 
-# # NOTE: Arena
-# # https://www.azerothcore.org/catalogue.html#/details/215361574
-# RUN ./acore.sh module-install mod-bg-twinpeaks
-# # https://www.azerothcore.org/catalogue.html#/details/227439010
-# RUN ./acore.sh module-install mod-bg-battle-for-gilneas
+# # NOTE: nice to have
+# https://www.azerothcore.org/catalogue.html#/details/74011079
+# .npc add 190010
+# > exec mod-transmog/data/sql
+RUN ./acore.sh module-install mod-transmog
+# https://www.azerothcore.org/catalogue.html#/details/113239863
+RUN ./acore.sh module-install mod-learn-spells
+# https://www.azerothcore.org/catalogue.html#/details/65892802
+RUN ./acore.sh module-install mod-duel-reset
+# https://www.azerothcore.org/catalogue.html#/details/291842397
+RUN ./acore.sh module-install mod-account-mounts
+# https://www.azerothcore.org/catalogue.html#/details/108285701
+RUN ./acore.sh module-install mod-account-achievements
+# https://www.azerothcore.org/catalogue.html#/details/138432861
+RUN ./acore.sh module-install mod-ah-bot
+
+
+# # # NOTE: Arena
 # # https://www.azerothcore.org/catalogue.html#/details/243375326
 # RUN ./acore.sh module-install mod-arena-tigerspeak
-# https://www.azerothcore.org/catalogue.html#/details/243374275
+# # https://www.azerothcore.org/catalogue.html#/details/243374275
 # RUN ./acore.sh module-install mod-arena-tolviron
 
-# # NOTE: bg
+# # # NOTE: bg
+# # https://www.azerothcore.org/catalogue.html#/details/227439010
+# RUN ./acore.sh module-install mod-bg-battle-for-gilneas
+# # https://www.azerothcore.org/catalogue.html#/details/215361574
+# RUN ./acore.sh module-install mod-bg-twinpeaks
 # # https://www.azerothcore.org/catalogue.html#/details/174038200
-# RUN ./acore.sh module-install mod-transmog mod-bg-slaveryvalley
+# RUN ./acore.sh module-install mod-bg-slaveryvalley
 
-# # NOTE: nice to have
-# # https://www.azerothcore.org/catalogue.html#/details/113239863
-# RUN ./acore.sh module-install mod-learn-spells
-# # https://www.azerothcore.org/catalogue.html#/details/65892802
-# RUN ./acore.sh module-install mod-duel-reset
-# # https://www.azerothcore.org/catalogue.html#/details/138432861
-# RUN ./acore.sh module-install mod-ah-bot
-# # https://www.azerothcore.org/catalogue.html#/details/291842397
-# RUN ./acore.sh module-install mod-account-mounts
-# # https://www.azerothcore.org/catalogue.html#/details/108285701
-# RUN ./acore.sh module-install mod-account-achievements
+# NOTE: rebuild
+RUN ./acore.sh compiler build
 
-# # NOTE: rebuild
-# ./acore.sh compiler build
