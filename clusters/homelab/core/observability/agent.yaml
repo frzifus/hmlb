@@ -11,6 +11,9 @@ metadata:
   name: otel-kubelet
 rules:
   - apiGroups: ['']
+    resources: ['nodes']
+    verbs: ['get', 'watch', 'list']
+  - apiGroups: ['']
     resources: ['nodes/stats']
     verbs: ['get', 'watch', 'list']
   - apiGroups: [""]
@@ -65,10 +68,15 @@ spec:
                 - targets:
                     - "localhost:9102"
       hostmetrics:
+        root_path: /hostfs
+        resource_to_telemetry_conversion:
+          enabled: true
         collection_interval: 30s
         scrapers:
           cpu:
             metrics:
+              system.cpu.utilization:
+                enabled: true
               system.cpu.logical.count:
                 enabled: true
           memory:
@@ -77,38 +85,52 @@ spec:
                 enabled: true
               system.memory.limit:
                 enabled: true
-          load: {}
           disk: {}
-          filesystem:
-            metrics:
-              system.filesystem.utilization:
-                enabled: true
+          filesystem: {}
           network: {}
-          paging: {}
           processes: {}
           process:
             mute_process_user_error: true
+            mute_process_exe_error: true
             metrics:
               process.cpu.utilization:
                 enabled: true
               process.memory.utilization:
                 enabled: true
-              process.threads:
-                enabled: true
-              process.paging.faults:
-                enabled: true
+              process.disk.io:
+                enabled: false
       kubeletstats:
         collection_interval: 30s
         auth_type: "serviceAccount"
         endpoint: "https://${env:K8S_NODE_NAME}:10250"
         insecure_skip_verify: true
-      filelog:
-        include_file_path: true
-        include:
-          - /hostfs/var/log/pods/*/*/*.log
-        operators:
-          - id: container-parser
-            type: container
+        node: "${env:K8S_NODE_NAME}"
+        k8s_api_config:
+          auth_type: serviceAccount
+        metrics:
+          k8s.node.uptime:
+            enabled: true
+          k8s.pod.uptime:
+            enabled: true
+          k8s.pod.cpu.node.utilization:
+            enabled: true
+          k8s.pod.cpu_limit_utilization:
+            enabled: true
+          k8s.pod.cpu_request_utilization:
+            enabled: true
+          k8s.pod.memory.node.utilization:
+            enabled: true
+          k8s.pod.memory_limit_utilization:
+            enabled: true
+          k8s.pod.memory_request_utilization:
+            enabled: true
+      # filelog:
+      #   include_file_path: true
+      #   include:
+      #     - /hostfs/var/log/pods/*/*/*.log
+      #   operators:
+      #     - id: container-parser
+      #       type: container
     processors:
       attributes/loki:
         actions:
@@ -130,6 +152,11 @@ spec:
           - key: service.name
             action: upsert
             value: otel-host-agent
+      resource:
+        attributes:
+          - action: upsert
+            key: host.name
+            value: "${env:K8S_NODE_NAME}"
       transform:
         metric_statements:
           - context: datapoint
@@ -165,7 +192,7 @@ spec:
                 exporter:
                   otlp:
                     endpoint: http://backend.observability:4317
-                    protocol: grpc/protobuf
+                    protocol: grpc
         metrics:
           level: detailed
           readers:
@@ -173,21 +200,20 @@ spec:
                 exporter:
                   otlp:
                     endpoint: http://backend.observability:4317
-                    protocol: grpc/protobuf
+                    protocol: grpc
       pipelines:
         metrics:
           receivers: [prometheus/kepler, hostmetrics, kubeletstats]
-          processors: [attributes, resourcedetection/system, transform, batch]
+          processors: [attributes, resourcedetection/system, resource, transform, batch]
           exporters: [otlp, count]
         metrics/count:
           receivers: [count]
-          processors: [batch]
+          processors: [batch, resource]
           exporters: [otlp]
-        logs:
-          receivers: [filelog]
-          processors: [attributes/loki, resourcedetection/system, batch]
-          exporters: [otlp, count]
-
+        # logs:
+        #   receivers: [filelog]
+        #   processors: [attributes/loki, resourcedetection/system, resource, batch]
+        #   exporters: [otlp, count]
 ---
 apiVersion: v1
 kind: Service
