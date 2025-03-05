@@ -317,18 +317,8 @@ spec:
             - name: config-volume
               mountPath: /azerothcore/env/dist/etc/dbimport.conf
               subPath: dbimport.conf
-          #   - name: etc-config
-          #     mountPath: /azerothcore/env/dist/etc
-          #   - name: logs-dir
-          #     mountPath: /azerothcore/env/dist/logs
       restartPolicy: OnFailure
       volumes:
         - name: config-volume
           configMap:
             name: db-import-config
-      #   - name: etc-config
-      #     hostPath:
-      #       path: /path/to/env/dist/etc
-      #   - name: logs-dir
-      #     hostPath:
-      #       path: /path/to/env/dist/logs
