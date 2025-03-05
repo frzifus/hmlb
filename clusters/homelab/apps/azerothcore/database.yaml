@@ -36,7 +36,7 @@ spec:
               mountPath: /var/lib/mysql
       containers:
         - name: mysql
-          image: mysql:8.3
+          image: mysql:9.2
           env:
             - name: MYSQL_ROOT_PASSWORD
               value: "password"
