@@ -1,0 +1,87 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: enshrouded-state
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: enshrouded-server
+  labels:
+    app: enshrouded-server
+spec:
+  strategy:
+    type: Recreate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: enshrouded-server
+  template:
+    metadata:
+      labels:
+        app: enshrouded-server
+    spec:
+      securityContext:
+        runAsUser: 10000
+        runAsGroup: 10000
+        fsGroup: 10000
+      volumes:
+        - name: enshrouded-state
+          persistentVolumeClaim:
+            claimName: enshrouded-state
+      containers:
+        - name: enshrouded-server
+          image: sknnr/enshrouded-dedicated-server:latest
+          ports:
+            - containerPort: 15636
+              protocol: UDP
+            - containerPort: 15637
+              protocol: UDP
+          env:
+            - name: SERVER_NAME
+              value: "Enshrouded Homelab Server"
+            - name: SERVER_SLOTS
+              value: "16"
+            - name: SERVER_PASSWORD
+              value: ""
+            - name: GAME_PORT
+              value: "15636"
+            - name: QUERY_PORT
+              value: "15637"
+          volumeMounts:
+            - mountPath: /home/steam/enshrouded/savegame
+              name: enshrouded-state
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "4Gi"
+            limits:
+              cpu: "2000m"
+              memory: "8Gi"
+          securityContext:
+            allowPrivilegeEscalation: false
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: enshrouded-server
+spec:
+  selector:
+    app: enshrouded-server
+  ports:
+    - protocol: UDP
+      name: game
+      port: 15636
+      targetPort: 15636
+    - protocol: UDP
+      name: query
+      port: 15637
+      targetPort: 15637
+  type: LoadBalancer
