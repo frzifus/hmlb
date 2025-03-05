@@ -10,6 +10,8 @@ resources:
   - init-job.yaml
   - auth-config.yaml
   - world-config.yaml
+  - ahbot-config.yaml
   - playerbots-config.yaml
   - auth-server.yaml
   - world-server.yaml
+  - phpmyadmin.yaml

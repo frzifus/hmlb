@@ -50,6 +50,13 @@ RUN ./acore.sh module-install mod-ah-bot
 # # https://www.azerothcore.org/catalogue.html#/details/174038200
 # RUN ./acore.sh module-install mod-bg-slaveryvalley
 
-# NOTE: rebuild
-RUN ./acore.sh compiler build
+# NOTE: testing
+# https://gitlab.realsoftgames.win/krazor/mod_llm_chat
+# ollama pull socialnetwooky/llama3.2-abliterated:1b_q8
+# RUN apt-get install -y \
+#     libboost-all-dev \
+#     nlohmann-json3-dev \
+#     build-essential
+# RUN git clone https://gitlab.realsoftgames.win/krazor/mod_llm_chat --branch=main /azerothcore-wotlk/modules/mod_llm_chat
 
+RUN ./acore.sh compiler build

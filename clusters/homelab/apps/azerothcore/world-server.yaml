@@ -49,6 +49,9 @@ spec:
             - name: playerbots-config
               mountPath: /azerothcore-wotlk/env/dist/etc/modules/playerbots.conf.dist
               subPath: playerbots.conf.dist
+            - name: ahbot-config
+              mountPath: /azerothcore-wotlk/env/dist/etc/modules/mod_ahbot.conf.dist
+              subPath: mod_ahbot.conf.dist
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -72,6 +75,9 @@ spec:
         - name: playerbots-config
           configMap:
             name: playerbots-config
+        - name: ahbot-config
+          configMap:
+            name: ahbot-config
 ---
 apiVersion: v1
 kind: Service
