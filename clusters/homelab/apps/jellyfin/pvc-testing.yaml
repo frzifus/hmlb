@@ -1,0 +1,32 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jellyfin-pvc-testing
+  namespace: jellyfin
+spec:
+  storageClassName: media-storage1-fs
+  accessModes:
+    - ReadWriteMany
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 3Gi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-mount
+  namespace: jellyfin
+spec:
+  containers:
+    - name: jellyfin-container
+      image: busybox:latest
+      command: ["sleep", "3600"]
+      volumeMounts:
+        - name: jellyfin-volume
+          mountPath: /testing
+  volumes:
+    - name: jellyfin-volume
+      persistentVolumeClaim:
+        claimName: jellyfin-pvc-testing

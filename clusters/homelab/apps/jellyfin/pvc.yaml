@@ -5,13 +5,13 @@ metadata:
   name: jellyfin-pvc-data
   namespace: jellyfin
 spec:
-  storageClassName: media-storage1-fs
+  storageClassName: openebs-crucial # NOTE: temporary, switch to openebs-media
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   volumeMode: Filesystem
   resources:
     requests:
-      storage: 20Ti
+      storage: 1Ti
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -19,39 +19,13 @@ metadata:
   name: jellyfin-pvc-config
   namespace: jellyfin
 spec:
-  storageClassName: simple-and-fast-block
+  storageClassName: openebs-crucial
   accessModes:
     - ReadWriteOnce
   volumeMode: Filesystem
   resources:
     requests:
       storage: 5Gi
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: filebrowser-db
-  namespace: jellyfin
-spec:
-  storageClassName: simple-and-fast-block
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 500Mi
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: filebrowser-config
-  namespace: jellyfin
-spec:
-  storageClassName: simple-and-fast-block
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 100Mi
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -65,7 +39,7 @@ spec:
     requests:
       storage: 250Gi
   volumeMode: Filesystem
-  storageClassName: simple-and-fast-block
+  storageClassName: openebs-cache
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -79,4 +53,4 @@ spec:
     requests:
       storage: 1Gi
   volumeMode: Filesystem
-  storageClassName: simple-and-fast-block
+  storageClassName: openebs-crucial

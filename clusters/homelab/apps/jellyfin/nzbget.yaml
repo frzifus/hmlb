@@ -359,6 +359,13 @@ spec:
       labels:
         app: nzbget
     spec:
+      affinity: # NOTE: follow jellyfin due to lack of RWX.
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: jellyfin
+              topologyKey: kubernetes.io/hostname
       volumes:
       - name: nfs-jellyfin-data
         persistentVolumeClaim:
@@ -527,3 +534,22 @@ spec:
   tls:
     - hosts:
         - nzbget
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nzbget
+  namespace: jellyfin
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: nzbget.homelab
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nzbget
+            port:
+              number: 6789
