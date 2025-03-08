@@ -100,4 +100,5 @@ RUN dnf install -y \
     libXxf86vm-devel \
     alsa-lib-devel \
     pkg-config \
-    distrobox
+    distrobox \
+    gnome-boxes
