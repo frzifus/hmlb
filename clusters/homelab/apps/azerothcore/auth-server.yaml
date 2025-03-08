@@ -57,17 +57,19 @@ spec:
           configMap:
             name: authserver-config
 ---
+# NOTE: client config.
+# set realmlist azerothcore-auth
 apiVersion: v1
 kind: Service
 metadata:
   name: auth
-  annotations:
-    metallb.universe.tf/allow-shared-ip: "key-to-share-192.168.5.111"
-    tailscale.com/expose: "true"
+#  annotations:
+#    metallb.universe.tf/allow-shared-ip: "key-to-share-192.168.5.111"
+#    tailscale.com/expose: "true"
 spec:
   type: LoadBalancer
-  loadBalancerIP: 192.168.5.111
-  loadBalancerClass: metallb
+  #loadBalancerIP: 192.168.5.111
+  loadBalancerClass: tailscale
   ports:
     - port: 3724
       targetPort: 3724
