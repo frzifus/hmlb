@@ -55,3 +55,10 @@ spec:
           - SYS_ADMIN
           - SYS_RESOURCE
     tunnelProtocol: vxlan
+    # NOTE: Enabling Tailscale LB
+    # https://github.com/tailscale/tailscale/issues/7868#issuecomment-1729967628
+    bpf:
+      lbExternalClusterIP: true
+    socketLB:
+      enabled: true
+      hostNamespaceOnly: true
