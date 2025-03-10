@@ -101,4 +101,5 @@ RUN dnf install -y \
     alsa-lib-devel \
     pkg-config \
     distrobox \
-    gnome-boxes
+    libvirt \
+    virt-install
