@@ -1,0 +1,137 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    kubernetes.io/metadata.name: nina
+  name: nina
+---
+# apiVersion: v1
+# kind: ResourceQuota
+# metadata:
+#   name: nina-resource-quota
+#   namespace: nina
+# spec:
+#   hard:
+#     requests.cpu: "1"
+#     requests.memory: "1Gi"
+#     limits.cpu: "3"
+#     limits.memory: "3Gi"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: nina
+  namespace: nina
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: nina-token
+  namespace: nina
+  annotations:
+    kubernetes.io/service-account.name: nina
+type: kubernetes.io/service-account-token
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: nina-role
+  namespace: nina
+rules:
+- apiGroups: ["rhtas.redhat.com"]
+  resources: ["modelvalidations"]
+  verbs: ["get", "list", "create", "update", "patch", "delete"]
+- apiGroups: ["", "extensions", "apps", "networking.k8s.io"]
+  resources: ["pods", "pods/log", "pods/exec", "deployments", "replicasets", "statefulsets", "configmaps", "ingresses",  "persistentvolumeclaims"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["batch"]
+  resources: ["jobs", "cronjobs"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: [""]
+  resources: ["resourcequotas"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["metrics.k8s.io"]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: nina-rolebinding
+  namespace: nina
+subjects:
+- kind: ServiceAccount
+  name: nina
+  namespace: nina
+roleRef:
+  kind: Role
+  name: nina-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cluster-readonly
+rules:
+- apiGroups: ["admissionregistration.k8s.io"]
+  resources: ["mutatingwebhookconfigurations"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["pods", "nodes", "namespaces", "persistentvolumes"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps", "extensions", "networking.k8s.io"]
+  resources: ["deployments", "replicasets", "statefulsets", "daemonsets", "ingresses"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["batch"]
+  resources: ["jobs", "cronjobs"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["metrics.k8s.io"]
+  resources: ["nodes"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: nina-cluster-readonly-binding
+subjects:
+- kind: ServiceAccount
+  name: nina
+  namespace: nina
+roleRef:
+  kind: ClusterRole
+  name: cluster-readonly
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: nina-role
+  namespace: model-validation-controller
+rules:
+- apiGroups: ["", "extensions", "apps", "networking.k8s.io"]
+  resources: ["pods", "pods/log", "deployments", "replicasets", "statefulsets", "configmaps", "ingresses"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["batch"]
+  resources: ["jobs", "cronjobs"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: [""]
+  resources: ["resourcequotas"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["metrics.k8s.io"]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: nina-rolebinding
+  namespace: model-validation-controller
+subjects:
+- kind: ServiceAccount
+  name: nina
+  namespace: nina
+roleRef:
+  kind: Role
+  name: nina-role
+  apiGroup: rbac.authorization.k8s.io
