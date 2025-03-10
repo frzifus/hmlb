@@ -84,9 +84,13 @@ RUN dnf install -y \
     libtool
 
 RUN dnf install -y \
+    @virtualization \
     libvirt \
     libvirt-daemon-kvm \
     qemu-kvm \
+    libvirt-daemon \
+    libvirt-client \
+    virt-manager \
     android-tools \
     fastboot
 
@@ -100,6 +104,4 @@ RUN dnf install -y \
     libXxf86vm-devel \
     alsa-lib-devel \
     pkg-config \
-    distrobox \
-    libvirt \
-    virt-install
+    distrobox
