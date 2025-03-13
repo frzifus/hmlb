@@ -1806,10 +1806,10 @@ data:
     #                     1 - (SkillGain.Defense)
     #                     1 - (SkillGain.Gathering)
     #                     1 - (SkillGain.Weapon)
-    SkillGain.Crafting  = 1
-    SkillGain.Defense   = 1
-    SkillGain.Gathering = 1
-    SkillGain.Weapon    = 1
+    SkillGain.Crafting  = 3
+    SkillGain.Defense   = 3
+    SkillGain.Gathering = 3
+    SkillGain.Weapon    = 3
     #
     #    SkillChance.Orange
     #    SkillChance.Yellow
