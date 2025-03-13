@@ -1902,22 +1902,22 @@ data:
     #                     1 - (Rate.XP.Quest.DF) - Dungeon Finder/LFG quests only.
     #                     1 - (Rate.XP.Explore)
     #                     1 - (Rate.XP.Pet)
-    Rate.XP.Kill      = 1
-    Rate.XP.Quest     = 1
-    Rate.XP.Quest.DF  = 1
-    Rate.XP.Explore   = 1
-    Rate.XP.Pet       = 1
+    Rate.XP.Kill      = 3
+    Rate.XP.Quest     = 3
+    Rate.XP.Quest.DF  = 3
+    Rate.XP.Explore   = 3
+    Rate.XP.Pet       = 3
     #
     #    Rate.XP.BattlegroundKill...
     #        Description: Experience rate for honorable kills in battlegrounds. Not affected by Rate.XP.Kill. Defined for each battleground.
     #                     Only works if Battleground.GiveXPForKills = 1
     #        Default:     1
-    Rate.XP.BattlegroundKillAV   = 1
-    Rate.XP.BattlegroundKillWSG  = 1
-    Rate.XP.BattlegroundKillAB   = 1
-    Rate.XP.BattlegroundKillEOTS = 1
-    Rate.XP.BattlegroundKillSOTA = 1
-    Rate.XP.BattlegroundKillIC   = 1
+    Rate.XP.BattlegroundKillAV   = 3
+    Rate.XP.BattlegroundKillWSG  = 3
+    Rate.XP.BattlegroundKillAB   = 3
+    Rate.XP.BattlegroundKillEOTS = 3
+    Rate.XP.BattlegroundKillSOTA = 3
+    Rate.XP.BattlegroundKillIC   = 3
     #
     #    Rate.Pet.LevelXP
     #        Description: Modifies the amount of experience required to level up a pet.
