@@ -81,7 +81,7 @@ nodes:
     installDisk: /dev/sda
     controlPlane: true
   - hostname: storage1
-    ipAddress: 192.168.5.5 # + 192.168.5.6
+    ipAddress: 192.168.5.6
     installDisk: /dev/nvme0n1
     controlPlane: false
     patches:
@@ -90,6 +90,22 @@ nodes:
           path: /machine/sysctls
           value:
             vm.nr_hugepages: "1024"
+      - |- # https://www.talos.dev/v1.9/advanced/advanced-networking/#bonding
+        machine:
+          network:
+            interfaces:
+              - interface: bond0
+                dhcp: true
+                bond:
+                  mode: 802.3ad
+                  lacpRate: fast
+                  xmitHashPolicy: layer3+4
+                  miimon: 100
+                  updelay: 200
+                  downdelay: 200
+                  interfaces:
+                    - enp1s0
+                    - enp2s0
     nodeLabels:
       openebs.io/engine: mayastor
       role: "storage-node"
@@ -98,7 +114,7 @@ nodes:
         value: "storage-node"
         effect: "NoSchedule"
   - hostname: storage2
-    ipAddress: 192.168.5.7 # + 192.168.5.8
+    ipAddress: 192.168.5.8
     installDisk: /dev/nvme0n1
     controlPlane: false
     patches:
@@ -107,6 +123,22 @@ nodes:
           path: /machine/sysctls
           value:
             vm.nr_hugepages: "1024"
+      - |- # https://www.talos.dev/v1.9/advanced/advanced-networking/#bonding
+        machine:
+          network:
+            interfaces:
+              - interface: bond0
+                dhcp: true
+                bond:
+                  mode: 802.3ad
+                  lacpRate: fast
+                  xmitHashPolicy: layer3+4
+                  miimon: 100
+                  updelay: 200
+                  downdelay: 200
+                  interfaces:
+                    - enp1s0
+                    - enp2s0
     nodeLabels:
       role: "storage-node"
       openebs.io/engine: mayastor
