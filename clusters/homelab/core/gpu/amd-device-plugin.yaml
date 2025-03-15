@@ -22,35 +22,35 @@ spec:
 #
 # helm install amd-gpu-operator rocm/gpu-operator-charts --namespace amd-gpu-plugin --set kmm.enabled=false --set node-feature-discovery.enabled=false
 #
-# apiVersion: helm.toolkit.fluxcd.io/v2
-# kind: HelmRelease
-# metadata:
-#   name: amd-gpu-operator
-#   namespace: amd-gpu-plugin
-# spec:
-#   interval: 5m
-#   releaseName: amd-plugin
-#   chart:
-#     spec:
-#       chart: gpu-operator-charts
-#       sourceRef:
-#         kind: HelmRepository
-#         name: amd-gpu-operator
-#         namespace: amd-gpu-plugin
-#       version: "*"
-#       # version: "1.0.0"
-#   values:
-#     kmm:
-#       enabled: false
-#     node-feature-discovery:
-#       enabled: false
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: amd-gpu-operator
+  namespace: amd-gpu-plugin
+spec:
+  interval: 5m
+  releaseName: amd-plugin
+  chart:
+    spec:
+      chart: gpu-operator-charts
+      sourceRef:
+        kind: HelmRepository
+        name: amd-gpu-operator
+        namespace: amd-gpu-plugin
+      version: "*"
+      # version: "1.0.0"
+  values:
+    kmm:
+      enabled: false
+    node-feature-discovery:
+      enabled: false
 ---
 apiVersion: amd.com/v1alpha1
 kind: DeviceConfig
 metadata:
   name: amd-device-plugin
   # use the namespace where AMD GPU Operator is running
-  namespace: node-feature-discovery
+  namespace: amd-gpu-plugin
 spec:
   driver:
     # disable the installation of our-of-tree amdgpu kernel module
