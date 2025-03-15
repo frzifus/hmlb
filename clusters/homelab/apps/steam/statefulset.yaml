@@ -1,0 +1,161 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: steam-headless
+spec:
+  serviceName: "steam-headless"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: steam-headless
+  template:
+    metadata:
+      labels:
+        app: steam-headless
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: "kubernetes.io/hostname"
+                operator: "In"
+                values:
+                - "worker1"
+      hostNetwork: false
+      securityContext:
+        fsGroup: 1000
+      containers:
+      - name: steam-headless
+        image: josh5/steam-headless:debian-0.2.0
+        ports:
+          - containerPort: 8083
+        securityContext:
+          privileged: true
+          allowPrivilegeEscalation: true
+          # runAsUser: 1000
+          runAsNonRoot: false
+          capabilities:
+            drop: ["ALL"]
+          seccompProfile:
+            type: RuntimeDefault
+        resources: #Change CPU and Memory below
+          requests:
+            memory: "4G"
+            cpu: "1"
+          limits:
+            memory: "6G"
+            cpu: "2"
+            gpu.intel.com/i915: 1
+            # nvidia.com/gpu: 1
+        volumeMounts:
+        - name: home-dir
+          mountPath: /home/default/
+        - name: games-dir
+          mountPath: /mnt/games/
+        # - name: input-devices
+        #   mountPath: /dev/input/
+        - name: dshm
+          mountPath: /dev/shm
+        env: #Environmental Vars
+        - name: NAME
+          value: 'SteamHeadless'
+        - name: TZ
+          value: 'Europe/Berlin'
+        - name: USER_LOCALES
+          value: 'de_DE.UTF-8 UTF-8'
+        - name: DISPLAY
+          value: ':55'
+        - name: SHM_SIZE
+          value: '2G'
+        # - name: DOCKER_RUNTIME
+        #   value: 'nvidia'
+        - name: PUID
+          value: '1000'
+        - name: PGID
+          value: '1000'
+        - name: UMASK
+          value: '000'
+        - name: USER_PASSWORD
+          value: 'password' #changeme
+        - name: MODE
+          value: 'primary'
+        - name: WEB_UI_MODE
+          value: 'vnc'
+        - name: ENABLE_VNC_AUDIO
+          value: 'true'
+        - name: PORT_NOVNC_WEB
+          value: '8083'
+        - name: NEKO_NAT1TO1
+          value: ''
+        - name: ENABLE_SUNSHINE
+          value: 'false'
+        - name: SUNSHINE_USER
+          value: 'sam'
+        - name: SUNSHINE_PASS
+          value: 'password'
+        # - name: ENABLE_EVDEV_INPUTS
+        #   value: 'true'
+        # - name: NVIDIA_DRIVER_CAPABILITIES
+        #   value: 'all'
+        # - name: NVIDIA_VISIBLE_DEVICES
+        #   value: 'all'
+      volumes:
+      - name: home-dir
+        persistentVolumeClaim:
+          claimName: home
+      - name: games-dir
+        persistentVolumeClaim:
+          claimName: games
+      # - name: input-devices
+      #   hostPath:
+      #     path: /dev/input/
+      - name: dshm
+        emptyDir:
+          medium: Memory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: steam
+spec:
+  selector:
+    app: steam-headless
+  ports:
+    - protocol: TCP
+      port: 8083
+      targetPort: 8083
+  type: ClusterIP
+---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: steam
+# spec:
+#   ingressClassName: nginx
+#   rules:
+#   - host: steam.homelab
+#     http:
+#       paths:
+#       - path: /
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: steam
+#             port:
+#               number: 8083
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: steam-tailscale
+spec:
+  defaultBackend:
+    service:
+      name: steam
+      port:
+        number: 8083
+  ingressClassName: tailscale
+  tls:
+    - hosts:
+        - steam
