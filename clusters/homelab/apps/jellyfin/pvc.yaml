@@ -54,3 +54,31 @@ spec:
       storage: 1Gi
   volumeMode: Filesystem
   storageClassName: openebs-crucial
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: radarr-config
+  namespace: jellyfin
+spec:
+  storageClassName: openebs-crucial
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sonarr-config
+  namespace: jellyfin
+spec:
+  storageClassName: openebs-crucial
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 1Gi
