@@ -81,7 +81,8 @@ RUN dnf install -y \
     ImageMagick \
     wireshark \
     openssl \
-    libtool
+    libtool \
+    yamllint
 
 RUN dnf install -y \
     @virtualization \
