@@ -52,7 +52,7 @@ spec:
         - name: TZ
           value: Europe/Berlin
         securityContext:
-          privileged: true # Container must run as privileged inside of the pod, required for hardware acceleration
+          privileged: false
         image: jellyfin/jellyfin:10.10.6 # Note: this image in particular has the OpenCL runtime
         imagePullPolicy: Always
         name: jellyfin
@@ -74,10 +74,10 @@ spec:
             cpu: "250m"
             memory: "1Gi"
           limits:
-            cpu: "2"
+            cpu: "3500m"
             memory: "8Gi"
+            gpu.intel.com/i915: 1
             # amd.com/gpu: 1
-            # gpu.intel.com/i915: 1
         stdin: true
         tty: true
         volumeMounts:
