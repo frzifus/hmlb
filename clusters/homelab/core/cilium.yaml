@@ -24,6 +24,8 @@ spec:
         name: cilium
         namespace: flux-system
   values:
+    envoy:
+      baseID: 3
     cgroup:
       autoMount:
         enabled: false
