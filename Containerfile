@@ -19,7 +19,7 @@ COPY ./etc/yum.repos.d/tailscale.repo /etc/yum.repos.d/tailscale.repo
 # https://github.com/fedora-silverblue/issue-tracker/issues/430
 RUN mkdir -p /etc/alternatives && mkdir -p /var/lib/alternatives
 
-RUN dnf install -y azure-cli
+RUN dnf install -y azure-cli && az upgrade -y
 
 RUN dnf install -y tailscale
 
