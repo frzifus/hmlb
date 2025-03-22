@@ -34,3 +34,4 @@ spec:
     installCRDs: true
     extraArgs:
       - --v=2
+      - --enable-gateway-api

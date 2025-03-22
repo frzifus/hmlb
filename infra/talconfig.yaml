@@ -9,6 +9,11 @@ cniConfig:
   name: none
 patches:
   - |-
+    - op: add
+      path: /machine/sysctls
+      value:
+        net.ipv4.ip_unprivileged_port_start: "0"
+  - |-
     cluster:
       proxy:
         disabled: true
