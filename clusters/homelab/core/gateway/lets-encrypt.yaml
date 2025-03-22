@@ -1,0 +1,17 @@
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+    name: lets-encrypt-prod
+spec:
+    acme:
+        email: "ben@klimlive.de"
+        server: https://acme-v02.api.letsencrypt.org/directory
+        privateKeySecretRef:
+            name: lets-encrypt-prod-account-key
+        solvers:
+            - dns01:
+                cloudflare:
+                    apiTokenSecretRef:
+                        name: cloudflare-token
+                        key: token
