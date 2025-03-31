@@ -1,4 +1,4 @@
-FROM quay.io/fedora/fedora-silverblue:41
+FROM quay.io/fedora/fedora-silverblue:42
 
 # NOTE: Just to test RHEL9 version
 # FROM registry.redhat.io/rhel9/rhel-bootc:9.5
@@ -19,7 +19,7 @@ COPY ./etc/yum.repos.d/tailscale.repo /etc/yum.repos.d/tailscale.repo
 # https://github.com/fedora-silverblue/issue-tracker/issues/430
 RUN mkdir -p /etc/alternatives && mkdir -p /var/lib/alternatives
 
-RUN dnf install -y azure-cli && az upgrade -y
+RUN dnf install -y azure-cli
 
 RUN dnf install -y tailscale
 
@@ -37,7 +37,7 @@ RUN dnf install -y \
     strace \
     nmap \
     bat \
-    eza \
+   # eza \ NOTE: currently no build available. Install from source.
     fzf \
     restic \
     htop \
