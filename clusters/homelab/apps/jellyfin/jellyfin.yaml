@@ -53,7 +53,7 @@ spec:
           value: Europe/Berlin
         securityContext:
           privileged: false
-        image: jellyfin/jellyfin:10.10.6 # Note: this image in particular has the OpenCL runtime
+        image: jellyfin/jellyfin:10.10.7 # Note: this image in particular has the OpenCL runtime
         imagePullPolicy: Always
         name: jellyfin
         ports:
