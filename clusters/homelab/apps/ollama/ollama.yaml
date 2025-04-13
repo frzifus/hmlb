@@ -14,7 +14,7 @@ metadata:
   name: ollama-data
   namespace: ollama
 spec:
-  storageClassName: simple-and-fast-block
+  storageClassName: openebs-cache
   accessModes:
     - ReadWriteOnce
   resources:
@@ -27,7 +27,7 @@ metadata:
   name: open-webui-data
   namespace: ollama
 spec:
-  storageClassName: simple-and-fast-block
+  storageClassName: openebs-cache
   accessModes:
     - ReadWriteOnce
   resources:
@@ -70,7 +70,8 @@ spec:
               - key: "kubernetes.io/hostname"
                 operator: "In"
                 values:
-                - "gpu2"
+                - "worker1"
+                - "worker2"
       # initContainers:
       #   - name: download-llama
       #     image: ollama/ollama:latest
