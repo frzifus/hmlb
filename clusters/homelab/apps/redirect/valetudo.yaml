@@ -1,0 +1,134 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: valetudo
+  namespace: redirect
+  labels:
+    app: valetudo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: valetudo
+  template:
+    metadata:
+      labels:
+        app: valetudo
+    spec:
+      containers:
+      - name: socat
+        image: alpine/socat
+        args: ["-v", "tcp-listen:443,reuseaddr,fork", "tcp:192.168.3.96:80"]
+        ports:
+        - containerPort: 443
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0
+          allowPrivilegeEscalation: false
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: valetudo
+  namespace: redirect
+  labels:
+    app: valetudo
+spec:
+  selector:
+    app: valetudo
+  ports:
+    - protocol: TCP
+      port: 443
+      targetPort: 443
+  type: ClusterIP
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: valetudo
+  namespace: redirect
+  # labels:
+  #   external-dns: "true"
+spec:
+  parentRefs:
+    - name: services
+      namespace: infra
+      sectionName: main
+  hostnames: [
+    "valetudo.overseer.work"
+  ]
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: valetudo
+          port: 443
+--- # NOTE: TESTING
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unifi-testing
+  namespace: redirect
+  labels:
+    app: unifi-testing
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: unifi-testing
+  template:
+    metadata:
+      labels:
+        app: unifi-testing
+    spec:
+      containers:
+      - name: socat
+        image: alpine/socat
+        args: ["-v", "tcp-listen:80,reuseaddr,fork", "tcp:192.168.1.1:80"]
+        ports:
+        - containerPort: 80
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0
+          allowPrivilegeEscalation: false
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: unifi-testing
+  namespace: redirect
+  labels:
+    app: unifi-testing
+spec:
+  selector:
+    app: unifi
+  ports:
+    - protocol: TCP
+      port: 443
+      targetPort: 443
+  type: ClusterIP
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: unifi-testing
+  namespace: redirect
+  # labels:
+  #   external-dns: "true"
+spec:
+  parentRefs:
+    - name: services
+      namespace: infra
+      sectionName: main
+  hostnames: [
+    "unifi-testing.overseer.work"
+  ]
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: unifi-testing
+          port: 80
