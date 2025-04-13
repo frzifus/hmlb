@@ -140,7 +140,7 @@ spec:
     spec:
       containers:
         - name: open-webui
-          image: ghcr.io/open-webui/open-webui:v0.6.2
+          image: ghcr.io/open-webui/open-webui:0.6.4
           ports:
             - containerPort: 8080
           env:
