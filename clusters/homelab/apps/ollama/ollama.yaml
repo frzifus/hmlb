@@ -209,18 +209,24 @@ spec:
             port:
               number: 3000
 ---
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
 metadata:
-  name: open-webui-tailscale
+  name: llm
   namespace: ollama
+  # labels:
+  #   external-dns: "true"
 spec:
-  defaultBackend:
-    service:
-      name: open-webui
-      port:
-        number: 3000
-  ingressClassName: tailscale
-  tls:
-    - hosts:
-        - ollama
+  parentRefs:
+    - name: services
+      namespace: infra
+      sectionName: main
+  hostnames: [
+    "llm.overseer.work"
+  ]
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: open-webui
+          port: 3000
