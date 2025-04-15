@@ -1,0 +1,14 @@
+---
+apiVersion: opentelemetry.io/v1alpha1
+kind: Instrumentation
+metadata:
+  name: central
+spec:
+  exporter:
+    endpoint: http://ingest.observability.svc.cluster.local:4317
+  env:
+    - name: "OTEL_EXPORTER_OTLP_TRACES_INSECURE"
+      value: "true"
+  propagators:
+    - tracecontext
+    - baggage
