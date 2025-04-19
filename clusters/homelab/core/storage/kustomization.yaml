@@ -5,4 +5,4 @@ kind: Kustomization
 resources:
   - cache.yaml
   - crucial.yaml
-#  - media.yaml
+  - media.yaml

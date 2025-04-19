@@ -6,7 +6,7 @@ metadata:
   namespace: openebs
 spec:
   node: storage2
-  disks: ["/dev/disk/by-id/ata-ST22000NT001-3LS101_ZX21V8H5"]
+  disks: ["/dev/disk/by-id/wwn-0x5000c500e776155c"]
   topology:
     labelled:
       type: media
