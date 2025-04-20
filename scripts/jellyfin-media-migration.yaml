@@ -1,0 +1,48 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: jellyfin-data-migration
+  namespace: jellyfin
+spec:
+  template:
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: "kubernetes.io/hostname"
+                operator: "In"
+                values:
+                - "storage2"
+        # podAffinity:
+        #   requiredDuringSchedulingIgnoredDuringExecution:
+        #     - labelSelector:
+        #         matchLabels:
+        #           app: jellyfin
+        #       topologyKey: kubernetes.io/hostname
+      restartPolicy: OnFailure
+      containers:
+        - name: file-sync
+          image: alpine:3.21.3
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "Installing rsync..." && \
+              apk add --no-cache rsync && \
+              echo "Starting sync..." && \
+              rsync -aHAXv --progress /old/ /new/ && \
+              echo "Sync complete!"
+          volumeMounts:
+            - name: old-data
+              mountPath: /old
+            - name: new-data
+              mountPath: /new
+      volumes:
+        - name: old-data
+          persistentVolumeClaim:
+            claimName: jellyfin-pvc-data
+        - name: new-data
+          persistentVolumeClaim:
+            claimName: jellyfin-media-data
