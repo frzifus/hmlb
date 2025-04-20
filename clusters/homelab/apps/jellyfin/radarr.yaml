@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -48,7 +49,7 @@ spec:
             claimName: radarr-config
         - name: nfs-jellyfin-data
           persistentVolumeClaim:
-            claimName: jellyfin-pvc-data
+            claimName: jellyfin-media-data
 ---
 apiVersion: v1
 kind: Service
@@ -81,20 +82,3 @@ spec:
                 name: radarr
                 port:
                   number: 7878
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: radarr-tailscale
-  namespace: jellyfin
-spec:
-  defaultBackend:
-    service:
-      name: radarr
-      port:
-        number: 7878
-  ingressClassName: tailscale
-  tls:
-    - hosts:
-        - radarr
-

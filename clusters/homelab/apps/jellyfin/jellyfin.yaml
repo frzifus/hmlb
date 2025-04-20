@@ -42,7 +42,7 @@ spec:
           claimName: jellyfin-pvc-config
       - name: nfs-jellyfin-data
         persistentVolumeClaim:
-          claimName: jellyfin-pvc-data
+          claimName: jellyfin-media-data
       - name: cache
         emptyDir:
           medium: Memory
