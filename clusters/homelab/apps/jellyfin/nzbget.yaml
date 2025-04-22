@@ -375,8 +375,80 @@ spec:
       - name: inter-downloads-and-history
         persistentVolumeClaim:
           claimName: inter-downloads-and-history
+      initContainers:
+        - name: gluetun
+          restartPolicy: Always
+          image: qmcgaw/gluetun:v3.40
+          securityContext:
+            capabilities:
+              add:
+                - NET_ADMIN
+          env:
+            - name: VPN_TYPE
+              value: "wireguard"
+            - name: VPN_SERVICE_PROVIDER
+              valueFrom:
+                secretKeyRef:
+                  name: vpn-secret
+                  key: VPN_SERVICE_PROVIDER
+            - name: DOT
+              valueFrom:
+                secretKeyRef:
+                  name: vpn-secret
+                  key: DOT
+            - name: DNS_ADDRESS
+              valueFrom:
+                secretKeyRef:
+                  name: vpn-secret
+                  key: DNS_ADDRESS
+            # - name: FIREWALL_VPN_INPUT_PORTS
+            #   valueFrom: # NOTE: Disable UPnP / NAT-PMP
+            #     secretKeyRef:
+            #       name: vpn-secret
+            #       key: FIREWALL_VPN_INPUT_PORTS
+            - name: FIREWALL_INPUT_PORTS
+              value: "6789,8000"
+            - name: SERVER_CITIES
+              valueFrom:
+                secretKeyRef:
+                  name: vpn-secret
+                  key: SERVER_CITIES
+            - name: WIREGUARD_ADDRESSES
+              valueFrom:
+                secretKeyRef:
+                  name: vpn-secret
+                  key: WIREGUARD_ADDRESSES
+            - name: WIREGUARD_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: vpn-secret
+                  key: WIREGUARD_PRIVATE_KEY
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "/gluetun-entrypoint healthcheck"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "/gluetun-entrypoint healthcheck"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          ports: # NOTE: nzbget does not support http or sock5 proxy.
+            - containerPort: 8000 # Optional: Gluetun HTTP control port
+            - containerPort: 8080 # Optional: HTTP proxy
+            - containerPort: 1080 # Optional: SOCKS5 proxy
       containers:
-      - image: frebib/nzbget-exporter
+      - image: frebib/nzbget-exporter@sha256:1ab799cf7ecaaf732b9e8655786c2bc8657f268290a580304192050c105dd4d9
         name: nzbget-exporter
         ports:
           - name: http
@@ -408,8 +480,8 @@ spec:
           - -o
           - Server2.Password=$(SERVER2_PASSWORD)
           - -o
-          - ControlIP=0.0.0.0
-          # - ControlIP=$(POD_IP)
+          #- ControlIP=0.0.0.0
+          - ControlIP=$(POD_IP)
           - -o
           - Feed1.URL=$(FEED1_URL)
           - -o
@@ -481,6 +553,20 @@ spec:
     - protocol: TCP
       port: 6789
       targetPort: 6789
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nzbget-gluetun
+  namespace: jellyfin
+spec:
+  selector:
+    app: nzbget
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
   type: ClusterIP
 ---
 apiVersion: v1
