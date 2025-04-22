@@ -49,6 +49,8 @@ metadata:
   namespace: ollama
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: ollama
@@ -131,6 +133,8 @@ metadata:
   namespace: ollama
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: open-webui
