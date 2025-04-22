@@ -1,0 +1,148 @@
+---
+# NOTE: testing
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: firefox
+  namespace: jellyfin
+spec:
+  selector:
+    matchLabels:
+      app: firefox
+  template:
+    metadata:
+      labels:
+        app: firefox
+    spec:
+      initContainers:
+        - name: gluetun
+          restartPolicy: Always
+          image: qmcgaw/gluetun:v3.40
+          securityContext:
+            capabilities:
+              add:
+                - NET_ADMIN
+          env:
+            - name: VPN_TYPE
+              value: "wireguard"
+            - name: VPN_SERVICE_PROVIDER
+              valueFrom:
+                secretKeyRef:
+                  name: vpn-secret
+                  key: VPN_SERVICE_PROVIDER
+            - name: DOT
+              valueFrom:
+                secretKeyRef:
+                  name: vpn-secret
+                  key: DOT
+            - name: DNS_ADDRESS
+              valueFrom:
+                secretKeyRef:
+                  name: vpn-secret
+                  key: DNS_ADDRESS
+            # - name: FIREWALL_VPN_INPUT_PORTS
+            #   valueFrom: # NOTE: Disable UPnP / NAT-PMP
+            #     secretKeyRef:
+            #       name: vpn-secret
+            #       key: FIREWALL_VPN_INPUT_PORTS
+            - name: FIREWALL_INPUT_PORTS
+              value: "5800"
+            - name: SERVER_CITIES
+              valueFrom:
+                secretKeyRef:
+                  name: vpn-secret
+                  key: SERVER_CITIES
+            - name: WIREGUARD_ADDRESSES
+              valueFrom:
+                secretKeyRef:
+                  name: vpn-secret
+                  key: WIREGUARD_ADDRESSES
+            - name: WIREGUARD_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: vpn-secret
+                  key: WIREGUARD_PRIVATE_KEY
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "/gluetun-entrypoint healthcheck"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "/gluetun-entrypoint healthcheck"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          ports: # NOTE: nzbget does not support http or sock5 proxy.
+            - containerPort: 8000 # Optional: Gluetun HTTP control port
+            - containerPort: 8080 # Optional: HTTP proxy
+            - containerPort: 1080 # Optional: SOCKS5 proxy
+      containers:
+      - name: firefox
+        image: jlesage/firefox:v25.04.1
+        ports:
+        - containerPort: 5800
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "10m"
+          limits:
+            memory: "2Gi"
+            cpu: "1500m"
+      #   securityContext:
+      #     runAsUser: 1000
+      #     runAsGroup: 1000
+      #     allowPrivilegeEscalation: true
+      #     capabilities:
+      #       drop:
+      #         - ALL
+      #     readOnlyRootFilesystem: true
+      #   volumeMounts:
+      #     - name: config-volume
+      #       mountPath: /config
+      # volumes:
+      #   - name: config-volume
+      #     emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: firefox
+spec:
+  selector:
+    app: firefox
+  ports:
+  - protocol: TCP
+    port: 5800
+    targetPort: 5800
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: firefox
+  namespace: jellyfin
+  # labels:
+  #   external-dns: "true"
+spec:
+  parentRefs:
+    - name: services
+      namespace: infra
+      sectionName: main
+  hostnames: [
+    "firefox.overseer.work"
+  ]
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: firefox
+          port: 5800
