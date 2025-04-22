@@ -70,6 +70,34 @@ data:
 
     Server2.JoinGroup=no
 
+    # Server retention time (days).
+    #
+    # How long the articles are stored on the news server. The articles
+    # whose age exceed the defined server retention time are not tried on
+    # this news server, the articles are instead considered failed on this
+    # news server.
+    #
+    # Value "0" disables retention check.
+    Server3.Retention=0
+
+    Server3.Active=yes
+    Server3.Level=1
+    # from secret
+    #Server2.Name=
+    #Server2.Host=
+    #Server2.Username=
+    #Server2.Password=
+
+    Server3.Port=563
+    Server3.IpVersion=auto
+    Server3.Connections=10
+
+    Server3.Encryption=yes
+    Server3.Cipher=
+
+    Server3.JoinGroup=no
+
+
     ### SECURITY
 
     # IP on which NZBGet server listen and which clients use to contact NZBGet.
@@ -479,6 +507,14 @@ spec:
           - Server2.Username=$(SERVER2_USERNAME)
           - -o
           - Server2.Password=$(SERVER2_PASSWORD)
+          - -o
+          - Server3.Name=$(SERVER3_NAME)
+          - -o
+          - Server3.Host=$(SERVER3_HOST)
+          - -o
+          - Server3.Username=$(SERVER3_USERNAME)
+          - -o
+          - Server3.Password=$(SERVER3_PASSWORD)
           - -o
           #- ControlIP=0.0.0.0
           - ControlIP=$(POD_IP)
