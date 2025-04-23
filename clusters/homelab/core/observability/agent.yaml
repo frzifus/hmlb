@@ -86,7 +86,7 @@ spec:
               system.memory.limit:
                 enabled: true
           disk: {}
-          filesystem: {}
+          # filesystem: {}
           network: {}
           processes: {}
           process:
@@ -185,14 +185,14 @@ spec:
 
     service:
       telemetry:
-        traces:
-          processors:
-            - batch:
-                schedule_delay: 1000
-                exporter:
-                  otlp:
-                    endpoint: http://backend.observability:4317
-                    protocol: grpc
+      #   traces:
+      #     processors:
+      #       - batch:
+      #           schedule_delay: 1000
+      #           exporter:
+      #             otlp:
+      #               endpoint: http://backend.observability:4317
+      #               protocol: grpc
         metrics:
           level: detailed
           readers:
