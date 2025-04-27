@@ -24,15 +24,10 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: "kubernetes.io/hostname"
-                operator: "NotIn"
-                values:
-                - "storage1"
-                # NOTE: testing
-              - key: "kubernetes.io/hostname"
+              - key: "gpu.intel.com/device-id.0300-56a0.present"
                 operator: "In"
                 values:
-                - "storage2" # NOTE: gpu nodes are currently unavailable
+                - "true"
       volumes:
       - name: nfs-jellyfin-config
         persistentVolumeClaim:
