@@ -37,7 +37,7 @@ spec:
             secretKeyRef:
               key: HF_TOKEN
               name: huggingface-secret
-        image: vllm/vllm-openai:v0.8.4
+        image: vllm/vllm-openai:v0.8.5
         name: llama32-3b
         ports:
         - containerPort: 8000
