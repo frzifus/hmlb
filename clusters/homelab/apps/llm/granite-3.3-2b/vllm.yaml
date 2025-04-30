@@ -1,0 +1,91 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: granite-3-3-2b
+  namespace: llm
+  labels:
+    app: granite-3-3-2b
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: granite-3-3-2b
+  template:
+    metadata:
+      annotations:
+        instrumentation.opentelemetry.io/inject-sdk: "true"
+      labels:
+        app: granite-3-3-2b
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: "gpu.intel.com/device-id.0300-56a0.present"
+                operator: "In"
+                values:
+                - "true"
+      containers:
+      - command:
+          - /bin/sh
+          - -c
+          - |
+            chmod +x /llm/start-vllm-service.sh
+            /llm/start-vllm-service.sh
+        env:
+        - name: PORT
+          value: "8000"
+        - name: MODEL_PATH # TODO: switch to 8b
+          value: "ibm-granite/granite-3.3-2b-instruct"
+        - name: SERVED_MODEL_NAME
+          value: "granite-3.3-2b"
+        - name: TENSOR_PARALLEL_SIZE
+          value: "1"
+        # TODO: adapt
+        - name: MAX_NUM_SEQS
+          value: "64"
+        - name: MAX_NUM_BATCHED_TOKENS
+          value: "64"
+        - name: MAX_MODEL_LEN
+          value: "64"
+        - name: LOAD_IN_LOW_BIT
+          value: "woq_int4"
+        - name: HUGGING_FACE_HUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              key: HF_TOKEN
+              name: huggingface-secret
+        image: intelanalytics/ipex-llm-serving-xpu:2.3.0-SNAPSHOT
+        # image: vllm/vllm-openai:v0.8.4
+        name: granite-3-3-2b
+        ports:
+        - containerPort: 8000
+          protocol: TCP
+        resources:
+          limits:
+            gpu.intel.com/i915: 1
+        volumeMounts:
+        - mountPath: /root/.cache
+          name: hf-cache
+        - mountPath: /root/.triton
+          name: triton
+        # - mountPath: /app
+        #   name: chat-template
+        - mountPath: /.config
+          name: config
+      volumes:
+      - name: hf-cache
+        persistentVolumeClaim:
+          claimName: model-cache
+      - emptyDir: {}
+        name: triton
+      # - configMap:
+      #     defaultMode: 420
+      #     name: granite-3-3-2b-template
+      #   name: chat-template
+      - emptyDir: {}
+        name: config

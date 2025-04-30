@@ -2,10 +2,10 @@
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: llama32-3b-template
+  name: granite-3-3-b-template
   namespace: llm
   labels:
-    app: llama32-3b
+    app: granite-3-3-b
 data:
   tool_chat_template_llama3.2_json.jinja: |
     {{- bos_token }} {%- if custom_tools is defined %}

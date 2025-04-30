@@ -2,13 +2,13 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: llama32-3b
+  name: granite-3-3-2b
   namespace: llm
   labels:
-    app: llama32-3b
+    app: granite-3-3-2b
 spec:
   selector:
-    app: llama32-3b
+    app: granite-3-3-2b
   ports:
     - name: http
       port: 8000
