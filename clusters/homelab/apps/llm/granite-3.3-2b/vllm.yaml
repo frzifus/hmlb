@@ -2,23 +2,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: granite-3-3-2b
+  name: vllm
   namespace: llm
   labels:
-    app: granite-3-3-2b
+    app: vllm
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: granite-3-3-2b
+      app: vllm
   template:
     metadata:
       annotations:
         instrumentation.opentelemetry.io/inject-sdk: "true"
       labels:
-        app: granite-3-3-2b
+        app: vllm
     spec:
       affinity:
         nodeAffinity:
@@ -37,7 +37,7 @@ spec:
             chmod +x /llm/start-vllm-service.sh
             /llm/start-vllm-service.sh
         env:
-        - name: PORT
+        - name: VLLM_PORT
           value: "8000"
         - name: MODEL_PATH # TODO: switch to 8b
           value: "ibm-granite/granite-3.3-2b-instruct"
@@ -45,13 +45,12 @@ spec:
           value: "granite-3.3-2b"
         - name: TENSOR_PARALLEL_SIZE
           value: "1"
-        # TODO: adapt
         - name: MAX_NUM_SEQS
-          value: "64"
+          value: "4"
         - name: MAX_NUM_BATCHED_TOKENS
-          value: "64"
+          value: "2048"
         - name: MAX_MODEL_LEN
-          value: "64"
+          value: "2048"
         - name: LOAD_IN_LOW_BIT
           value: "woq_int4"
         - name: HUGGING_FACE_HUB_TOKEN
@@ -61,12 +60,35 @@ spec:
               name: huggingface-secret
         image: intelanalytics/ipex-llm-serving-xpu:2.5.0-SNAPSHOT
         # image: vllm/vllm-openai:v0.8.4
-        name: granite-3-3-2b
+        name: vllm
         ports:
         - containerPort: 8000
           protocol: TCP
+        # livenessProbe:
+        #   httpGet:
+        #     path: /health
+        #     port: 8000
+        #     scheme: HTTP
+        #   initialDelaySeconds: 120
+        #   periodSeconds: 30
+        #   timeoutSeconds: 5
+        #   failureThreshold: 30
+        # readinessProbe:
+        #   httpGet:
+        #     path: /health
+        #     port: 8000
+        #     scheme: HTTP
+        #   initialDelaySeconds: 120
+        #   periodSeconds: 30
+        #   timeoutSeconds: 5
+        #   failureThreshold: 30
         resources:
+          # requests:
+          #   cpu: "50m"
+          #   memory: "1Gi"
           limits:
+          #   cpu: "2500m"
+          #   memory: "8Gi"
             gpu.intel.com/i915: 1
         volumeMounts:
         - mountPath: /root/.cache

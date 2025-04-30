@@ -2,13 +2,13 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: granite-3-3-2b
+  name: vllm
   namespace: llm
   labels:
-    app: granite-3-3-2b
+    app: vllm
 spec:
   selector:
-    app: granite-3-3-2b
+    app: vllm
   ports:
     - name: http
       port: 8000
