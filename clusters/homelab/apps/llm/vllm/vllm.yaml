@@ -39,16 +39,16 @@ spec:
         env:
         - name: VLLM_PORT
           value: "8000"
-        - name: MODEL_PATH # TODO: switch to 8b
+        - name: MODEL_PATH
           value: "ibm-granite/granite-3.3-2b-instruct"
         - name: SERVED_MODEL_NAME
-          value: "granite-3.3-2b"
+          value: "vllm"
         - name: TENSOR_PARALLEL_SIZE
           value: "1"
         - name: MAX_NUM_SEQS
           value: "4"
         - name: MAX_NUM_BATCHED_TOKENS
-          value: "2048"
+          value: "4000"
         - name: MAX_MODEL_LEN
           value: "2048"
         - name: LOAD_IN_LOW_BIT
@@ -83,12 +83,13 @@ spec:
         #   timeoutSeconds: 5
         #   failureThreshold: 30
         resources:
-          # requests:
-          #   cpu: "50m"
-          #   memory: "1Gi"
+          requests:
+            cpu: "50m"
+            memory: "1Gi"
+            gpu.intel.com/i915: 1
           limits:
-          #   cpu: "2500m"
-          #   memory: "8Gi"
+            cpu: "2500m"
+            memory: "12Gi"
             gpu.intel.com/i915: 1
         volumeMounts:
         - mountPath: /root/.cache
