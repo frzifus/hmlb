@@ -59,7 +59,7 @@ spec:
             secretKeyRef:
               key: HF_TOKEN
               name: huggingface-secret
-        image: intelanalytics/ipex-llm-serving-xpu:2.3.0-SNAPSHOT
+        image: intelanalytics/ipex-llm-serving-xpu:2.5.0-SNAPSHOT
         # image: vllm/vllm-openai:v0.8.4
         name: granite-3-3-2b
         ports:
