@@ -6,3 +6,4 @@ resources:
   - pvc.yaml
   - vllm.yaml
   - service.yaml
+  - servicemonitor.yaml

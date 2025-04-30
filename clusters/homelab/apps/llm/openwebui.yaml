@@ -1,0 +1,96 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: open-webui-data
+  namespace: llm
+spec:
+  storageClassName: openebs-cache
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open-webui
+  namespace: llm
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: open-webui
+  template:
+    metadata:
+      labels:
+        app: open-webui
+    spec:
+      containers:
+        - name: open-webui
+          image: ghcr.io/open-webui/open-webui:v0.6.5
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ENABLE_WEBSOCKET_SUPPORT
+              value: "0"
+            - name: OPENAI_API_BASE_URL
+              value: "http://vllm:8000/v1"
+            - name: OPENAI_API_KEY
+              value: "fake"
+            - name: ENABLE_OLLAMA_API
+              value: "false"
+            - name: ENABLE_RAG_WEB_SEARCH
+              value: "true"
+            - name: RAG_WEB_SEARCH_ENGINE
+              value: "duckduckgo"
+          volumeMounts:
+            - mountPath: /app/backend/data
+              name: open-webui-data
+          resources:
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+      volumes:
+        - name: open-webui-data
+          persistentVolumeClaim:
+            claimName: open-webui-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: open-webui
+  namespace: llm
+spec:
+  selector:
+    app: open-webui
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 8080
+  type: ClusterIP
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: llm
+  namespace: llm
+  # labels:
+  #   external-dns: "true"
+spec:
+  parentRefs:
+    - name: services
+      namespace: infra
+      sectionName: main
+  hostnames: [
+    "llm.overseer.work"
+  ]
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: open-webui
+          port: 3000

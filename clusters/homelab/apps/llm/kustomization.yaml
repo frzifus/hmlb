@@ -6,4 +6,4 @@ resources:
   - namespace.yaml
   - huggingface-secret.yaml
   - llama-stack
-  - granite-3.3-2b
+  - vllm

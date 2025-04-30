@@ -1,0 +1,17 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: vllm
+  namespace: llm
+spec:
+  selector:
+    matchLabels:
+      app: vllm
+  namespaceSelector:
+    matchNames:
+      - llm
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
