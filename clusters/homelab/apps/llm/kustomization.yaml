@@ -5,5 +5,7 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - huggingface-secret.yaml
+  - otel-sdk-config.yaml
+  - openwebui.yaml
   - llama-stack
   - vllm

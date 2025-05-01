@@ -34,8 +34,30 @@ spec:
           - /bin/sh
           - -c
           - |
-            chmod +x /llm/start-vllm-service.sh
-            /llm/start-vllm-service.sh
+            pip install \
+              'opentelemetry-sdk>=1.26.0,<1.27.0' \
+              'opentelemetry-api>=1.26.0,<1.27.0' \
+              'opentelemetry-exporter-otlp>=1.26.0,<1.27.0' \
+              'opentelemetry-semantic-conventions-ai>=0.4.1,<0.5.0' \
+              'opentelemetry-instrumentation-fastapi>=0.41b0,<0.42'
+            source /opt/intel/1ccl-wks/setvars.sh
+            python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
+              --otlp-traces-endpoint="$OTEL_EXPORTER_OTLP_ENDPOINT" \
+              --served-model-name $SERVED_MODEL_NAME \
+              --model $MODEL_PATH \
+              --trust-remote-code \
+              --block-size 8 \
+              --gpu-memory-utilization 0.95 \
+              --device xpu \
+              --dtype float16 \
+              --enforce-eager \
+              --load-in-low-bit woq_int4 \
+              --max-model-len 2048 \
+              --max-num-batched-tokens 4000 \
+              --max-num-seqs 4 \
+              --tensor-parallel-size 1 \
+              --disable-async-output-proc \
+              --distributed-executor-backend ray
         env:
         - name: VLLM_PORT
           value: "8000"
@@ -43,22 +65,34 @@ spec:
           value: "ibm-granite/granite-3.3-2b-instruct"
         - name: SERVED_MODEL_NAME
           value: "vllm"
-        - name: TENSOR_PARALLEL_SIZE
+        - name: CCL_WORKER_COUNT
+          value: "2"
+        - name: SYCL_CACHE_PERSISTENT
           value: "1"
-        - name: MAX_NUM_SEQS
-          value: "4"
-        - name: MAX_NUM_BATCHED_TOKENS
-          value: "4000"
-        - name: MAX_MODEL_LEN
-          value: "2048"
-        - name: LOAD_IN_LOW_BIT
-          value: "woq_int4"
+        - name: FI_PROVIDER
+          value: "shm"
+        - name: CCL_ATL_TRANSPORT
+          value: "ofi"
+        - name: CCL_ZE_IPC_EXCHANGE
+          value: "sockets"
+        - name: CCL_ATL_SHM
+          value: "1"
+        - name: USE_XETLA
+          value: "OFF"
+        - name: SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS
+          value: "2"
+        - name: TORCH_LLM_ALLREDUCE
+          value: "0"
+        - name: CCL_SAME_STREAM
+          value: "1"
+        - name: CCL_BLOCKING_WAIT
+          value: "0"
         - name: HUGGING_FACE_HUB_TOKEN
           valueFrom:
             secretKeyRef:
               key: HF_TOKEN
               name: huggingface-secret
-        image: intelanalytics/ipex-llm-serving-xpu:2.5.0-SNAPSHOT
+        image: intelanalytics/ipex-llm-serving-xpu:2.2.0-b17
         # image: vllm/vllm-openai:v0.8.4
         name: vllm
         ports:

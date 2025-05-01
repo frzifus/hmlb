@@ -5,7 +5,7 @@ metadata:
   name: central
 spec:
   exporter:
-    endpoint: http://ingest.observability.svc.cluster.local:4317
+    endpoint: http://backend.observability.svc.cluster.local:4317
   env:
     - name: "OTEL_EXPORTER_OTLP_TRACES_INSECURE"
       value: "true"
