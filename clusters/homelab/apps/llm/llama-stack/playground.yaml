@@ -1,0 +1,39 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llamastack-playground
+  namespace: llm
+  labels:
+    app: llamastack-playground
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: llamastack-playground
+  template:
+    metadata:
+      labels:
+        app: llamastack-playground
+    spec:
+      containers:
+      - name: llamastack-playground
+        # NOTE: is configured manually.
+        image: quay.io/jland/llama-stack-playground:0.1.9
+        ports:
+        - containerPort: 8501
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: llamastack-playground
+  namespace: llm
+spec:
+  selector:
+    app: llamastack-playground
+  ports:
+  - protocol: TCP
+    port: 8501
+    targetPort: 8501
+  type: ClusterIP

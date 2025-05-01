@@ -5,6 +5,7 @@ metadata:
   name: run-config
   namespace: llm
 data:
+data:
   config.yaml: |
     version: '2'
     image_name: remote-vllm
@@ -13,28 +14,31 @@ data:
     - datasetio
     - eval
     - inference
-    # - safety
+    - safety
     - scoring
     - telemetry
     - tool_runtime
     - vector_io
     providers:
       inference:
-      - provider_id: llama-3b
+      - provider_id: vllm-inference
         provider_type: remote::vllm
         config:
-          url: ${env.LLAMA3B_URL}
-          max_tokens: 128000
-          api_token: fake
-          tls_verify: false
+          url: ${env.VLLM_URL:http://localhost:8000/v1}
+          max_tokens: ${env.VLLM_MAX_TOKENS:2048}
+          api_token: ${env.VLLM_API_TOKEN:fake}
+          tls_verify: ${env.VLLM_TLS_VERIFY:true}
       - provider_id: sentence-transformers
         provider_type: inline::sentence-transformers
         config: {}
       vector_io:
-      - provider_id: milvus
-        provider_type: inline::milvus
+      - provider_id: faiss
+        provider_type: inline::faiss
         config:
-         db_path: ${env.MILVUS_DB_PATH}
+          kvstore:
+            type: sqlite
+            namespace: null
+            db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/faiss_store.db
       safety:
       - provider_id: llama-guard
         provider_type: inline::llama-guard
@@ -78,30 +82,29 @@ data:
       - provider_id: llm-as-judge
         provider_type: inline::llm-as-judge
         config: {}
-      # - provider_id: braintrust
-      #   provider_type: inline::braintrust
-      #   config:
-      #     openai_api_key: ${env.OPENAI_API_KEY:}
+      - provider_id: braintrust
+        provider_type: inline::braintrust
+        config:
+          openai_api_key: ${env.OPENAI_API_KEY:}
       telemetry:
       - provider_id: meta-reference
         provider_type: inline::meta-reference
         config:
-          service_name: ${env.OTEL_SERVICE_NAME:llama-stack}
-          sinks: ${env.TELEMETRY_SINKS:console, otel_trace, sqlite}
-          otel_trace_endpoint: ${env.OTEL_TRACE_ENDPOINT:}
-          sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/remote-vllm/trace_store.db}
+          service_name: ${env.OTEL_SERVICE_NAME:}
+          sinks: ${env.TELEMETRY_SINKS:console,sqlite}
+          otel_trace_endpoint: ${env.CUSTOM_OTEL_TRACE_ENDPOINT:}
+          sqlite_db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/trace_store.db
       tool_runtime:
-      # NOTE: Support searxng!
       - provider_id: brave-search
         provider_type: remote::brave-search
         config:
           api_key: ${env.BRAVE_SEARCH_API_KEY:}
           max_results: 3
-      # - provider_id: tavily-search
-      #   provider_type: remote::tavily-search
-      #   config:
-      #     api_key: ${env.TAVILY_SEARCH_API_KEY:}
-      #     max_results: 3
+      - provider_id: tavily-search
+        provider_type: remote::tavily-search
+        config:
+          api_key: ${env.TAVILY_SEARCH_API_KEY:}
+          max_results: 3
       - provider_id: code-interpreter
         provider_type: inline::code-interpreter
         config: {}
@@ -111,22 +114,24 @@ data:
       - provider_id: model-context-protocol
         provider_type: remote::model-context-protocol
         config: {}
+      - provider_id: wolfram-alpha
+        provider_type: remote::wolfram-alpha
+        config:
+          api_key: ${env.WOLFRAM_ALPHA_API_KEY:}
     metadata_store:
       type: sqlite
       db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/registry.db
     models:
     - metadata: {}
-      model_id: ${env.LLAMA3B_MODEL}
-      provider_id: llama-3b
+      model_id: ${env.INFERENCE_MODEL}
+      provider_id: vllm-inference
       model_type: llm
     - metadata:
         embedding_dimension: 384
       model_id: all-MiniLM-L6-v2
       provider_id: sentence-transformers
       model_type: embedding
-    # shields:
-    # - shield_id: ${env.SAFETY_MODEL}
-    #   provider_id: llama-guard
+    shields: []
     vector_dbs: []
     datasets: []
     scoring_fns: []
@@ -138,7 +143,7 @@ data:
       provider_id: rag-runtime
     - toolgroup_id: builtin::code_interpreter
       provider_id: code-interpreter
-    - toolgroup_id: mcp::opentelemetry
-      provider_id: model-context-protocol
-      mcp_endpoint: # TODO: @frzifus.
-        uri: "http://otel-mcp-server.llm.svc.cluster.local:8000/sse"
+    - toolgroup_id: builtin::wolfram_alpha
+      provider_id: wolfram-alpha
+    server:
+      port: 8321
