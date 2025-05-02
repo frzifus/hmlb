@@ -15,6 +15,11 @@ spec:
     metadata:
       labels:
         app: radarr
+      # NOTE: Its based on dotnet6, which is not supported.
+      #       Downgrading to autoinstrumentation-dotnet:1.2.0 doesnt help.
+      # annotations:
+      #   instrumentation.opentelemetry.io/inject-dotnet: "central-old-dotnet"
+      #   instrumentation.opentelemetry.io/otel-dotnet-auto-runtime: "linux-musl-x64"
     spec:
       securityContext:
         fsGroup: 1000 # NOTE: set fsGroup for permission to /data/downloads

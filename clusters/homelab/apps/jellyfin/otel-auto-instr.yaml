@@ -1,0 +1,15 @@
+---
+apiVersion: opentelemetry.io/v1alpha1
+kind: Instrumentation
+metadata:
+  name: central
+  namespace: jellyfin
+spec:
+  exporter:
+    endpoint: http://backend.observability.svc.cluster.local:4318
+  env:
+    - name: "OTEL_EXPORTER_OTLP_TRACES_INSECURE"
+      value: "true"
+  propagators:
+    - tracecontext
+    - baggage

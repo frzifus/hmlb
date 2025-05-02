@@ -18,6 +18,8 @@ spec:
     metadata:
       labels:
         app: jellyfin
+      annotations:
+        instrumentation.opentelemetry.io/inject-dotnet: "true"
     spec:
       affinity:
         nodeAffinity:
