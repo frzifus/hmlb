@@ -82,6 +82,8 @@ RUN dnf install -y \
     wireshark \
     openssl \
     libtool \
+    rustup \
+    golang \
     yamllint
 
 RUN dnf install -y \
