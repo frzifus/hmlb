@@ -476,7 +476,7 @@ spec:
             - containerPort: 8080 # Optional: HTTP proxy
             - containerPort: 1080 # Optional: SOCKS5 proxy
       containers:
-      - image: frebib/nzbget-exporter@sha256:1ab799cf7ecaaf732b9e8655786c2bc8657f268290a580304192050c105dd4d9
+      - image: frebib/nzbget-exporter@sha256:4aedf8b4e9ef85d184f38dcd095262b11557e539931763180b8ffcbd8f6534da
         name: nzbget-exporter
         ports:
           - name: http
