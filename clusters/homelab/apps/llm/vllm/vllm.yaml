@@ -38,8 +38,7 @@ spec:
               'opentelemetry-sdk>=1.26.0,<1.27.0' \
               'opentelemetry-api>=1.26.0,<1.27.0' \
               'opentelemetry-exporter-otlp>=1.26.0,<1.27.0' \
-              'opentelemetry-semantic-conventions-ai>=0.4.1,<0.5.0' \
-              'opentelemetry-instrumentation-fastapi>=0.41b0,<0.42'
+              'opentelemetry-semantic-conventions-ai>=0.4.1,<0.5.0'
             source /opt/intel/1ccl-wks/setvars.sh
             python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
               --otlp-traces-endpoint="$OTEL_EXPORTER_OTLP_ENDPOINT" \
@@ -52,8 +51,10 @@ spec:
               --dtype float16 \
               --enforce-eager \
               --load-in-low-bit woq_int4 \
-              --max-model-len 2048 \
-              --max-num-batched-tokens 4000 \
+              --enable-auto-tool-choice \
+              --tool-call-parser llama3_json \
+              --max-model-len 4096 \
+              --max-num-batched-tokens 8000 \
               --max-num-seqs 4 \
               --tensor-parallel-size 1 \
               --disable-async-output-proc \
