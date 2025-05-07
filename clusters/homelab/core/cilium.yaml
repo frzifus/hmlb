@@ -26,6 +26,10 @@ spec:
   values:
     envoy:
       baseID: 3
+      prometheus:
+        enabled: true
+        serviceMonitor:
+          enabled: true
     cgroup:
       autoMount:
         enabled: false
@@ -64,3 +68,25 @@ spec:
     socketLB:
       enabled: true
       hostNamespaceOnly: true
+    hubble:
+      enabled: true
+      relay:
+        enabled: true
+      ui:
+        enabled: true
+      metrics:
+        serviceMonitor:
+          enabled: true
+        enableOpenMetrics: true
+        enabled:
+          - dns
+          - drop
+          - tcp
+          - flow
+          - port-distribution
+          - icmp
+          - http
+    prometheus:
+      enabled: true
+      serviceMonitor:
+        enabled: true
