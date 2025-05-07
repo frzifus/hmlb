@@ -1,11 +1,10 @@
 ---
-name: Build and Publish Container Image
+name: Build  Desktop Image
 
 on:
   push:
     branches:
       - main
-  pull_request:
   schedule:
     - cron: "0 14 * * *"
 
@@ -34,6 +33,7 @@ jobs:
         with:
           containerfiles: |
             ./images/desktop/Containerfile
+          context: ./images/desktop
           image: ghcr.io/frzifus/desktop
           tags: latest
           archs: amd64 # disable, arm64
