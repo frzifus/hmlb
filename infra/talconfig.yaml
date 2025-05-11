@@ -83,7 +83,7 @@ nodes:
     controlPlane: true
   - hostname: master3
     ipAddress: 192.168.5.4
-    installDisk: /dev/sda
+    installDisk: /dev/nvme0n1
     controlPlane: true
   - hostname: storage1
     ipAddress: 192.168.5.6
