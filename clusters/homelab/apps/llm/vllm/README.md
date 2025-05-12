@@ -4,7 +4,7 @@ Deploy [vllm](https://github.com/vllm-project/vllm) with the [IBM Granite](https
 
 ## Model Validation CR
 
-The Model Validation Operator will use the [demo Granite Validation CR](clusters/homelab/apps/llm/vllm/granite-validation.yaml). We need to provide an identity and issuer there.
+The Model Validation Operator will use the [demo Granite Validation CR](granite-validation.yaml). We need to provide an identity and issuer there.
 
 Google example:
 - Identity "fake@gmail.com"
@@ -63,7 +63,7 @@ Verification succeeded
 
 ## Debug
 
-Use the [model-validation-debug container](clusters/homelab/apps/llm/vllm/granite-validation-debug.yaml) to `sign`, `validate`, `delete signature`, `modify` and `restore` the IBM Granite model.
+Use the [model-validation-debug container](granite-validation-debug.yaml) to `sign`, `validate`, `delete signature`, `modify` and `restore` the IBM Granite model.
 ```bash
 $ oc get pods                
 NAME                                      READY   STATUS    RESTARTS      AGE
