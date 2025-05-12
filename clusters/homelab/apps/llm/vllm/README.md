@@ -100,10 +100,10 @@ oc exec -it model-validation-debug-85848698fd-w9f25 -- model_signing verify  \
 
 To simulate unwanted modifications, we can modify the model manually.
 ```bash
-oc exec -it model-validation-debug-85848698fd-w9f25 -- echo "fake" > /models/huggingface/hub/models--ibm-granite--granite-3.3-2b-instruct/blob/b0d40f9bebc505fca54f7e1af51b6e755f2807a6
+oc exec -it model-validation-debug-85848698fd-w9f25 -- sh -c 'echo "fake" > /models/huggingface/hub/models--ibm-granite--granite-3.3-2b-instruct/blobs/b0d40f9bebc505fca54f7e1af51b6e755f2807a6'
 ```
 
 The `custom-backup` folder contains a backup to restore the model.
 ```bash
-oc exec -it model-validation-debug-85848698fd-w9f25 -- cp /models/huggingface/hub/models--ibm-granite--granite-3.3-2b-instruct/custom-backup/b0d40f9bebc505fca54f7e1af51b6e755f2807a6 /models/huggingface/hub/models--ibm-granite--granite-3.3-2b-instruct/blob/b0d40f9bebc505fca54f7e1af51b6e755f2807a6
+oc exec -it model-validation-debug-85848698fd-w9f25 -- sh -c 'cp /models/huggingface/hub/models--ibm-granite--granite-3.3-2b-instruct/custom-backup/b0d40f9bebc505fca54f7e1af51b6e755f2807a6 /models/huggingface/hub/models--ibm-granite--granite-3.3-2b-instruct/blobs/b0d40f9bebc505fca54f7e1af51b6e755f2807a6'
 ```
