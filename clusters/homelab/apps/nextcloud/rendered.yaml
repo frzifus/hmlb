@@ -1,0 +1,1384 @@
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-apache-persistentvolumeclaim.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    io.kompose.service: nextcloud-aio-apache
+  name: nextcloud-aio-apache
+  namespace: "nextcloud"
+spec:
+  storageClassName: openebs-crucial
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-database-dump-persistentvolumeclaim.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    io.kompose.service: nextcloud-aio-database-dump
+  name: nextcloud-aio-database-dump
+  namespace: "nextcloud"
+spec:
+  storageClassName: openebs-crucial
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-database-persistentvolumeclaim.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    io.kompose.service: nextcloud-aio-database
+  name: nextcloud-aio-database
+  namespace: "nextcloud"
+spec:
+  storageClassName: openebs-crucial
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-elasticsearch-persistentvolumeclaim.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    io.kompose.service: nextcloud-aio-elasticsearch
+  name: nextcloud-aio-elasticsearch
+  namespace: "nextcloud"
+spec:
+  storageClassName: openebs-crucial
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-nextcloud-data-persistentvolumeclaim.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    io.kompose.service: nextcloud-aio-nextcloud-data
+  name: nextcloud-aio-nextcloud-data
+  namespace: "nextcloud"
+spec:
+  storageClassName: openebs-crucial
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-nextcloud-persistentvolumeclaim.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    io.kompose.service: nextcloud-aio-nextcloud
+  name: nextcloud-aio-nextcloud
+  namespace: "nextcloud"
+spec:
+  storageClassName: openebs-crucial
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-nextcloud-trusted-cacerts-persistentvolumeclaim.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    io.kompose.service: nextcloud-aio-nextcloud-trusted-cacerts
+  name: nextcloud-aio-nextcloud-trusted-cacerts
+  namespace: "nextcloud"
+spec:
+  storageClassName: openebs-crucial
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-onlyoffice-persistentvolumeclaim.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    io.kompose.service: nextcloud-aio-onlyoffice
+  name: nextcloud-aio-onlyoffice
+  namespace: "nextcloud"
+spec:
+  storageClassName: openebs-crucial
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-redis-persistentvolumeclaim.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    io.kompose.service: nextcloud-aio-redis
+  name: nextcloud-aio-redis
+  namespace: "nextcloud"
+spec:
+  storageClassName: openebs-crucial
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-apache-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: nextcloud-aio-apache
+  name: nextcloud-aio-apache
+  namespace: "nextcloud"
+spec:
+  ipFamilyPolicy: PreferDualStack
+  ports:
+    - name: "443"
+      port: 443
+      targetPort: 443
+    - name: 443-udp
+      port: 443
+      protocol: UDP
+      targetPort: 443
+  selector:
+    io.kompose.service: nextcloud-aio-apache
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-collabora-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: nextcloud-aio-collabora
+  name: nextcloud-aio-collabora
+  namespace: "nextcloud"
+spec:
+  ipFamilyPolicy: PreferDualStack
+  ports:
+    - name: "9980"
+      port: 9980
+      targetPort: 9980
+  selector:
+    io.kompose.service: nextcloud-aio-collabora
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-database-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: nextcloud-aio-database
+  name: nextcloud-aio-database
+  namespace: "nextcloud"
+spec:
+  ipFamilyPolicy: PreferDualStack
+  ports:
+    - name: "5432"
+      port: 5432
+      targetPort: 5432
+  selector:
+    io.kompose.service: nextcloud-aio-database
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-fulltextsearch-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: nextcloud-aio-fulltextsearch
+  name: nextcloud-aio-fulltextsearch
+  namespace: "nextcloud"
+spec:
+  ipFamilyPolicy: PreferDualStack
+  ports:
+    - name: "9200"
+      port: 9200
+      targetPort: 9200
+  selector:
+    io.kompose.service: nextcloud-aio-fulltextsearch
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-imaginary-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: nextcloud-aio-imaginary
+  name: nextcloud-aio-imaginary
+  namespace: "nextcloud"
+spec:
+  ipFamilyPolicy: PreferDualStack
+  ports:
+    - name: "9000"
+      port: 9000
+      targetPort: 9000
+  selector:
+    io.kompose.service: nextcloud-aio-imaginary
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-nextcloud-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: nextcloud-aio-nextcloud
+  name: nextcloud-aio-nextcloud
+  namespace: "nextcloud"
+spec:
+  ipFamilyPolicy: PreferDualStack
+  ports:
+    - name: "9000"
+      port: 9000
+      targetPort: 9000
+    - name: "9001"
+      port: 9001
+      targetPort: 9001
+  selector:
+    io.kompose.service: nextcloud-aio-nextcloud
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-notify-push-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: nextcloud-aio-notify-push
+  name: nextcloud-aio-notify-push
+  namespace: "nextcloud"
+spec:
+  ipFamilyPolicy: PreferDualStack
+  ports:
+    - name: "7867"
+      port: 7867
+      targetPort: 7867
+  selector:
+    io.kompose.service: nextcloud-aio-notify-push
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-onlyoffice-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: nextcloud-aio-onlyoffice
+  name: nextcloud-aio-onlyoffice
+  namespace: "nextcloud"
+spec:
+  ipFamilyPolicy: PreferDualStack
+  ports:
+    - name: "80"
+      port: 80
+      targetPort: 80
+  selector:
+    io.kompose.service: nextcloud-aio-onlyoffice
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-redis-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: nextcloud-aio-redis
+  name: nextcloud-aio-redis
+  namespace: "nextcloud"
+spec:
+  ipFamilyPolicy: PreferDualStack
+  ports:
+    - name: "6379"
+      port: 6379
+      targetPort: 6379
+  selector:
+    io.kompose.service: nextcloud-aio-redis
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-talk-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: nextcloud-aio-talk
+  name: nextcloud-aio-talk-public
+  namespace: "nextcloud"
+spec:
+  ipFamilyPolicy: PreferDualStack
+  ports:
+    - name: "3478"
+      port: 3478
+      targetPort: 3478
+    - name: 3478-udp
+      port: 3478
+      protocol: UDP
+      targetPort: 3478
+  selector:
+    io.kompose.service: nextcloud-aio-talk
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-talk-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: nextcloud-aio-talk
+  name: nextcloud-aio-talk
+  namespace: "nextcloud"
+spec:
+  ipFamilyPolicy: PreferDualStack
+  ports:
+    - name: "8081"
+      port: 8081
+      targetPort: 8081
+  selector:
+    io.kompose.service: nextcloud-aio-talk
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-whiteboard-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: nextcloud-aio-whiteboard
+  name: nextcloud-aio-whiteboard
+  namespace: "nextcloud"
+spec:
+  ipFamilyPolicy: PreferDualStack
+  ports:
+    - name: "3002"
+      port: 3002
+      targetPort: 3002
+  selector:
+    io.kompose.service: nextcloud-aio-whiteboard
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-apache-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: nextcloud-aio-apache
+  name: nextcloud-aio-apache
+  namespace: "nextcloud"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: nextcloud-aio-apache
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.version: 1.35.0 (9532ceef3)
+      labels:
+        io.kompose.service: nextcloud-aio-apache
+    spec:
+      securityContext:
+        # The items below only work in pod context
+        fsGroup: 33
+        fsGroupChangePolicy: "OnRootMismatch"
+        # The items below work in both contexts
+        runAsUser: 33
+        runAsGroup: 33
+        runAsNonRoot: true
+      containers:
+        - env:
+            - name: ADDITIONAL_TRUSTED_DOMAIN
+              value: ""
+            - name: APACHE_HOST
+              value: nextcloud-aio-apache
+            - name: APACHE_MAX_SIZE
+              value: "17179869184"
+            - name: APACHE_MAX_TIME
+              value: "3600"
+            - name: APACHE_PORT
+              value: "443"
+            - name: COLLABORA_HOST
+              value: nextcloud-aio-collabora
+            - name: NC_DOMAIN
+              value: "nextcloud-aio-apache.nextcloud.svc.cluster.local"
+            - name: NEXTCLOUD_HOST
+              value: nextcloud-aio-nextcloud
+            - name: NOTIFY_PUSH_HOST
+              value: nextcloud-aio-notify-push
+            - name: ONLYOFFICE_HOST
+              value: nextcloud-aio-onlyoffice
+            - name: TALK_HOST
+              value: nextcloud-aio-talk
+            - name: TZ
+              value: "Europe/Berlin"
+            - name: WHITEBOARD_HOST
+              value: nextcloud-aio-whiteboard
+          image: ghcr.io/nextcloud-releases/aio-apache:20250512_082954
+          readinessProbe:
+            exec:
+              command:
+                - /healthcheck.sh
+            failureThreshold: 3
+            periodSeconds: 30
+            timeoutSeconds: 30
+          livenessProbe:
+            exec:
+              command:
+                - /healthcheck.sh
+            failureThreshold: 3
+            periodSeconds: 30
+            timeoutSeconds: 30
+          name: nextcloud-aio-apache
+          ports:
+            - containerPort: 443
+              protocol: TCP
+            - containerPort: 443
+              protocol: UDP
+          securityContext:
+            # The items below only work in container context
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["NET_RAW"]
+              add: ["NET_BIND_SERVICE"]
+          volumeMounts:
+            - mountPath: /var/www/html
+              name: nextcloud-aio-nextcloud
+              readOnly: true
+            - mountPath: /mnt/data
+              name: nextcloud-aio-apache
+      volumes:
+        - name: nextcloud-aio-nextcloud
+          persistentVolumeClaim:
+            claimName: nextcloud-aio-nextcloud
+        - name: nextcloud-aio-apache
+          persistentVolumeClaim:
+            claimName: nextcloud-aio-apache
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-collabora-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: nextcloud-aio-collabora
+  name: nextcloud-aio-collabora
+  namespace: "nextcloud"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: nextcloud-aio-collabora
+  template:
+    metadata:
+      annotations:
+        kompose.version: 1.35.0 (9532ceef3)
+      labels:
+        io.kompose.service: nextcloud-aio-collabora
+    spec:
+      containers:
+        - args: ["--o:security.seccomp=true"]
+          env:
+            - name: DONT_GEN_SSL_CERT
+              value: "1"
+            - name: TZ
+              value: "Europe/Berlin"
+            - name: aliasgroup1
+              value: https://nextcloud-aio-apache.nextcloud.svc.cluster.local:443
+            - name: dictionaries
+              value: "de_DE en_GB en_US es_ES fr_FR it nl pt_BR pt_PT ru"
+            - name: extra_params
+              value: --o:ssl.enable=false --o:ssl.termination=true --o:mount_jail_tree=false --o:logging.level=warning --o:home_mode.enable=true --o:remote_font_config.url=https://nextcloud-aio-apache.nextcloud.svc.cluster.local/apps/richdocuments/settings/fonts.json --o:net.post_allow.host[0]=.+
+            - name: server_name
+              value: "nextcloud-aio-apache.nextcloud.svc.cluster.local"
+          image: ghcr.io/nextcloud-releases/aio-collabora:20250512_082954
+          readinessProbe:
+            exec:
+              command:
+                - /healthcheck.sh
+            failureThreshold: 9
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 30
+          livenessProbe:
+            exec:
+              command:
+                - /healthcheck.sh
+            failureThreshold: 9
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 30
+          name: nextcloud-aio-collabora
+          ports:
+            - containerPort: 9980
+              protocol: TCP
+          securityContext:
+            capabilities:
+              add:
+                - MKNOD
+                - CAP_SYS_ADMIN
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-database-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: nextcloud-aio-database
+  name: nextcloud-aio-database
+  namespace: "nextcloud"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: nextcloud-aio-database
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.version: 1.35.0 (9532ceef3)
+      labels:
+        io.kompose.service: nextcloud-aio-database
+    spec:
+      securityContext:
+        # The items below only work in pod context
+        fsGroup: 999
+        fsGroupChangePolicy: "OnRootMismatch"
+        # The items below work in both contexts
+        runAsUser: 999
+        runAsGroup: 999
+        runAsNonRoot: true
+      initContainers:
+        - name: init-subpath
+          image: ghcr.io/nextcloud-releases/aio-alpine:20250512_082954
+          command:
+            - mkdir
+            - "-p"
+            - /nextcloud-aio-database/data
+          volumeMounts:
+            - name: nextcloud-aio-database
+              mountPath: /nextcloud-aio-database
+          securityContext:
+            # The items below only work in container context
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["NET_RAW"]
+      containers:
+        - env:
+            - name: PGTZ
+              value: "Europe/Berlin"
+            - name: POSTGRES_DB
+              value: nextcloud_database
+            - name: POSTGRES_PASSWORD
+              value: "abc"
+            - name: POSTGRES_USER
+              value: nextcloud
+            - name: TZ
+              value: "Europe/Berlin"
+          image: ghcr.io/nextcloud-releases/aio-postgresql:20250512_082954
+          readinessProbe:
+            exec:
+              command:
+                - /healthcheck.sh
+            failureThreshold: 3
+            periodSeconds: 30
+            timeoutSeconds: 30
+          livenessProbe:
+            exec:
+              command:
+                - /healthcheck.sh
+            failureThreshold: 3
+            periodSeconds: 30
+            timeoutSeconds: 30
+          name: nextcloud-aio-database
+          ports:
+            - containerPort: 5432
+              protocol: TCP
+          securityContext:
+            # The items below only work in container context
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["NET_RAW"]
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              subPath: data
+              name: nextcloud-aio-database
+            - mountPath: /mnt/data
+              name: nextcloud-aio-database-dump
+      terminationGracePeriodSeconds: 1800
+      volumes:
+        - name: nextcloud-aio-database
+          persistentVolumeClaim:
+            claimName: nextcloud-aio-database
+        - name: nextcloud-aio-database-dump
+          persistentVolumeClaim:
+            claimName: nextcloud-aio-database-dump
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-fulltextsearch-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: nextcloud-aio-fulltextsearch
+  name: nextcloud-aio-fulltextsearch
+  namespace: "nextcloud"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: nextcloud-aio-fulltextsearch
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.version: 1.35.0 (9532ceef3)
+      labels:
+        io.kompose.service: nextcloud-aio-fulltextsearch
+    spec:
+      initContainers:
+        - name: init-volumes
+          image: ghcr.io/nextcloud-releases/aio-alpine:20250512_082954
+          command:
+            - chmod
+            - "777"
+            - /nextcloud-aio-elasticsearch
+          volumeMounts:
+            - name: nextcloud-aio-elasticsearch
+              mountPath: /nextcloud-aio-elasticsearch
+      containers:
+        - env:
+            - name: ES_JAVA_OPTS
+              value: "-Xms512M -Xmx512M"
+            - name: FULLTEXTSEARCH_PASSWORD
+              value: "abc"
+            - name: TZ
+              value: "Europe/Berlin"
+            - name: bootstrap.memory_lock
+              value: "true"
+            - name: cluster.name
+              value: nextcloud-aio
+            - name: discovery.type
+              value: single-node
+            - name: http.port
+              value: "9200"
+            - name: logger.org.elasticsearch.discovery
+              value: WARN
+            - name: xpack.license.self_generated.type
+              value: basic
+            - name: xpack.security.enabled
+              value: "false"
+          image: ghcr.io/nextcloud-releases/aio-fulltextsearch:20250512_082954
+          readinessProbe:
+            exec:
+              command:
+                - /healthcheck.sh
+            failureThreshold: 5
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            exec:
+              command:
+                - /healthcheck.sh
+            failureThreshold: 5
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+          name: nextcloud-aio-fulltextsearch
+          ports:
+            - containerPort: 9200
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /usr/share/elasticsearch/data
+              name: nextcloud-aio-elasticsearch
+      volumes:
+        - name: nextcloud-aio-elasticsearch
+          persistentVolumeClaim:
+            claimName: nextcloud-aio-elasticsearch
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-imaginary-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: nextcloud-aio-imaginary
+  name: nextcloud-aio-imaginary
+  namespace: "nextcloud"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: nextcloud-aio-imaginary
+  template:
+    metadata:
+      annotations:
+        kompose.version: 1.35.0 (9532ceef3)
+      labels:
+        io.kompose.service: nextcloud-aio-imaginary
+    spec:
+      securityContext:
+        # The items below only work in pod context
+        fsGroup: 65534
+        fsGroupChangePolicy: "OnRootMismatch"
+        # The items below work in both contexts
+        runAsUser: 65534
+        runAsGroup: 65534
+        runAsNonRoot: true
+      containers:
+        - env:
+            - name: IMAGINARY_SECRET
+              value: "abc"
+            - name: TZ
+              value: "Europe/Berlin"
+          image: ghcr.io/nextcloud-releases/aio-imaginary:20250512_082954
+          readinessProbe:
+            exec:
+              command:
+                - /healthcheck.sh
+            failureThreshold: 3
+            periodSeconds: 30
+            timeoutSeconds: 30
+          livenessProbe:
+            exec:
+              command:
+                - /healthcheck.sh
+            failureThreshold: 3
+            periodSeconds: 30
+            timeoutSeconds: 30
+          name: nextcloud-aio-imaginary
+          ports:
+            - containerPort: 9000
+              protocol: TCP
+          securityContext:
+            # The items below only work in container context
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["NET_RAW"]
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-nextcloud-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: nextcloud-aio-nextcloud
+  name: nextcloud-aio-nextcloud
+  namespace: "nextcloud"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: nextcloud-aio-nextcloud
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.version: 1.35.0 (9532ceef3)
+      labels:
+        io.kompose.service: nextcloud-aio-nextcloud
+    spec: # AIO-config - do not change this comment!
+# AIO settings start # Do not remove or change this line!
+      initContainers:
+        - name: init-volumes
+          image: ghcr.io/nextcloud-releases/aio-alpine:20250512_082954
+          command:
+            - chmod
+            - "777"
+            - /nextcloud-aio-nextcloud
+            - /nextcloud-aio-nextcloud-trusted-cacerts
+          volumeMounts:
+            - name: nextcloud-aio-nextcloud-trusted-cacerts
+              mountPath: /nextcloud-aio-nextcloud-trusted-cacerts
+            - name: nextcloud-aio-nextcloud
+              mountPath: /nextcloud-aio-nextcloud
+# AIO settings end # Do not remove or change this line!
+      containers:
+        - env:
+            - name: SMTP_HOST
+              value: ""
+            - name: SMTP_SECURE
+              value: ""
+            - name: SMTP_PORT
+              value: ""
+            - name: SMTP_AUTHTYPE
+              value: ""
+            - name: SMTP_NAME
+              value: ""
+            - name: SMTP_PASSWORD
+              value: ""
+            - name: MAIL_FROM_ADDRESS
+              value: ""
+            - name: MAIL_DOMAIN
+              value: ""
+            - name: SUBSCRIPTION_KEY
+              value: ""
+            - name: APPS_ALLOWLIST
+              value: ""
+            - name: ADDITIONAL_TRUSTED_PROXY
+              value: ""
+            - name: ADDITIONAL_TRUSTED_DOMAIN
+              value: ""
+            - name: SERVERINFO_TOKEN
+              value: ""
+            - name: NEXTCLOUD_DEFAULT_QUOTA
+              value: "10 GB"
+            - name: NEXTCLOUD_SKELETON_DIRECTORY
+              value: ""
+            - name: NEXTCLOUD_MAINTENANCE_WINDOW
+              value: ""
+            - name: ADDITIONAL_APKS
+              value: "imagemagick"
+            - name: ADDITIONAL_PHP_EXTENSIONS
+              value: "imagick"
+            - name: ADMIN_PASSWORD
+              value: "abc"
+            - name: ADMIN_USER
+              value: admin
+            - name: APACHE_HOST
+              value: nextcloud-aio-apache
+            - name: APACHE_PORT
+              value: "443"
+            - name: CLAMAV_ENABLED
+              value: "no"
+            - name: CLAMAV_HOST
+              value: nextcloud-aio-clamav
+            - name: CLAMAV_MAX_SIZE
+              value: "17179869184"
+            - name: COLLABORA_ENABLED
+              value: "yes"
+            - name: COLLABORA_HOST
+              value: nextcloud-aio-collabora
+            - name: FULLTEXTSEARCH_ENABLED
+              value: "yes"
+            - name: FULLTEXTSEARCH_HOST
+              value: nextcloud-aio-fulltextsearch
+            - name: FULLTEXTSEARCH_PASSWORD
+              value: "abc"
+            - name: IMAGINARY_ENABLED
+              value: "yes"
+            - name: IMAGINARY_HOST
+              value: nextcloud-aio-imaginary
+            - name: IMAGINARY_SECRET
+              value: "abc"
+            - name: INSTALL_LATEST_MAJOR
+              value: "false"
+            - name: NC_DOMAIN
+              value: "nextcloud-aio-apache.nextcloud.svc.cluster.local"
+            - name: NEXTCLOUD_DATA_DIR
+              value: /mnt/ncdata
+            - name: NEXTCLOUD_HOST
+              value: nextcloud-aio-nextcloud
+            - name: ONLYOFFICE_ENABLED
+              value: "yes"
+            - name: ONLYOFFICE_HOST
+              value: nextcloud-aio-onlyoffice
+            - name: ONLYOFFICE_SECRET
+              value: "abc"
+            - name: OVERWRITEPROTOCOL
+              value: https
+            - name: PHP_MAX_TIME
+              value: "3600"
+            - name: PHP_MEMORY_LIMIT
+              value: "512M"
+            - name: PHP_UPLOAD_LIMIT
+              value: "16G"
+            - name: POSTGRES_DB
+              value: nextcloud_database
+            - name: POSTGRES_HOST
+              value: nextcloud-aio-database
+            - name: POSTGRES_PASSWORD
+              value: "abc"
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_USER
+              value: nextcloud
+            - name: RECORDING_SECRET
+              value: "abc"
+            - name: REDIS_HOST
+              value: nextcloud-aio-redis
+            - name: REDIS_HOST_PASSWORD
+              value: "abc"
+            - name: REMOVE_DISABLED_APPS
+              value: "true"
+            - name: SIGNALING_SECRET
+              value: "abc"
+            - name: STARTUP_APPS
+              value: "deck twofactor_totp tasks calendar contacts notes"
+            - name: TALK_ENABLED
+              value: "yes"
+            - name: TALK_PORT
+              value: "3478"
+            - name: TALK_RECORDING_ENABLED
+              value: "no"
+            - name: TALK_RECORDING_HOST
+              value: nextcloud-aio-talk-recording
+            - name: TRUSTED_CACERTS_DIR
+              value: ""
+            - name: TURN_SECRET
+              value: "abc"
+            - name: TZ
+              value: "Europe/Berlin"
+            - name: UPDATE_NEXTCLOUD_APPS
+              value: "false"
+            - name: WHITEBOARD_ENABLED
+              value: "yes"
+            - name: WHITEBOARD_SECRET
+              value: "abc"
+          image: ghcr.io/nextcloud-releases/aio-nextcloud:20250512_082954 # AIO-config - do not change this comment!
+          readinessProbe:
+            exec:
+              command:
+                - /healthcheck.sh
+            failureThreshold: 3
+            periodSeconds: 30
+            timeoutSeconds: 30
+          livenessProbe:
+            exec:
+              command:
+                - /healthcheck.sh
+            failureThreshold: 3
+            periodSeconds: 30
+            timeoutSeconds: 30
+          name: nextcloud-aio-nextcloud
+          ports:
+            - containerPort: 9000
+              protocol: TCP
+            - containerPort: 9001
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /var/www/html
+              name: nextcloud-aio-nextcloud
+            - mountPath: /mnt/ncdata
+              name: nextcloud-aio-nextcloud-data
+            - mountPath: /usr/local/share/ca-certificates
+              name: nextcloud-aio-nextcloud-trusted-cacerts
+              readOnly: true
+      terminationGracePeriodSeconds: 600
+      volumes:
+        - name: nextcloud-aio-nextcloud
+          persistentVolumeClaim:
+            claimName: nextcloud-aio-nextcloud
+        - name: nextcloud-aio-nextcloud-data
+          persistentVolumeClaim:
+            claimName: nextcloud-aio-nextcloud-data
+        - name: nextcloud-aio-nextcloud-trusted-cacerts
+          persistentVolumeClaim:
+            claimName: nextcloud-aio-nextcloud-trusted-cacerts
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-notify-push-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: nextcloud-aio-notify-push
+  name: nextcloud-aio-notify-push
+  namespace: "nextcloud"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: nextcloud-aio-notify-push
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.version: 1.35.0 (9532ceef3)
+      labels:
+        io.kompose.service: nextcloud-aio-notify-push
+    spec:
+      securityContext:
+        # The items below only work in pod context
+        fsGroup: 33
+        fsGroupChangePolicy: "OnRootMismatch"
+        # The items below work in both contexts
+        runAsUser: 33
+        runAsGroup: 33
+        runAsNonRoot: true
+      containers:
+        - env:
+            - name: NC_DOMAIN
+              value: "nextcloud-aio-apache.nextcloud.svc.cluster.local"
+            - name: NEXTCLOUD_HOST
+              value: nextcloud-aio-nextcloud
+            - name: POSTGRES_DB
+              value: nextcloud_database
+            - name: POSTGRES_HOST
+              value: nextcloud-aio-database
+            - name: POSTGRES_PASSWORD
+              value: "abc"
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_USER
+              value: nextcloud
+            - name: REDIS_HOST
+              value: nextcloud-aio-redis
+            - name: REDIS_HOST_PASSWORD
+              value: "abc"
+            - name: TZ
+              value: "Europe/Berlin"
+          image: ghcr.io/nextcloud-releases/aio-notify-push:20250512_082954
+          readinessProbe:
+            exec:
+              command:
+                - /healthcheck.sh
+            failureThreshold: 3
+            periodSeconds: 30
+            timeoutSeconds: 30
+          livenessProbe:
+            exec:
+              command:
+                - /healthcheck.sh
+            failureThreshold: 3
+            periodSeconds: 30
+            timeoutSeconds: 30
+          name: nextcloud-aio-notify-push
+          ports:
+            - containerPort: 7867
+              protocol: TCP
+          securityContext:
+            # The items below only work in container context
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["NET_RAW"]
+          volumeMounts:
+            - mountPath: /nextcloud
+              name: nextcloud-aio-nextcloud
+              readOnly: true
+      volumes:
+        - name: nextcloud-aio-nextcloud
+          persistentVolumeClaim:
+            claimName: nextcloud-aio-nextcloud
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-onlyoffice-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: nextcloud-aio-onlyoffice
+  name: nextcloud-aio-onlyoffice
+  namespace: "nextcloud"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: nextcloud-aio-onlyoffice
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.version: 1.35.0 (9532ceef3)
+      labels:
+        io.kompose.service: nextcloud-aio-onlyoffice
+    spec:
+      initContainers:
+        - name: init-volumes
+          image: ghcr.io/nextcloud-releases/aio-alpine:20250512_082954
+          command:
+            - chmod
+            - "777"
+            - /nextcloud-aio-onlyoffice
+          volumeMounts:
+            - name: nextcloud-aio-onlyoffice
+              mountPath: /nextcloud-aio-onlyoffice
+      containers:
+        - env:
+            - name: JWT_ENABLED
+              value: "true"
+            - name: JWT_HEADER
+              value: AuthorizationJwt
+            - name: JWT_SECRET
+              value: "abc"
+            - name: TZ
+              value: "Europe/Berlin"
+          image: ghcr.io/nextcloud-releases/aio-onlyoffice:20250512_082954
+          readinessProbe:
+            exec:
+              command:
+                - /healthcheck.sh
+            failureThreshold: 9
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 30
+          livenessProbe:
+            exec:
+              command:
+                - /healthcheck.sh
+            failureThreshold: 9
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 30
+          name: nextcloud-aio-onlyoffice
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /var/lib/onlyoffice
+              name: nextcloud-aio-onlyoffice
+      volumes:
+        - name: nextcloud-aio-onlyoffice
+          persistentVolumeClaim:
+            claimName: nextcloud-aio-onlyoffice
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-redis-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: nextcloud-aio-redis
+  name: nextcloud-aio-redis
+  namespace: "nextcloud"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: nextcloud-aio-redis
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.version: 1.35.0 (9532ceef3)
+      labels:
+        io.kompose.service: nextcloud-aio-redis
+    spec:
+      securityContext:
+        # The items below only work in pod context
+        fsGroup: 999
+        fsGroupChangePolicy: "OnRootMismatch"
+        # The items below work in both contexts
+        runAsUser: 999
+        runAsGroup: 999
+        runAsNonRoot: true
+      containers:
+        - env:
+            - name: REDIS_HOST_PASSWORD
+              value: "abc"
+            - name: TZ
+              value: "Europe/Berlin"
+          image: ghcr.io/nextcloud-releases/aio-redis:20250512_082954
+          readinessProbe:
+            exec:
+              command:
+                - /healthcheck.sh
+            failureThreshold: 3
+            periodSeconds: 30
+            timeoutSeconds: 30
+          livenessProbe:
+            exec:
+              command:
+                - /healthcheck.sh
+            failureThreshold: 3
+            periodSeconds: 30
+            timeoutSeconds: 30
+          name: nextcloud-aio-redis
+          ports:
+            - containerPort: 6379
+              protocol: TCP
+          securityContext:
+            # The items below only work in container context
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["NET_RAW"]
+          volumeMounts:
+            - mountPath: /data
+              name: nextcloud-aio-redis
+      volumes:
+        - name: nextcloud-aio-redis
+          persistentVolumeClaim:
+            claimName: nextcloud-aio-redis
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-talk-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: nextcloud-aio-talk
+  name: nextcloud-aio-talk
+  namespace: "nextcloud"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: nextcloud-aio-talk
+  template:
+    metadata:
+      annotations:
+        kompose.version: 1.35.0 (9532ceef3)
+      labels:
+        io.kompose.service: nextcloud-aio-talk
+    spec:
+      securityContext:
+        # The items below only work in pod context
+        fsGroup: 1000
+        fsGroupChangePolicy: "OnRootMismatch"
+        # The items below work in both contexts
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+      containers:
+        - env:
+            - name: TALK_MAX_STREAM_BITRATE
+              value: "1048576"
+            - name: TALK_MAX_SCREEN_BITRATE
+              value: "2097152"
+            - name: INTERNAL_SECRET
+              value: "abc"
+            - name: NC_DOMAIN
+              value: "nextcloud-aio-apache.nextcloud.svc.cluster.local"
+            - name: SIGNALING_SECRET
+              value: "abc"
+            - name: TALK_HOST
+              value: nextcloud-aio-talk
+            - name: TALK_PORT
+              value: "3478"
+            - name: TURN_SECRET
+              value: "abc"
+            - name: TZ
+              value: "Europe/Berlin"
+          image: ghcr.io/nextcloud-releases/aio-talk:20250512_082954
+          readinessProbe:
+            exec:
+              command:
+                - /healthcheck.sh
+            failureThreshold: 3
+            periodSeconds: 30
+            timeoutSeconds: 30
+          livenessProbe:
+            exec:
+              command:
+                - /healthcheck.sh
+            failureThreshold: 3
+            periodSeconds: 30
+            timeoutSeconds: 30
+          name: nextcloud-aio-talk
+          ports:
+            - containerPort: 3478
+              protocol: TCP
+            - containerPort: 3478
+              protocol: UDP
+            - containerPort: 8081
+              protocol: TCP
+          securityContext:
+            # The items below only work in container context
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["NET_RAW"]
+---
+# Source: nextcloud-aio-helm-chart/templates/nextcloud-aio-whiteboard-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: nextcloud-aio-whiteboard
+  name: nextcloud-aio-whiteboard
+  namespace: "nextcloud"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: nextcloud-aio-whiteboard
+  template:
+    metadata:
+      annotations:
+        kompose.version: 1.35.0 (9532ceef3)
+      labels:
+        io.kompose.service: nextcloud-aio-whiteboard
+    spec:
+      securityContext:
+        # The items below only work in pod context
+        fsGroup: 65534
+        fsGroupChangePolicy: "OnRootMismatch"
+        # The items below work in both contexts
+        runAsUser: 65534
+        runAsGroup: 65534
+        runAsNonRoot: true
+      containers:
+        - env:
+            - name: BACKUP_DIR
+              value: /tmp
+            - name: JWT_SECRET_KEY
+              value: "abc"
+            - name: NEXTCLOUD_URL
+              value: https://nextcloud-aio-apache.nextcloud.svc.cluster.local
+            - name: REDIS_HOST
+              value: nextcloud-aio-redis
+            - name: REDIS_HOST_PASSWORD
+              value: "abc"
+            - name: STORAGE_STRATEGY
+              value: redis
+            - name: TZ
+              value: "Europe/Berlin"
+          image: ghcr.io/nextcloud-releases/aio-whiteboard:20250512_082954
+          readinessProbe:
+            exec:
+              command:
+                - /healthcheck.sh
+            failureThreshold: 3
+            periodSeconds: 30
+            timeoutSeconds: 30
+          livenessProbe:
+            exec:
+              command:
+                - /healthcheck.sh
+            failureThreshold: 3
+            periodSeconds: 30
+            timeoutSeconds: 30
+          name: nextcloud-aio-whiteboard
+          ports:
+            - containerPort: 3002
+              protocol: TCP
+          securityContext:
+            # The items below only work in container context
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["NET_RAW"]
