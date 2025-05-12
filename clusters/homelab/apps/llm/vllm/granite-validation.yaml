@@ -7,8 +7,8 @@ metadata:
 spec:
   config:
     sigstoreConfig:
-      certificateIdentity: "ben@klimlive.de"
-      certificateOidcIssuer: "https://github.com/login/oauth"
+      certificateIdentity: "nolear@redhat.com"
+      certificateOidcIssuer: "https://accounts.google.com"
   model:
     path: /root/.cache/huggingface/hub/models--ibm-granite--granite-3.3-2b-instruct/blobs
     signaturePath: /root/.cache/huggingface/hub/models--ibm-granite--granite-3.3-2b-instruct/model.sig
