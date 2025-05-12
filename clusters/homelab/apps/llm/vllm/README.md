@@ -107,3 +107,7 @@ The `custom-backup` folder contains a backup to restore the model.
 ```bash
 oc exec -it model-validation-debug-85848698fd-w9f25 -- sh -c 'cp /models/huggingface/hub/models--ibm-granite--granite-3.3-2b-instruct/custom-backup/b0d40f9bebc505fca54f7e1af51b6e755f2807a6 /models/huggingface/hub/models--ibm-granite--granite-3.3-2b-instruct/blobs/b0d40f9bebc505fca54f7e1af51b6e755f2807a6'
 ```
+
+## Presentation
+
+https://docs.google.com/presentation/d/191_9AGpNxtU8JNIQmHgN6DgyM3NV6doHdAhAnmLPjc8/edit#slide=id.p
