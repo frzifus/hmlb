@@ -19,6 +19,7 @@ spec:
         instrumentation.opentelemetry.io/inject-sdk: "true"
       labels:
         app: vllm
+        validation.rhtas.redhat.com/ml: "true"
     spec:
       affinity:
         nodeAffinity:
@@ -99,24 +100,24 @@ spec:
         ports:
         - containerPort: 8000
           protocol: TCP
-        # livenessProbe:
-        #   httpGet:
-        #     path: /health
-        #     port: 8000
-        #     scheme: HTTP
-        #   initialDelaySeconds: 120
-        #   periodSeconds: 30
-        #   timeoutSeconds: 5
-        #   failureThreshold: 30
-        # readinessProbe:
-        #   httpGet:
-        #     path: /health
-        #     port: 8000
-        #     scheme: HTTP
-        #   initialDelaySeconds: 120
-        #   periodSeconds: 30
-        #   timeoutSeconds: 5
-        #   failureThreshold: 30
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+            scheme: HTTP
+          initialDelaySeconds: 120
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 30
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+            scheme: HTTP
+          initialDelaySeconds: 120
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 30
         resources:
           requests:
             cpu: "50m"

@@ -1,0 +1,49 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: model-validation-debug
+  namespace: llm
+  labels:
+    app: model-validation-debug
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: model-validation-debug
+  template:
+    metadata:
+      annotations:
+        instrumentation.opentelemetry.io/inject-sdk: "true"
+      labels:
+        app: model-validation-debug
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: "gpu.intel.com/device-id.0300-56a0.present"
+                operator: "In"
+                values:
+                - "true"
+      containers:
+      - command: ["sleep", "36000"]
+        image: ghcr.io/sigstore/model-transparency-cli:v1.0.1
+        name: debug
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "1Gi"
+          limits:
+            cpu: "1000m"
+            memory: "2Gi"
+        volumeMounts:
+        - mountPath: /models
+          name: hf-cache
+      volumes:
+      - name: hf-cache
+        persistentVolumeClaim:
+          claimName: model-cache
