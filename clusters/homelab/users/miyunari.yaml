@@ -37,13 +37,13 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: nina-role
-  namespace: nina-testing
+  namespace: llm
 rules:
 - apiGroups: ["rhtas.redhat.com"]
   resources: ["modelvalidations"]
   verbs: ["get", "list", "create", "update", "patch", "delete"]
 - apiGroups: ["", "extensions", "apps", "networking.k8s.io"]
-  resources: ["pods", "pods/log", "pods/exec", "deployments", "replicasets", "statefulsets", "configmaps", "ingresses",  "persistentvolumeclaims"]
+  resources: ["pods", "pods/log", "pods/exec", "pods/portforward", "deployments", "services", "replicasets", "statefulsets", "configmaps", "ingresses",  "persistentvolumeclaims"]
   verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 - apiGroups: ["batch"]
   resources: ["jobs", "cronjobs"]
@@ -59,7 +59,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: nina-rolebinding
-  namespace: nina-testing
+  namespace: llm
 subjects:
 - kind: ServiceAccount
   name: nina
