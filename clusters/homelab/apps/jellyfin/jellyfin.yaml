@@ -26,7 +26,7 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: "gpu.intel.com/device-id.0300-56a0.present"
+              - key: "gpu.intel.com/device-id.0300-56a5.present"
                 operator: "In"
                 values:
                 - "true"
@@ -37,10 +37,9 @@ spec:
       - name: nfs-jellyfin-data
         persistentVolumeClaim:
           claimName: jellyfin-media-data
-      - name: cache
-        emptyDir:
-          medium: Memory
-          sizeLimit: 4Gi
+      - name: nfs-jellyfin-cache
+        persistentVolumeClaim:
+          claimName: jellyfin-transcode-cache
       containers:
       - env:
         - name: TZ
@@ -68,8 +67,8 @@ spec:
             cpu: "250m"
             memory: "1Gi"
           limits:
-            cpu: "3500m"
-            memory: "8Gi"
+            cpu: "4000m"
+            memory: "16Gi"
             gpu.intel.com/i915: 1
             # amd.com/gpu: 1
         stdin: true
@@ -79,8 +78,8 @@ spec:
           name: nfs-jellyfin-config
         - mountPath: /data
           name: nfs-jellyfin-data
-        - name: cache
-          mountPath: /cache
+        - mountPath: /cache
+          name: nfs-jellyfin-cache
       dnsPolicy: ClusterFirst
       restartPolicy: Always
 ---
