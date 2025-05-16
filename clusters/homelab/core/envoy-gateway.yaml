@@ -38,6 +38,8 @@ spec:
         name: envoy-gateway
       version: 1.3.3
   values:
+    deployment:
+      replicas: 9 # NOTE: match node count to avoid invalid dns entries.
     config:
       envoyGateway:
         extensionApis:
