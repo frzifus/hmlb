@@ -40,6 +40,21 @@ spec:
   values:
     deployment:
       replicas: 9 # NOTE: match node count to avoid invalid dns entries.
+      pod:
+        labels:
+          test: "true"
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                      - key: control-plane
+                        operator: In
+                        values:
+                          - envoy-gateway
+                  topologyKey: "kubernetes.io/hostname"
     config:
       envoyGateway:
         extensionApis:
