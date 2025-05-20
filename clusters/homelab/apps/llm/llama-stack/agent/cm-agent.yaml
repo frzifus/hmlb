@@ -60,13 +60,11 @@ data:
         top_p: Optional[float] = 0.9
         stop: Optional[List[str]] = None
 
-
     class CompletionChoice(BaseModel):
         text: str
         index: int
         logprobs: Optional[Any] = None
         finish_reason: str
-
 
     class CompletionResponse(BaseModel):
         id: str
@@ -75,12 +73,33 @@ data:
         model: str
         choices: List[CompletionChoice]
 
+    class ChatMessage(BaseModel):
+        role: Literal["system", "user", "assistant"]
+        content: str
+
+    class ChatCompletionRequest(BaseModel):
+        model: str
+        messages: List[ChatMessage]
+        temperature: Optional[float] = 1.0
+        top_p: Optional[float] = 0.9
+        max_tokens: Optional[int] = 256
+
+    class ChatCompletionChoice(BaseModel):
+        index: int
+        message: ChatMessage
+        finish_reason: str
+
+    class ChatCompletionResponse(BaseModel):
+        id: str
+        object: Literal["chat.completion"]
+        created: int
+        model: str
+        choices: List[ChatCompletionChoice]
 
     class ModelInfo(BaseModel):
         id: str
         object: Literal["model"] = "model"
         owned_by: str = "owner"
-
 
     class ModelList(BaseModel):
         object: Literal["list"]
@@ -177,6 +196,46 @@ data:
                 }
             ]
         }
+
+    @app.post("/v1/chat/completions", response_model=ChatCompletionResponse)
+    def chat_completions(request: ChatCompletionRequest):
+        if request.model != MODEL_ID:
+            raise HTTPException(status_code=404, detail="Model not found")
+
+        if not AGENT_INSTANCE or not AGENT_SESSION_ID:
+            raise HTTPException(status_code=500, detail="Agent not initialized")
+
+        try:
+            response = AGENT_INSTANCE.create_turn(
+                messages=[msg.dict() for msg in request.messages],
+                session_id=AGENT_SESSION_ID,
+                stream=False,
+            )
+
+            content = ""
+            if hasattr(response, "output_message"):
+                content = response.output_message.content
+
+            if not content:
+                raise ValueError("No response from assistant")
+
+        except Exception as e:
+            logger.exception("Chat completion error")
+            raise HTTPException(status_code=500, detail="Chat agent error")
+
+        return ChatCompletionResponse(
+            id="chatcmpl-1234",
+            object="chat.completion",
+            created=int(time.time()),
+            model=MODEL_ID,
+            choices=[
+                ChatCompletionChoice(
+                    index=0,
+                    message=ChatMessage(role="assistant", content=content.strip()),
+                    finish_reason="stop"
+                )
+            ]
+        )
 kind: ConfigMap
 metadata:
   name: llamastack-agent
