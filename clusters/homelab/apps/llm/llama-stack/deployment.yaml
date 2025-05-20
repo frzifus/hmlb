@@ -42,6 +42,11 @@ spec:
               value: 'http://vllm:8000/v1'
             - name: INFERENCE_MODEL
               value: 'vllm'
+            - name: TAVILY_SEARCH_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: tavily-search-api-secret
+                  key: TAVILY_SEARCH_API_KEY
             # - name: MILVUS_DB_PATH
             #   value: milvus.db
             # # NOTE: trace endpoint is

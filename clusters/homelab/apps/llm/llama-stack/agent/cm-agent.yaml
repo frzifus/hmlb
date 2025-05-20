@@ -8,11 +8,52 @@ data:
     import os
     import logging
     import time
+    import httpx
     from fastapi import FastAPI, HTTPException, Request, Header
     from pydantic import BaseModel, Field
     from typing import List, Optional, Literal, Dict, Any
     from llama_stack_client import LlamaStackClient, Agent, AgentEventLogger
     from llama_stack_client.lib.agents.client_tool import client_tool
+
+    from opentelemetry import trace
+    from opentelemetry.sdk.resources import Resource
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export import SimpleSpanProcessor
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+
+    from opentelemetry.propagate import inject
+    from opentelemetry.context import get_current
+    from opentelemetry.propagators.textmap import default_setter
+
+    from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+
+    app = FastAPI()
+
+    class OTelHttpxClient(httpx.Client):
+        def send(self, request, *args, **kwargs):
+            # Inject current trace context into the request headers
+            inject(request.headers, context=get_current(), setter=default_setter)
+            return super().send(request, *args, **kwargs)
+
+    http_client = OTelHttpxClient()
+
+    trace.set_tracer_provider(
+        TracerProvider(
+            resource=Resource.create({"service.name": "llamastack-agent"})
+        )
+    )
+
+    otlp_trace_exporter = OTLPSpanExporter( # NOTE: Testing backend.
+        endpoint="http://backend.observability.svc.cluster.local:4317",
+        insecure=True
+    )
+
+    trace.get_tracer_provider().add_span_processor(
+        SimpleSpanProcessor(otlp_trace_exporter)
+    )
+
+    tracer = trace.get_tracer(__name__)
+
 
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
@@ -110,7 +151,7 @@ data:
 
         host = os.getenv("LLAMA_HOST", "localhost")
         port = int(os.getenv("LLAMA_PORT", 8080))
-        client = LlamaStackClient(base_url=f"http://{host}:{port}")
+        client = LlamaStackClient(base_url=f"http://{host}:{port}", http_client=http_client)
 
         available_models = [
             model.identifier
@@ -129,7 +170,7 @@ data:
                 "strategy": {"type": "top_p", "temperature": 1.0, "top_p": 0.9},
             },
             #tools=[],
-            tools=[calculator],
+            tools=[calculator, "builtin::websearch"],
         )
 
         session_id = agent.create_session("openai-compatible-session")
@@ -198,44 +239,53 @@ data:
         }
 
     @app.post("/v1/chat/completions", response_model=ChatCompletionResponse)
-    def chat_completions(request: ChatCompletionRequest):
-        if request.model != MODEL_ID:
-            raise HTTPException(status_code=404, detail="Model not found")
+    def chat_completions(request: ChatCompletionRequest, raw_request: Request):
+        with tracer.start_as_current_span("agent.chat_completions") as span:
+            # https://opentelemetry.io/docs/specs/semconv/attributes-registry/http/
+            for header_name, header_value in raw_request.headers.items():
+                span.set_attribute(f"http.request.header.{header_name}", header_value)
 
-        if not AGENT_INSTANCE or not AGENT_SESSION_ID:
-            raise HTTPException(status_code=500, detail="Agent not initialized")
+            if request.model != MODEL_ID:
+                raise HTTPException(status_code=404, detail="Model not found")
 
-        try:
-            response = AGENT_INSTANCE.create_turn(
-                messages=[msg.dict() for msg in request.messages],
-                session_id=AGENT_SESSION_ID,
-                stream=False,
+            if not AGENT_INSTANCE or not AGENT_SESSION_ID:
+                raise HTTPException(status_code=500, detail="Agent not initialized")
+
+            try:
+                # Trace the agent's create_turn method
+                with tracer.start_as_current_span("agent.create_turn"):
+                    response = AGENT_INSTANCE.create_turn(
+                        messages=[msg.dict() for msg in request.messages],
+                        session_id=AGENT_SESSION_ID,
+                        stream=False,
+                    )
+
+                content = ""
+                if hasattr(response, "output_message"):
+                    content = response.output_message.content
+
+                if not content:
+                    raise ValueError("No response from assistant")
+
+            except Exception as e:
+                logger.exception("Chat completion error")
+                raise HTTPException(status_code=500, detail="Chat agent error")
+
+            return ChatCompletionResponse(
+                id="chatcmpl-1234",
+                object="chat.completion",
+                created=int(time.time()),
+                model=MODEL_ID,
+                choices=[
+                    ChatCompletionChoice(
+                        index=0,
+                        message=ChatMessage(role="assistant", content=content.strip()),
+                        finish_reason="stop"
+                    )
+                ]
             )
 
-            content = ""
-            if hasattr(response, "output_message"):
-                content = response.output_message.content
-
-            if not content:
-                raise ValueError("No response from assistant")
-
-        except Exception as e:
-            logger.exception("Chat completion error")
-            raise HTTPException(status_code=500, detail="Chat agent error")
-
-        return ChatCompletionResponse(
-            id="chatcmpl-1234",
-            object="chat.completion",
-            created=int(time.time()),
-            model=MODEL_ID,
-            choices=[
-                ChatCompletionChoice(
-                    index=0,
-                    message=ChatMessage(role="assistant", content=content.strip()),
-                    finish_reason="stop"
-                )
-            ]
-        )
+    FastAPIInstrumentor.instrument_app(app)
 kind: ConfigMap
 metadata:
   name: llamastack-agent
