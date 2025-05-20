@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: python-agent
-        image: python:3.11-slim
+        image: python:3.13-slim
         # command: ["sleep", "infinity"]
         command:
           - /bin/sh
