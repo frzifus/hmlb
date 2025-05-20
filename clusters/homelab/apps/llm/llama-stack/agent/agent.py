@@ -1,133 +1,176 @@
 #!/usr/bin/env python3
 
-import os
-import fire
-from termcolor import colored
-from llama_stack_client import LlamaStackClient, Agent, AgentEventLogger
+# kubectl create configmap llamastack-agent --from-file=agent.py
 
-# Set up logging for the calculator tool
+import os
 import logging
+import time
+from fastapi import FastAPI, HTTPException, Request, Header
+from pydantic import BaseModel, Field
+from typing import List, Optional, Literal, Dict, Any
+from llama_stack_client import LlamaStackClient, Agent, AgentEventLogger
 from llama_stack_client.lib.agents.client_tool import client_tool
 
-logging.basicConfig(level=logging.WARNING)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def check_model_is_available(client: LlamaStackClient, model: str):
-    available_models = [
-        model.identifier
-        for model in client.models.list()
-        if model.model_type == "llm" and "guard" not in model.identifier
-    ]
+app = FastAPI(title="OpenAI-Compatible LlamaStack API", version="1.0")
 
-    if model not in available_models:
-        print(
-            colored(
-                f"Model `{model}` not found. Available models:\n\n{available_models}\n",
-                "red",
-            )
-        )
-        return False
-
-    return True
-
-
-def get_any_available_model(client: LlamaStackClient):
-    available_models = [
-        model.identifier
-        for model in client.models.list()
-        if model.model_type == "llm" and "guard" not in model.identifier
-    ]
-    if not available_models:
-        print(colored("No available models.", "red"))
-        return None
-
-    return available_models[0]
+MODEL_ID = "vllm"
+AGENT_SESSION_ID = None
+AGENT_INSTANCE = None
 
 @client_tool
 def calculator(x: float, y: float, operation: str) -> dict:
-    """Simple calculator tool that performs basic math operations.
-
-    :param x: First number to perform operation on
-    :param y: Second number to perform operation on
-    :param operation: Mathematical operation to perform ('add', 'subtract', 'multiply', 'divide')
-    :returns: Dictionary containing success status and result or error message
     """
-    logger.debug(f"Calculator called with: x={x}, y={y}, operation={operation}")
+    Perform a basic arithmetic operation on two numbers.
+
+    :param x: First number
+    :param y: Second number
+    :param operation: The operation to perform: 'add', 'subtract', 'multiply', or 'divide'
+    :returns: A dictionary with keys 'success' and either 'result' or 'error'
+    """
+    print(f"Call calculator: {x} {operation}, {y}", file=sys.stdout, flush=True)
     try:
         if operation == "add":
-            result = float(x) + float(y)
+            result = x + y
         elif operation == "subtract":
-            result = float(x) - float(y)
+            result = x - y
         elif operation == "multiply":
-            result = float(x) * float(y)
+            result = x * y
         elif operation == "divide":
-            if float(y) == 0:
+            if y == 0:
                 return {"success": False, "error": "Cannot divide by zero"}
-            result = float(x) / float(y)
+            result = x / y
         else:
             return {"success": False, "error": "Invalid operation"}
 
-        logger.debug(f"Calculator result: {result}")
         return {"success": True, "result": result}
     except Exception as e:
-        logger.error(f"Calculator error: {str(e)}")
         return {"success": False, "error": str(e)}
 
-def main(host: str, port: int, model_id: str | None = None):
+class CompletionRequest(BaseModel):
+    model: str
+    prompt: str
+    max_tokens: Optional[int] = 256
+    temperature: Optional[float] = 1.0
+    top_p: Optional[float] = 0.9
+    stop: Optional[List[str]] = None
+
+
+class CompletionChoice(BaseModel):
+    text: str
+    index: int
+    logprobs: Optional[Any] = None
+    finish_reason: str
+
+
+class CompletionResponse(BaseModel):
+    id: str
+    object: Literal["text_completion"]
+    created: int
+    model: str
+    choices: List[CompletionChoice]
+
+
+class ModelInfo(BaseModel):
+    id: str
+    object: Literal["model"] = "model"
+    owned_by: str = "owner"
+
+
+class ModelList(BaseModel):
+    object: Literal["list"]
+    data: List[ModelInfo]
+
+def initialize_agent():
+    global AGENT_INSTANCE, AGENT_SESSION_ID
+
+    host = os.getenv("LLAMA_HOST", "localhost")
+    port = int(os.getenv("LLAMA_PORT", 8080))
     client = LlamaStackClient(base_url=f"http://{host}:{port}")
 
-    api_key = ""
-    engine = "tavily"
-    if "TAVILY_SEARCH_API_KEY" in os.environ:
-        api_key = os.getenv("TAVILY_SEARCH_API_KEY")
-    elif "BRAVE_SEARCH_API_KEY" in os.environ:
-        api_key = os.getenv("BRAVE_SEARCH_API_KEY")
-        engine = "brave"
-    else:
-        print(
-            colored(
-                "Warning: TAVILY_SEARCH_API_KEY or BRAVE_SEARCH_API_KEY is not set; Web search will not work",
-                "yellow",
-            )
-        )
+    available_models = [
+        model.identifier
+        for model in client.models.list()
+        if model.model_type == "llm" and "guard" not in model.identifier
+    ]
 
-    if model_id is None:
-        model_id = get_any_available_model(client)
-        if model_id is None:
-            return
-    else:
-        if not check_model_is_available(client, model_id):
-            return
+    if MODEL_ID not in available_models:
+        raise RuntimeError(f"Model `{MODEL_ID}` not found in {available_models}")
 
     agent = Agent(
         client,
-        model=model_id,
-        instructions="You are a helpful assistant. Use the tools you have access to for providing relevant answers.",
+        model=MODEL_ID,
+        instructions="You are a helpful assistant. Use tools when necessary.",
         sampling_params={
             "strategy": {"type": "top_p", "temperature": 1.0, "top_p": 0.9},
         },
-        tools=[
-            calculator,
-        ],
+        #tools=[],
+        tools=[calculator],
     )
-    session_id = agent.create_session("test-session")
-    print(f"Created session_id={session_id} for Agent({agent.agent_id})")
 
-    user_prompts = [
-        "What is 40+30?",
-        "What is 100 divided by 4?",
-        "What is 50 multiplied by 2?"
-    ]
-    for prompt in user_prompts:
-        print(colored(f"User> {prompt}", "cyan"))
-        response = agent.create_turn(
-            messages=[{"role": "user", "content": prompt}],
-            session_id=session_id,
-        )
+    session_id = agent.create_session("openai-compatible-session")
+    AGENT_INSTANCE = agent
+    AGENT_SESSION_ID = session_id
+    logger.info(f"Initialized agent with model {MODEL_ID} and session {session_id}")
 
-        for log in AgentEventLogger().log(response):
-            log.print()
+@app.on_event("startup")
+def on_startup():
+    initialize_agent()
 
+@app.get("/v1/models", response_model=ModelList)
+def get_models():
+    return ModelList(object="list", data=[ModelInfo(id=MODEL_ID)])
 
-if __name__ == "__main__":
-    fire.Fire(main)
+@app.post("/v1/completions")
+def completions(request: CompletionRequest):
+    if request.model != MODEL_ID:
+        raise HTTPException(status_code=404, detail="Model not found")
+
+    if not AGENT_INSTANCE or not AGENT_SESSION_ID:
+        raise HTTPException(status_code=500, detail="Agent not initialized")
+
+    messages = request.prompt if isinstance(request.prompt, list) else [request.prompt]
+
+    response = AGENT_INSTANCE.create_turn(
+        messages=[{"role": "user", "content": m} for m in messages],
+        session_id=AGENT_SESSION_ID,
+        stream=False,
+    )
+
+    print(f"Response from agent: {response}")
+    content = ""
+
+    try:
+        if hasattr(response, "output_message"):
+            content = response.output_message.content
+        elif hasattr(response, "steps") and len(response.steps) > 0:
+            step = response.steps[0]
+            if hasattr(step, "api_model_response"):
+                content = step.api_model_response.content
+
+        if not content:
+            raise HTTPException(status_code=500, detail="No assistant response received")
+
+    except Exception as e:
+        print(f"Error while processing the log: {e}")
+        raise HTTPException(status_code=500, detail="Error processing the log")
+
+    if not content:
+        raise HTTPException(status_code=500, detail="No assistant response received")
+
+    return {
+        "id": "cmpl-1234",
+        "object": "text_completion",
+        "created": int(time.time()),
+        "model": MODEL_ID,
+        "choices": [
+            {
+                "text": content.strip(),
+                "index": 0,
+                "logprobs": None,
+                "finish_reason": "stop"
+            }
+        ]
+    }

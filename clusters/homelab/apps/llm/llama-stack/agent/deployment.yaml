@@ -1,0 +1,45 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llamastack-agent
+  namespace: llm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: llamastack-agent
+  template:
+    metadata:
+      labels:
+        app: llamastack-agent
+    spec:
+      containers:
+      - name: python-agent
+        image: python:3.11-slim
+        # command: ["sleep", "infinity"]
+        command:
+          - /bin/sh
+          - -c
+          - |
+            pip install \
+              uvicorn llama-stack-client fastapi pydantic\
+              'opentelemetry-sdk>=1.26.0,<1.27.0' \
+              'opentelemetry-api>=1.26.0,<1.27.0' \
+              'opentelemetry-exporter-otlp>=1.26.0,<1.27.0' \
+              'opentelemetry-semantic-conventions-ai>=0.4.1,<0.5.0'
+            cd /home
+            uvicorn agent:app --host 0.0.0.0 --port 8000 --log-level debug
+        env:
+        - name: LLAMA_HOST
+          value: "llamastack"
+        - name: LLAMA_PORT
+          value: "8321"
+        volumeMounts:
+        - name: agent-src
+          mountPath: /home/agent.py
+          subPath: agent.py
+      volumes:
+      - name: agent-src
+        configMap:
+          name: llamastack-agent
