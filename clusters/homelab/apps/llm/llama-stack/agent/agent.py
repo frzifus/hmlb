@@ -58,6 +58,12 @@ logger = logging.getLogger(__name__)
 app = FastAPI(title="OpenAI-Compatible LlamaStack API", version="1.0")
 
 MODEL_ID = "vllm"
+
+# Mapping for user-facing model name to internal model identifier
+MODEL_ALIAS_MAP = {
+    "agent": MODEL_ID  # "agent" is exposed, but internally it's always "vllm"
+}
+
 AGENT_SESSION_ID = None
 AGENT_INSTANCE = None
 
@@ -181,14 +187,18 @@ def on_startup():
 
 @app.get("/v1/models", response_model=ModelList)
 def get_models():
-    return ModelList(object="list", data=[ModelInfo(id=MODEL_ID)])
+    return ModelList(
+        object="list",
+        data=[ModelInfo(id=alias) for alias in MODEL_ALIAS_MAP.keys()]
+    )
 
 @app.post("/v1/completions")
 def completions(request: CompletionRequest):
-    if request.model != MODEL_ID:
+    internal_model = MODEL_ALIAS_MAP.get(request.model)
+    if not internal_model:
         raise HTTPException(status_code=404, detail="Model not found")
 
-    if not AGENT_INSTANCE or not AGENT_SESSION_ID:
+    if internal_model != MODEL_ID or not AGENT_INSTANCE or not AGENT_SESSION_ID:
         raise HTTPException(status_code=500, detail="Agent not initialized")
 
     messages = request.prompt if isinstance(request.prompt, list) else [request.prompt]
@@ -242,10 +252,11 @@ def chat_completions(request: ChatCompletionRequest, raw_request: Request):
         for header_name, header_value in raw_request.headers.items():
             span.set_attribute(f"http.request.header.{header_name}", header_value)
 
-        if request.model != MODEL_ID:
+        internal_model = MODEL_ALIAS_MAP.get(request.model)
+        if not internal_model:
             raise HTTPException(status_code=404, detail="Model not found")
 
-        if not AGENT_INSTANCE or not AGENT_SESSION_ID:
+        if internal_model != MODEL_ID or not AGENT_INSTANCE or not AGENT_SESSION_ID:
             raise HTTPException(status_code=500, detail="Agent not initialized")
 
         try:
