@@ -42,6 +42,8 @@ spec:
               value: "8888"
             - name: ATUIN_OPEN_REGISTRATION
               value: "true"
+            - name: RUST_LOG
+              value: info,atuin_server=debug
           image: ghcr.io/atuinsh/atuin:v18.6.1
           name: atuin
           ports:
