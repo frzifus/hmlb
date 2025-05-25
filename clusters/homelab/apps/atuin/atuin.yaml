@@ -1,0 +1,76 @@
+---
+# atuin login -s https://atuin.overseer.work
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: atuin
+  namespace: atuin
+spec:
+  strategy:
+    type: Recreate
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: atuin
+  template:
+    metadata:
+      labels:
+        io.kompose.service: atuin
+    spec:
+      initContainers:
+        - name: fix-perms
+          image: busybox
+          command: ["sh", "-c", "chmod 777 /config"]
+          volumeMounts:
+            - name: atuin-claim0
+              mountPath: /config
+      containers:
+        - args:
+            - server
+            - start
+          env:
+            - name: ATUIN_DB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: atuin-secrets
+                  key: ATUIN_DB_URI
+                  optional: false
+            - name: ATUIN_HOST
+              value: 0.0.0.0
+            - name: ATUIN_PORT
+              value: "8888"
+            - name: ATUIN_OPEN_REGISTRATION
+              value: "true"
+          image: ghcr.io/atuinsh/atuin:v18.6.1
+          name: atuin
+          ports:
+            - containerPort: 8888
+          resources:
+            limits:
+              cpu: 250m
+              memory: 1Gi
+            requests:
+              cpu: 250m
+              memory: 1Gi
+          volumeMounts:
+            - mountPath: /config
+              name: atuin-claim0
+      volumes:
+        - name: atuin-claim0
+          persistentVolumeClaim:
+            claimName: atuin-claim0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: atuin
+  name: atuin
+  namespace: atuin
+spec:
+  ports:
+    - name: "8888"
+      port: 8888
+  selector:
+    io.kompose.service: atuin
