@@ -1,0 +1,35 @@
+apiVersion: v1
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Benedikt Bongartz – Links</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <meta name="description" content="Links to my profiles: GitHub, Mastodon, Matrix, LinkedIn" />
+    </head>
+    <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+      <div class="bg-white shadow-xl rounded-2xl p-8 max-w-md text-center space-y-6">
+        <img src="https://avatars.githubusercontent.com/u/10403402?v=4" alt="Avatar" class="w-24 h-24 mx-auto rounded-full shadow-lg border-4 border-white">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-800">Benedikt Bongartz</h1>
+          <p class="text-gray-500">Software Developer • Open Source Enthusiast • Privacy Advocate</p>
+        </div>
+        <div class="space-y-3">
+          <a href="https://github.com/frzifus" target="_blank" class="w-full block bg-gray-900 text-white py-2 rounded-lg hover:bg-gray-800 transition">GitHub</a>
+          <a href="https://fosstodon.org/@frzifus" target="_blank" rel="me" class="w-full block bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-500 transition">Mastodon</a>
+          <a href="https://matrix.to/#/@frzifus:matrix.org" target="_blank" class="w-full block bg-green-600 text-white py-2 rounded-lg hover:bg-green-500 transition">Matrix</a>
+          <a href="https://www.linkedin.com/in/benedikt-b-b11788192/" target="_blank" class="w-full block bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-500 transition">LinkedIn</a>
+        </div>
+      </div>
+    </body>
+    </html>
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2025-05-27T11:39:00Z"
+  name: klimlive-html
+  namespace: ext-klimlive
+  resourceVersion: "46015502"
+  uid: c3f283f6-86d4-4915-b014-6c5503df378e
