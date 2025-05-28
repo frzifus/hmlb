@@ -67,7 +67,7 @@ spec:
             - name: cache
               mountPath: /.cache
           terminationMessagePolicy: File
-          image: 'llamastack/distribution-remote-vllm:0.2.7'
+          image: 'llamastack/distribution-remote-vllm:0.2.8'
           args:
             - '--config'
             - /app-config/config.yaml
