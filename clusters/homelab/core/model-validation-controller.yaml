@@ -10,9 +10,9 @@ metadata:
   namespace: model-validation-controller
 spec:
   interval: 5m
-  url: https://github.com/miyunari/model-validation-controller
+  url: https://github.com/sigstore/model-validation-operator
   ref:
-    branch: main
+    tag: v1.0.1
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
