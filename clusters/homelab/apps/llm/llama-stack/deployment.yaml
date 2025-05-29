@@ -34,8 +34,6 @@ spec:
           terminationMessagePath: /dev/termination-log
           name: llamastack
           env:
-            - name: VLLM_TLS_VERIFY
-              value: 'false'
             - name: VLLM_MAX_TOKENS
               value: '2048'
             - name: VLLM_URL

@@ -27,7 +27,7 @@ data:
           url: ${env.VLLM_URL:http://localhost:8000/v1}
           max_tokens: ${env.VLLM_MAX_TOKENS:2048}
           api_token: ${env.VLLM_API_TOKEN:fake}
-          tls_verify: ${env.VLLM_TLS_VERIFY:true}
+          tls_verify: false
       - provider_id: sentence-transformers
         provider_type: inline::sentence-transformers
         config: {}
@@ -52,6 +52,10 @@ data:
             type: sqlite
             namespace: null
             db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/agents_store.db
+          responses_store:
+            type: sqlite
+            namespace: null
+            db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/remote-vllm}/responses_store.db
       eval:
       - provider_id: meta-reference
         provider_type: inline::meta-reference
@@ -140,5 +144,9 @@ data:
       provider_id: rag-runtime
     - toolgroup_id: builtin::wolfram_alpha
       provider_id: wolfram-alpha
+    - toolgroup_id: mcp::opentelemetry
+      provider_id: model-context-protocol
+      mcp_endpoint:
+        uri: "http://mcp-otel-operator:8000/sse"
     server:
       port: 8321

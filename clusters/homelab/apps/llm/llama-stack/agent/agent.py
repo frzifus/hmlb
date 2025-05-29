@@ -192,59 +192,6 @@ def get_models():
         data=[ModelInfo(id=alias) for alias in MODEL_ALIAS_MAP.keys()]
     )
 
-@app.post("/v1/completions")
-def completions(request: CompletionRequest):
-    internal_model = MODEL_ALIAS_MAP.get(request.model)
-    if not internal_model:
-        raise HTTPException(status_code=404, detail="Model not found")
-
-    if internal_model != MODEL_ID or not AGENT_INSTANCE or not AGENT_SESSION_ID:
-        raise HTTPException(status_code=500, detail="Agent not initialized")
-
-    messages = request.prompt if isinstance(request.prompt, list) else [request.prompt]
-
-    response = AGENT_INSTANCE.create_turn(
-        messages=[{"role": "user", "content": m} for m in messages],
-        session_id=AGENT_SESSION_ID,
-        stream=False,
-    )
-
-    print(f"Response from agent: {response}")
-    content = ""
-
-    try:
-        if hasattr(response, "output_message"):
-            content = response.output_message.content
-        elif hasattr(response, "steps") and len(response.steps) > 0:
-            step = response.steps[0]
-            if hasattr(step, "api_model_response"):
-                content = step.api_model_response.content
-
-        if not content:
-            raise HTTPException(status_code=500, detail="No assistant response received")
-
-    except Exception as e:
-        print(f"Error while processing the log: {e}")
-        raise HTTPException(status_code=500, detail="Error processing the log")
-
-    if not content:
-        raise HTTPException(status_code=500, detail="No assistant response received")
-
-    return {
-        "id": "cmpl-1234",
-        "object": "text_completion",
-        "created": int(time.time()),
-        "model": MODEL_ID,
-        "choices": [
-            {
-                "text": content.strip(),
-                "index": 0,
-                "logprobs": None,
-                "finish_reason": "stop"
-            }
-        ]
-    }
-
 @app.post("/v1/chat/completions", response_model=ChatCompletionResponse)
 def chat_completions(request: ChatCompletionRequest, raw_request: Request):
     with tracer.start_as_current_span("agent.chat_completions") as span:
@@ -260,10 +207,19 @@ def chat_completions(request: ChatCompletionRequest, raw_request: Request):
             raise HTTPException(status_code=500, detail="Agent not initialized")
 
         try:
+            logger.info(f"All incoming messages: {[msg.dict() for msg in request.messages]}")
+            agent_messages = [
+                {"role": "user", "content": msg.content}
+                for msg in request.messages
+                if msg.role == "user"
+            ]
+
+            if not agent_messages:
+                raise HTTPException(status_code=400, detail="No user message found.")
             # Trace the agent's create_turn method
             with tracer.start_as_current_span("agent.create_turn"):
                 response = AGENT_INSTANCE.create_turn(
-                    messages=[msg.dict() for msg in request.messages],
+                    messages=agent_messages,
                     session_id=AGENT_SESSION_ID,
                     stream=False,
                 )
