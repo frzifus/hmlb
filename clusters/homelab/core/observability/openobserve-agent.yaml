@@ -1,0 +1,36 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: openobserve
+  namespace: observability
+spec:
+  url: https://charts.openobserve.ai
+  interval: 10m
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: o2c
+  namespace: observability
+spec:
+  releaseName: o2c
+  chart:
+    spec:
+      chart: openobserve-collector
+      sourceRef:
+        kind: HelmRepository
+        name: openobserve
+        namespace: observability
+  interval: 15m
+  values: # TODO: testing
+    k8sCluster: homelab
+    exporters:
+      "otlphttp/openobserve":
+        endpoint: http://openobserve:5080/api/default
+        headers:
+          Authorization: "Basic cm9vdEBleGFtcGxlLmNvbTpMMjBBemhjR1FWU2djd2dv"
+      "otlphttp/openobserve_k8s_events":
+        endpoint: http://openobserve:5080/api/default
+        headers:
+          Authorization: "Basic cm9vdEBleGFtcGxlLmNvbTpMMjBBemhjR1FWU2djd2dv"
