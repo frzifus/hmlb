@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: fewo
-  namespace: fewo
+  namespace: ext-fewo
   labels:
     app: fewo
 spec:

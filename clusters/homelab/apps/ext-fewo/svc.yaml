@@ -3,7 +3,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: fewo
-  namespace: fewo
+  namespace: ext-fewo
 spec:
   selector:
     app: fewo
@@ -17,12 +17,13 @@ apiVersion: v1
 kind: Service
 metadata:
   name: fewo-monitoring
-  namespace: fewo
+  namespace: ext-fewo
 spec:
   selector:
     app: fewo
   ports:
-    - protocol: TCP
+    - name: http-metrics
+      protocol: TCP
       port: 2000
       targetPort: 2000
   type: ClusterIP
