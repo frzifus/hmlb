@@ -1,0 +1,111 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openobserve
+  namespace: observability
+  labels:
+    app: openobserve
+spec:
+  strategy:
+    type: Recreate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openobserve
+  template:
+    metadata:
+      labels:
+        app: openobserve
+    spec:
+      containers:
+      - name: openobserve
+        image: public.ecr.aws/zinclabs/openobserve:v0.14.7
+        ports:
+        - containerPort: 5080
+        env: # TODO: reroll
+        - name: ZO_ROOT_USER_EMAIL
+          value: "root@example.com"
+        - name: ZO_ROOT_USER_PASSWORD
+          value: "Complexpass#123"
+        volumeMounts:
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: openobserve
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: openobserve
+  namespace: observability
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openobserve
+  namespace: observability
+spec:
+  selector:
+    app: openobserve
+  ports:
+  - protocol: TCP
+    port: 5080
+    targetPort: 5080
+  type: ClusterIP
+---
+# apiVersion: v1
+# kind: Service
+# metadata:  # NOTE: backwards compatibility
+#   name: backend
+#   namespace: observability
+# spec:
+#   selector:
+#     app.kubernetes.io/component: opentelemetry-collector
+#     app.kubernetes.io/instance: observability.o2c-openobserve-collector-gateway
+#     app.kubernetes.io/managed-by: opentelemetry-operator
+#     app.kubernetes.io/part-of: opentelemetry
+#   ports:
+#     - name: otel-grpc
+#       protocol: TCP
+#       port: 4317
+#       targetPort: 4317
+#     - name: otel-http
+#       protocol: TCP
+#       port: 4318
+#       targetPort: 4318
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: observability
+  namespace: observability
+spec:
+  hostnames:
+  - observability.overseer.work
+  parentRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: services
+    namespace: infra
+    sectionName: main
+  rules:
+  - backendRefs:
+    - group: ""
+      kind: Service
+      name: backend
+      port: 5080
+      weight: 1
+    matches:
+    - path:
+        type: PathPrefix
+        value: /
+
