@@ -5,5 +5,5 @@ kind: Kustomization
 resources:
   - grafana-dashboards.yaml
   - lgtm.yaml
-  - agent.yaml
+#  - agent.yaml
   - target-allocator.yaml
