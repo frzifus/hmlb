@@ -90,7 +90,7 @@ spec:
       namespace: infra
       sectionName: main
   hostnames: [
-    "llm.overseer.work"
+    "llm.klimlive.de"
   ]
   rules:
     - backendRefs:

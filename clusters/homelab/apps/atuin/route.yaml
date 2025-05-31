@@ -10,7 +10,7 @@ spec:
       namespace: infra
       sectionName: main
   hostnames: [
-  "atuin.overseer.work"
+  "atuin.klimlive.de"
   ]
   rules:
     - backendRefs:

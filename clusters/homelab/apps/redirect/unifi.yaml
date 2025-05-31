@@ -86,7 +86,7 @@ metadata:
   namespace: redirect
 spec:
   hostnames:
-  - unifi.overseer.work
+  - unifi.klimlive.de
   parentRefs:
   - group: gateway.networking.k8s.io
     kind: Gateway

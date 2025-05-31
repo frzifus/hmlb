@@ -57,7 +57,7 @@ spec:
       namespace: infra
       sectionName: main
   hostnames: [
-    "valetudo.overseer.work"
+    "valetudo.klimlive.de"
   ]
   rules:
     - backendRefs:

@@ -670,7 +670,7 @@ spec:
       namespace: infra
       sectionName: main
   hostnames: [
-    "nzbget.overseer.work"
+    "nzbget.klimlive.de"
   ]
   rules:
     - backendRefs:

@@ -77,7 +77,7 @@ spec:
       namespace: infra
       sectionName: main
   hostnames: [
-    "jellyseerr.overseer.work"
+    "jellyseerr.klimlive.de"
   ]
   rules:
     - backendRefs:

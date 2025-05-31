@@ -90,7 +90,7 @@ metadata:
   namespace: observability
 spec:
   hostnames:
-  - observability.overseer.work
+  - observability.klimlive.de
   parentRefs:
   - group: gateway.networking.k8s.io
     kind: Gateway

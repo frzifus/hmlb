@@ -129,7 +129,7 @@ spec:
       namespace: infra
       sectionName: main
   hostnames: [
-  "jellyfin.overseer.work"
+  "jellyfin.klimlive.de"
   ]
   rules:
     - backendRefs:
