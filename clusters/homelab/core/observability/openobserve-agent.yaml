@@ -27,10 +27,6 @@ spec:
     k8sCluster: homelab
     exporters:
       "otlphttp/openobserve":
-        endpoint: http://openobserve:5080/api/default
-        headers:
-          Authorization: "Basic cm9vdEBleGFtcGxlLmNvbTpMMjBBemhjR1FWU2djd2dv"
+        endpoint: http://backend:4318/
       "otlphttp/openobserve_k8s_events":
-        endpoint: http://openobserve:5080/api/default
-        headers:
-          Authorization: "Basic cm9vdEBleGFtcGxlLmNvbTpMMjBBemhjR1FWU2djd2dv"
+        endpoint: http://backend:4318/
