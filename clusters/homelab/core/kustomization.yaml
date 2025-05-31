@@ -17,4 +17,4 @@ resources:
   - metallb/config.yaml
   - nginx-ingress.yaml
   - observability/operator.yaml
-  - observability/config.yaml
+  #- observability/config.yaml
