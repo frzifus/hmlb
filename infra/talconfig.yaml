@@ -1,6 +1,6 @@
 ---
 clusterName: homelab
-talosVersion: v1.9.4
+talosVersion: v1.10.3
 endpoint: https://192.168.5.2:6443
 allowSchedulingOnMasters: true
 additionalApiServerCertSans:
@@ -47,26 +47,23 @@ patches:
 # schematic:
 #   customization:
 #     systemExtensions:
-#       officialExtensions:
-#         - siderolabs/iscsi-tools
-#         - siderolabs/util-linux-tool
-#         - siderolabs/amd-ucode
-#         - siderolabs/amdgpu
-#         - siderolabs/i915
-#         - siderolabs/intel-ucode
-#         - siderolabs/mei
-#         - siderolabs/qemu-guest-agent
-#         - siderolabs/tailscale
+#         officialExtensions:
+#             - siderolabs/amdgpu
+#             - siderolabs/gvisor
+#             - siderolabs/i915
+#             - siderolabs/intel-ucode
+#             - siderolabs/mei
+#             - siderolabs/tailscale
 
 controlPlane:
-  talosImageURL: factory.talos.dev/installer-secureboot/d1dcbd874be717cf1c5706bbe5c102bce507a1041f997d06f70dffc0556fe3a4
+  talosImageURL: factory.talos.dev/installer-secureboot/ec5a345a9a57a94b4271f600874fc8b9a0ea87e3148c50472fe806e1ab23b1d7
   extensionServices:
     - name: tailscale
       environment:
         - TS_AUTHKEY=${tsAuth}
 
 worker:
-  talosImageURL: factory.talos.dev/installer-secureboot/d1dcbd874be717cf1c5706bbe5c102bce507a1041f997d06f70dffc0556fe3a4
+  talosImageURL: factory.talos.dev/installer-secureboot/ec5a345a9a57a94b4271f600874fc8b9a0ea87e3148c50472fe806e1ab23b1d7
   extensionServices:
     - name: tailscale
       environment:
@@ -160,11 +157,11 @@ nodes:
     installDisk: /dev/nvme0n1
     controlPlane: false
   - hostname: gpu1
-    ipAddress: 192.168.5.11
+    ipAddress: 192.168.5.7 # TODO
     installDisk: /dev/sda
     controlPlane: false
   - hostname: gpu2
-    ipAddress: 192.168.5.12
+    ipAddress: 192.168.1.140 # TODO
     installDisk: /dev/nvme0n1
     controlPlane: false
     patches:
