@@ -51,6 +51,10 @@ spec:
         mayastor:
           enabled: true
     mayastor:
+      loki:
+        enabled: false
+      alloy:
+        enabled: false
       csi:
         node:
           # currently necessary because the init container checks for nvmeof module but Talos compiles it in
