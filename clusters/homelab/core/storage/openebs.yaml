@@ -35,12 +35,8 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: openebs
-      version: 4.3.2
+      version: 4.2.0
   values:
-    loki:
-      enabled: false
-    alloy:
-      enabled: false
     engines:
       local:
         lvm:
@@ -51,10 +47,6 @@ spec:
         mayastor:
           enabled: true
     mayastor:
-      loki:
-        enabled: false
-      alloy:
-        enabled: false
       csi:
         node:
           # currently necessary because the init container checks for nvmeof module but Talos compiles it in
@@ -68,9 +60,12 @@ spec:
         # It's the automatic mode, in the DPDK code IOVA_MODE_DC, that causes issues.
         # Confirmed by EAL debug log output that this really selects VA
         envcontext: "iova-mode=va"
+      loki-stack:
+        enabled: false
       obs:
         callhome:
           enabled: false
       storageClass:
         # we can't override reclaimPolicy so just make the classes explicit in base-config
         enabled: false
+
