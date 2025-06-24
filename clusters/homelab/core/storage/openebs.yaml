@@ -37,6 +37,10 @@ spec:
         name: openebs
       version: 4.3.2
   values:
+    loki:
+      enabled: false
+    alloy:
+      enabled: false
     engines:
       local:
         lvm:
@@ -60,10 +64,6 @@ spec:
         # It's the automatic mode, in the DPDK code IOVA_MODE_DC, that causes issues.
         # Confirmed by EAL debug log output that this really selects VA
         envcontext: "iova-mode=va"
-      loki:
-        enabled: false
-      alloy:
-        enabled: false
       obs:
         callhome:
           enabled: false
