@@ -35,8 +35,12 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: openebs
-      version: 4.2.0
+      version: 4.3.2
   values:
+    alloy:
+      enabled: false
+    loki:
+      enabled: false
     engines:
       local:
         lvm:
@@ -47,6 +51,8 @@ spec:
         mayastor:
           enabled: true
     mayastor:
+      alloy:
+        enabled: false
       csi:
         node:
           # currently necessary because the init container checks for nvmeof module but Talos compiles it in
