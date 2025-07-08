@@ -13,6 +13,8 @@ spec:
       app: llamastack-playground
   template:
     metadata:
+      annotations:
+        instrumentation.opentelemetry.io/inject-python: "true"
       labels:
         app: llamastack-playground
     spec:
@@ -22,7 +24,9 @@ spec:
         image: quay.io/jland/llama-stack-playground:v0.2.12
         ports:
         - containerPort: 8501
-
+        env:
+          - name: LLAMA_STACK_ENDPOINT
+            value: "http://llamastack:8321"
 ---
 apiVersion: v1
 kind: Service
@@ -37,3 +41,24 @@ spec:
     port: 8501
     targetPort: 8501
   type: ClusterIP
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: llamastack-playground
+  namespace: llm
+spec:
+  parentRefs:
+    - name: services
+      namespace: infra
+      sectionName: main
+  hostnames: [
+    "llamastack.klimlive.de"
+  ]
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: llamastack-playground
+          port: 8501
+

@@ -16,7 +16,7 @@ spec:
   template:
     metadata:
       annotations:
-        instrumentation.opentelemetry.io/inject-sdk: "true"
+        instrumentation.opentelemetry.io/inject-python: "true"
       labels:
         app: llamastack
     spec:

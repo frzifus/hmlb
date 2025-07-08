@@ -3,6 +3,7 @@ apiVersion: opentelemetry.io/v1alpha1
 kind: Instrumentation
 metadata:
   name: central
+  namespace: llm
 spec:
   exporter:
     endpoint: http://backend.observability.svc.cluster.local:4317
@@ -12,3 +13,7 @@ spec:
   propagators:
     - tracecontext
     - baggage
+  python:
+    env:
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://backend.observability.svc.cluster.local:4318
