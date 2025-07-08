@@ -19,7 +19,7 @@ spec:
       containers:
       - name: llamastack-playground
         # NOTE: is configured manually.
-        image: quay.io/jland/llama-stack-playground:0.1.9
+        image: quay.io/jland/llama-stack-playground:v0.2.12
         ports:
         - containerPort: 8501
 
