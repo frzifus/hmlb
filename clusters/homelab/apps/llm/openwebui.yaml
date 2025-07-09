@@ -40,17 +40,13 @@ spec:
             - name: ENABLE_WEBSOCKET_SUPPORT
               value: "0"
             - name: OPENAI_API_BASE_URL
-              value: "http://vllm:8000/v1"
+              value: "http://llamastack:8321/v1/openai/v1"
             - name: OPENAI_API_KEY
               value: "fake"
             - name: ENABLE_OLLAMA_API
               value: "false"
             - name: ENABLE_OTEL
               value: "true"
-            - name: ENABLE_RAG_WEB_SEARCH
-              value: "true"
-            - name: RAG_WEB_SEARCH_ENGINE
-              value: "duckduckgo"
           volumeMounts:
             - mountPath: /app/backend/data
               name: open-webui-data
