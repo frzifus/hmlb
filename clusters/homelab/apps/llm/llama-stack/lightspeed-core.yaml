@@ -81,6 +81,43 @@ spec:
             seccompProfile:
               type: RuntimeDefault
 ---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: lightspeed-core-egress
+  namespace: llm
+spec:
+  podSelector:
+    matchLabels:
+      app: lightspeed-core
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: observability
+          podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 4317
+        - protocol: TCP
+          port: 4318
+
+    - to:
+        - podSelector:
+            matchLabels:
+              app: llamastack
+      ports:
+        - protocol: TCP
+          port: 8321
+
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -95,3 +132,122 @@ spec:
       targetPort: 8080
       protocol: TCP
   type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: lightspeed-ui-egress
+  namespace: llm
+spec:
+  podSelector:
+    matchLabels:
+      app: lightspeed-ui
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: observability
+          podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 4317
+        - protocol: TCP
+          port: 4318
+
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: lightspeed-ui
+  namespace: llm
+spec:
+  selector:
+    matchLabels:
+      app: lightspeed-ui
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        instrumentation.opentelemetry.io/inject-nodejs: "true"
+      labels:
+        app: lightspeed-ui
+    spec:
+      containers:
+      - name: lightspeed-ui
+        image: ghcr.io/frzifus/lightspeed-ui:0.0.4
+        volumeMounts:
+        - name: tmp-dir
+          mountPath: /tmp
+        ports:
+          - containerPort: 8080
+            protocol: TCP
+        env:
+          - name: API_BASE_URL
+            value: 'http://lightspeed-core:8080'
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          seccompProfile:
+            type: RuntimeDefault
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: tmp-dir
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lightspeed-ui
+  namespace: llm
+spec:
+  selector:
+    app: lightspeed-ui
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: lightspeed-core
+  namespace: llm
+spec:
+  parentRefs:
+    - name: services
+      namespace: infra
+      sectionName: main
+  hostnames:
+    - "lightspeed-core.klimlive.de"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /v1
+      backendRefs:
+        - kind: Service
+          name: lightspeed-core
+          port: 8080
+
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - kind: Service
+          name: lightspeed-ui
+          port: 8080
