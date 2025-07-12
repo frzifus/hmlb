@@ -1,4 +1,23 @@
 ---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: valetudo-egress-to-local-network
+  namespace: redirect
+spec:
+  podSelector:
+    matchLabels:
+      app: valetudo
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 192.168.3.96/32
+      ports:
+      - protocol: TCP
+        port: 80
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
