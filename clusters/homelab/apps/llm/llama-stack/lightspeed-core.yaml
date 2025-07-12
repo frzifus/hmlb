@@ -1,0 +1,97 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lightspeed-core
+  namespace: llm
+data:
+  lightspeed-stack.yaml: |
+    name: core
+    service:
+      host: 0.0.0.0
+      port: 8080
+      auth_enabled: false
+      workers: 1
+      color_log: true
+      access_log: true
+    llama_stack:
+      # Uses a remote llama-stack service
+      # The instance would have already been started with a llama-stack-run.yaml file
+      use_as_library_client: false
+      # Alternative for "as library use"
+      # use_as_library_client: true
+      # library_client_config_path: <path-to-llama-stack-run.yaml-file>
+      url: http://llamastack:8321
+      api_key: fake
+    user_data_collection:
+      feedback_disabled: false
+      feedback_storage: "/tmp/data/feedback"
+      transcripts_disabled: false
+      transcripts_storage: "/tmp/data/transcripts"
+    authentication:
+      module: "noop"
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: lightspeed-core
+  namespace: llm
+spec:
+  selector:
+    matchLabels:
+      app: lightspeed-core
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        instrumentation.opentelemetry.io/inject-python: "true"
+      labels:
+        app: lightspeed-core
+    spec:
+      volumes:
+        - name: run-config-volume
+          configMap:
+            name: lightspeed-core
+            defaultMode: 420
+      containers:
+        - resources: {}
+          name: lightspeed-core
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          volumeMounts:
+            - name: run-config-volume
+              mountPath: /app-config
+          image: 'quay.io/lightspeed-core/lightspeed-stack:dev-20250708-8e24e8b'
+          args:
+            - 'python3.12'
+            - 'src/lightspeed_stack.py'
+            - '-c'
+            - /app-config/lightspeed-stack.yaml
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lightspeed-core
+  namespace: llm
+spec:
+  selector:
+    app: lightspeed-core
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+  type: ClusterIP
