@@ -44,7 +44,7 @@ spec:
               value: "true"
             - name: RUST_LOG
               value: info,atuin_server=debug
-          image: ghcr.io/atuinsh/atuin:v18.6.1
+          image: ghcr.io/atuinsh/atuin:v18.7.1
           name: atuin
           ports:
             - containerPort: 8888
