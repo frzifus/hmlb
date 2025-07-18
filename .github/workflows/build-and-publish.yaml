@@ -62,7 +62,7 @@ jobs:
           registry: ghcr.io
 
       - name: Install Cosign
-        uses: sigstore/cosign-installer@v3.9.1
+        uses: sigstore/cosign-installer@v3.9.2
 
       - name: Sign the images with GitHub OIDC Token
         env:
