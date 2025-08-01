@@ -16,6 +16,10 @@ COPY ./etc/yum.repos.d/tailscale.repo /etc/yum.repos.d/tailscale.repo
 #     firefox \
 #     firefox-langpacks
 
+COPY ./etc/yum.repos.d/google-cloud-sdk.repo /etc/yum.repos.d/google-cloud-sdk.repo
+
+RUN dnf install -y libxcrypt-compat google-cloud-cli npm
+
 # https://github.com/fedora-silverblue/issue-tracker/issues/430
 RUN mkdir -p /etc/alternatives && mkdir -p /var/lib/alternatives
 
