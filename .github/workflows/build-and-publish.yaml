@@ -40,7 +40,7 @@ jobs:
           oci: false
 
       - id: docker_meta
-        uses: docker/metadata-action@v5.7.0
+        uses: docker/metadata-action@v5.8.0
         with:
           images: ${{ steps.build_image.outputs.image }}
           tags: type=sha,format=long,type=ref,event=branch
