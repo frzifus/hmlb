@@ -1,7 +1,7 @@
 # Based on https://github.com/apnar/docker-image-nfs-ganesha
 # Based on https://github.com/vasilev/docker-image-nfs-ganesha
 
-FROM debian:12-slim
+FROM debian:13-slim
 
 LABEL org.opencontainers.image.source=https://github.com/frzifus/ccm/images/ganesha-nfs
 
