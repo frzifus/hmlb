@@ -27,7 +27,7 @@ spec:
         kind: HelmRepository
         name: ingress-nginx
         namespace: flux-system
-      version: "4.13.1"
+      version: "4.13.2"
   dependsOn:
     - name: metallb
       namespace: metallb-system
