@@ -1,0 +1,17 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: galabau-cloudflared
+  namespace: ext-galabau
+spec:
+  selector:
+    matchLabels:
+      app: galabau
+  namespaceSelector:
+    matchNames:
+    - galabau
+  endpoints:
+  - port: http-metrics
+    path: /metrics
+    interval: 15s

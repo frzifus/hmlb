@@ -1,0 +1,49 @@
+---
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: default-deny-egress
+  namespace: ext-galabau
+spec:
+  endpointSelector: {}
+  egress: []
+---
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: restrict-egress-and-internal-access
+  namespace: ext-galabau
+spec:
+  endpointSelector: {}
+
+  egress:
+  - toEntities:
+      - world
+    toPorts:
+    - ports:
+        - port: "443"
+          protocol: TCP
+        - port: "7844"
+          protocol: TCP
+        - port: "7844"
+          protocol: UDP
+  - toEntities:
+      - all
+    toPorts:
+      - ports:
+          - port: "53"
+            protocol: UDP
+          - port: "53"
+            protocol: TCP
+
+  - toServices:
+      - k8sService:
+          namespace: observability
+          serviceName: backend
+    toPorts:
+    - ports:
+        - port: "4318"
+          protocol: TCP
+      rules:
+        http:
+          - method: "POST"
