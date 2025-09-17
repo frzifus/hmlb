@@ -36,7 +36,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: envoy-gateway
-      version: 1.5.0
+      version: 1.5.1
   values:
     deployment:
       replicas: 9 # NOTE: match node count to avoid invalid dns entries.
