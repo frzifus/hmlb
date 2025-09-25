@@ -32,7 +32,7 @@ spec:
         kind: HelmRepository
         name: open-telemetry
         namespace: observability
-      version: "0.95.1"
+      version: "0.95.2"
   dependsOn:
     - name: cert-manager
       namespace: cert-manager
