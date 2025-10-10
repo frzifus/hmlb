@@ -31,7 +31,7 @@ spec:
                 - "true"
       containers:
       - command: ["sleep", "36000"]
-        image: ghcr.io/sigstore/model-transparency-cli:v1.0.1
+        image: ghcr.io/sigstore/model-transparency-cli:v1.1.1
         name: debug
         resources:
           requests:
