@@ -39,7 +39,7 @@ spec:
             drop:
               - ALL
       - name: cloudflared
-        image: cloudflare/cloudflared:2025.9.1
+        image: cloudflare/cloudflared:2025.10.0
         args:
           - tunnel
           - --no-autoupdate
