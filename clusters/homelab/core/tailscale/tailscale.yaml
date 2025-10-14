@@ -31,7 +31,7 @@ spec:
         kind: HelmRepository
         name: tailscale
         namespace: tailscale
-      version: "1.88.3"
+      version: "1.88.4"
   interval: 1h
   # install:
   #   createNamespace: true
