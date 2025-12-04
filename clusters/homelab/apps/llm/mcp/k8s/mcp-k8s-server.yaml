@@ -1,0 +1,97 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: mcp-k8s-server
+  labels:
+    app: mcp-k8s-server
+spec:
+  selector:
+    matchLabels:
+      app: mcp-k8s-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mcp-k8s-server
+        deployment: mcp-k8s-server
+    spec:
+      serviceAccountName: mcp-k8s-server-sa
+      containers:
+      - name: mcp-k8s-server
+        image: ghcr.io/frzifus/kubernetes-mcp-server:latest
+        ports:
+          - containerPort: 8080
+            protocol: TCP
+        command: ["./kubernetes-mcp-server"]
+        args: ["--sse-port", "8080"]
+        resources: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-k8s-server
+  labels:
+    app: mcp-k8s-server
+spec:
+  selector:
+    app: mcp-k8s-server
+    deployment: mcp-k8s-server
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mcp-k8s-server-sa
+  namespace: llm
+  labels:
+    app: mcp-k8s-server
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: mcp-k8s-server-readonly
+  labels:
+    app: mcp-k8s-server
+rules:
+  - apiGroups: [""]
+    resources: ["events", "pods", "pods/log", "services", "endpoints", "configmaps", "namespaces", "nodes", "nodes/stats", "persistentvolumes", "persistentvolumeclaims"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "daemonsets", "statefulsets", "replicasets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["batch"]
+    resources: ["jobs", "cronjobs"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["networkpolicies", "ingresses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["roles", "rolebindings", "clusterroles", "clusterrolebindings"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["metrics.k8s.io"]
+    resources: ["nodes", "pods"]
+    verbs: ["get", "list"]
+  - apiGroups: ["apps.openshift.io"]
+    resources: ["deploymentconfigs"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["route.openshift.io"]
+    resources: ["routes"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: mcp-k8s-server-readonly-binding
+  labels:
+    app: mcp-k8s-server
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: mcp-k8s-server-readonly
+subjects:
+  - kind: ServiceAccount
+    name: mcp-k8s-server-sa
+    namespace: llm
