@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llamastack-proxy
+  namespace: llm
+  labels:
+    app: llamastack-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: llamastack-proxy
+  template:
+    metadata:
+      labels:
+        app: llamastack-proxy
+      annotations:
+        instrumentation.opentelemetry.io/inject-sdk: "true"
+    spec:
+      containers:
+      - name: proxy
+        image: ghcr.io/frzifus/llamastack-proxy:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8322
+          name: http
+          protocol: TCP
+        env:
+        - name: LLAMASTACK_URL
+          valueFrom:
+            configMapKeyRef:
+              name: llamastack-proxy-config
+              key: llamastack-url
+        - name: PROXY_PORT
+          value: "8322"
+        - name: ENABLE_SMART_TOOL_FILTERING
+          value: "true"
+        - name: TOOLS_BLACKLIST
+          value: "pods_exec,pods_delete,pods_run,resources_create_or_update,resources_delete,helm_install,helm_uninstall,nodes_log"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8322
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8322
+          initialDelaySeconds: 3
+          periodSeconds: 5
+          timeoutSeconds: 2
+          failureThreshold: 3
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"

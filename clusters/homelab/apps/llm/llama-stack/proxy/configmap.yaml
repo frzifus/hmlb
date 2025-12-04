@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: llamastack-proxy-config
+  namespace: llm
+data:
+  llamastack-url: "http://llamastack.llm.svc.cluster.local:8321"
