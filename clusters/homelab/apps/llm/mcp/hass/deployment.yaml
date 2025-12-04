@@ -1,0 +1,49 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-proxy-hass
+  namespace: llm
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: mcp-proxy-hass
+  template:
+    metadata:
+      labels:
+        app: mcp-proxy-hass
+    spec:
+      containers:
+        - name: mcp-proxy
+          image: ghcr.io/frzifus/mcp-proxy-hass:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              name: sse
+              protocol: TCP
+          env:
+            - name: HA_URL
+              valueFrom:
+                secretKeyRef:
+                  name: hass-mcp-secret
+                  key: HA_URL
+            - name: HA_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: hass-mcp-secret
+                  key: HA_TOKEN
+          args:
+            - "--port=8080"
+            - "--host=0.0.0.0"
+            - "--pass-environment"
+            - "hass-mcp"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
