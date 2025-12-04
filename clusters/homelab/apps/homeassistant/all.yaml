@@ -1,0 +1,89 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: homeassistant
+  labels:
+    gateway.infra.services/allow-routes: "true"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: home-assistant
+  namespace: homeassistant
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 512Mi
+  storageClassName: openebs-crucial
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: home-assistant
+  namespace: homeassistant
+  labels:
+    app: home-assistant
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: home-assistant
+  template:
+    metadata:
+      labels:
+        app: home-assistant
+    spec:
+      containers:
+        - name: home-assistant
+          image: "ghcr.io/home-assistant/home-assistant:stable"
+          securityContext:
+            privileged: false
+          ports:
+            - containerPort: 8123
+          volumeMounts:
+            - mountPath: /config
+              name: home-assistant-config-volume
+      volumes:
+        - name: home-assistant-config-volume
+          persistentVolumeClaim:
+            claimName: home-assistant
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  namespace: homeassistant
+  labels:
+    app: web
+spec:
+  ports:
+    - port: 8123
+      targetPort: 8123
+      name: home-assistant-web
+  selector:
+    app: home-assistant
+  type: ClusterIP
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: homeassistant
+  namespace: homeassistant
+spec:
+  parentRefs:
+    - name: services
+      namespace: infra
+      sectionName: main
+  hostnames: [
+  "homeassistant.klimlive.de"
+  ]
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: web
+          port: 8123
+
