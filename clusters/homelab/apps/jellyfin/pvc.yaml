@@ -26,21 +26,7 @@ spec:
   volumeMode: Filesystem
   resources:
     requests:
-      storage: 5Gi
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: inter-downloads-and-history
-  namespace: jellyfin
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 250Gi
-  volumeMode: Filesystem
-  storageClassName: openebs-cache
+      storage: 20Gi
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
