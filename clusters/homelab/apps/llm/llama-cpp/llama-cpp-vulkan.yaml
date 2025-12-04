@@ -1,0 +1,85 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llama-cpp-intel
+  labels:
+    app: llama-cpp
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: llama-cpp
+  template:
+    metadata:
+      labels:
+        app: llama-cpp
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: "gpu.intel.com/device-id.0300-56a0.present"
+                operator: In
+                values:
+                - "true"
+      containers:
+      - name: llama-cpp
+        image: ghcr.io/ggml-org/llama.cpp:full-vulkan-b6852
+        imagePullPolicy: IfNotPresent
+        command: ["/app/llama-server"]
+        args:
+          - "--host"
+          - "0.0.0.0"
+          - "--metrics"
+          - "--ctx-size"
+          - "30720"
+          - "--jinja"
+          - "-ub"
+          - "512"
+          - "-b"
+          - "512"
+          - "-hf"
+          - "ggml-org/gemma-3n-E4B-it-GGUF:Q8_0"
+        ports:
+        - containerPort: 8080
+          name: http
+        resources:
+          requests:
+            cpu: "2"
+            memory: "12Gi"
+          limits:
+            cpu: "2"
+            memory: "12Gi"
+            gpu.intel.com/i915: "1"
+        volumeMounts:
+        - name: models
+          mountPath: /root/.cache/llama.cpp
+      volumes:
+      - name: models
+        persistentVolumeClaim:
+          claimName: llama-models-pvc
+      tolerations:
+      - key: "gpu.intel.com/i915"
+        operator: "Exists"
+        effect: "NoSchedule"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: llama-cpp
+  labels:
+    app: llama-cpp
+spec:
+  selector:
+    app: llama-cpp
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+
