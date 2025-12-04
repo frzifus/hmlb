@@ -1,0 +1,88 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: comfyui
+  namespace: llm
+  labels:
+    app: comfyui
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: comfyui
+  template:
+    metadata:
+      annotations:
+        instrumentation.opentelemetry.io/inject-sdk: "true"
+      labels:
+        app: comfyui
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: "gpu.intel.com/device-id.0300-56a0.present"
+                operator: "In"
+                values:
+                - "true"
+      containers:
+      - args: ["--name", "comfy-server"]
+        env:
+        - name: ComfyArgs
+          value: "--listen=0.0.0.0"
+        - name: HUGGING_FACE_HUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              key: HF_TOKEN
+              name: huggingface-secret
+        image: ghcr.io/frzifus/ipex-arc-comfy:f44f8d0
+        name: comfy
+        ports:
+        - containerPort: 8188
+          protocol: TCP
+        # livenessProbe:
+        #   httpGet:
+        #     path: /health
+        #     port: 8000
+        #     scheme: HTTP
+        #   initialDelaySeconds: 120
+        #   periodSeconds: 30
+        #   timeoutSeconds: 5
+        #   failureThreshold: 30
+        # readinessProbe:
+        #   httpGet:
+        #     path: /health
+        #     port: 8000
+        #     scheme: HTTP
+        #   initialDelaySeconds: 120
+        #   periodSeconds: 30
+        #   timeoutSeconds: 5
+        #   failureThreshold: 30
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "1Gi"
+            gpu.intel.com/i915: 1
+          limits:
+            cpu: "2500m"
+            memory: "12Gi"
+            gpu.intel.com/i915: 1
+        volumeMounts:
+        - mountPath: /root/.cache
+          name: hf-cache
+        - mountPath: /root/.triton
+          name: triton
+        - mountPath: /.config
+          name: config
+      volumes:
+      - name: hf-cache
+        persistentVolumeClaim:
+          claimName: model-cache
+      - emptyDir: {}
+        name: triton
+      - emptyDir: {}
+        name: config
