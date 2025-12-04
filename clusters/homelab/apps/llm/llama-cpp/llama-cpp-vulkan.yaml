@@ -36,24 +36,25 @@ spec:
           - "0.0.0.0"
           - "--metrics"
           - "--ctx-size"
-          - "30720"
+          - "64000"
           - "--jinja"
           - "-ub"
-          - "512"
+          - "1024"
           - "-b"
           - "512"
+          - "--no-mmap"
           - "-hf"
-          - "ggml-org/gemma-3n-E4B-it-GGUF:Q8_0"
+          - "ggml-org/gemma-3-12b-it-qat-GGUF:Q4_0"
         ports:
         - containerPort: 8080
           name: http
         resources:
           requests:
             cpu: "2"
-            memory: "12Gi"
+            memory: "13Gi"
           limits:
             cpu: "2"
-            memory: "12Gi"
+            memory: "13Gi"
             gpu.intel.com/i915: "1"
         volumeMounts:
         - name: models
