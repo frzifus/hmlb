@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ambient-code
+  annotations:
+    app.kubernetes.io/name: ambient-code
+    app.kubernetes.io/part-of: ambient-code
+  labels:
+    gateway.infra.services/allow-routes: "true"
+    ambient-code.io/managed: "true"
+    app: vteam
+    kubernetes.io/metadata.name: ambient-code
+    name: ambient-code
+
