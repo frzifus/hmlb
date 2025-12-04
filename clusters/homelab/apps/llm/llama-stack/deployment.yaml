@@ -35,11 +35,12 @@ spec:
           name: llamastack
           env:
             - name: VLLM_MAX_TOKENS
-              value: '2048'
+              #value: '32768'
+              value: '64000'
             - name: VLLM_URL
-              value: 'http://vllm:8000/v1'
+              value: 'http://llama-cpp:8080/v1'
             - name: INFERENCE_MODEL
-              value: 'vllm'
+              value: '/root/.cache/llama.cpp/ggml-org_gemma-3-12b-it-qat-GGUF_gemma-3-12b-it-qat-Q4_0.gguf'
             - name: TAVILY_SEARCH_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -49,7 +50,7 @@ spec:
             #   value: milvus.db
             # # NOTE: trace endpoint is
             - name: CUSTOM_OTEL_TRACE_ENDPOINT
-              value: 'http://backend.observability.svc.cluster.local:4318/v1/traces'
+              value: 'http://backend-collector.observability.svc.cluster.local:4318/v1/traces'
             - name: TELEMETRY_SINKS
               value: 'otel_trace'
           ports:

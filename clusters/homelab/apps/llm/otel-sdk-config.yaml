@@ -16,4 +16,4 @@ spec:
   python:
     env:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://backend.observability.svc.cluster.local:4318
+        value: http://backend-collector.observability.svc.cluster.local:4318

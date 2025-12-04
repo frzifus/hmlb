@@ -37,15 +37,15 @@ spec:
           ports:
             - containerPort: 8080
           env:
-            - name: ENABLE_WEBSOCKET_SUPPORT
-              value: "0"
             - name: OPENAI_API_BASE_URL
               value: "http://llamastack:8321/v1/openai/v1"
             - name: OPENAI_API_KEY
               value: "fake"
-            - name: ENABLE_OLLAMA_API
-              value: "false"
             - name: ENABLE_OTEL
+              value: "true"
+            - name: ENABLE_OTEL_METRICS
+              value: "true"
+            - name: OTEL_EXPORTER_OTLP_INSECURE
               value: "true"
           volumeMounts:
             - mountPath: /app/backend/data
