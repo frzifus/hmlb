@@ -38,6 +38,7 @@ type ToolCache struct {
 	toolGroups        []ToolGroupInfo
 	toolsByGroup      map[string][]LlamaStackTool
 	allTools          []LlamaStackTool
+	toolToGroup       map[string]string // Maps tool name to toolgroup_id
 	lastRefresh       time.Time
 	enableSmartFilter bool
 	explicitGroups    []string
@@ -57,7 +58,7 @@ type ToolGroupsResponse struct {
 	Data []ToolGroupInfo `json:"data"`
 }
 
-// LlamaStack Tool structures
+// LlamaStack Tool structures (updated for v0.3.4 API)
 type ToolParameter struct {
 	Name          string      `json:"name"`
 	ParameterType string      `json:"parameter_type"`
@@ -66,15 +67,26 @@ type ToolParameter struct {
 	Default       interface{} `json:"default"`
 }
 
+// InputSchema represents the JSON Schema for tool inputs
+type InputSchema struct {
+	Type       string                 `json:"type"`
+	Properties map[string]interface{} `json:"properties"`
+	Required   []string               `json:"required"`
+}
+
 type LlamaStackTool struct {
-	Identifier         string          `json:"identifier"`
-	ProviderResourceID *string         `json:"provider_resource_id"`
-	ProviderID         string          `json:"provider_id"`
-	Type               string          `json:"type"`
-	ToolGroupID        string          `json:"toolgroup_id"`
-	Description        string          `json:"description"`
-	Parameters         []ToolParameter `json:"parameters"`
-	Metadata           interface{}     `json:"metadata"`
+	Name        string       `json:"name"`          // Changed from 'identifier' in v0.3.4
+	ToolGroupID string       `json:"toolgroup_id"`
+	Description string       `json:"description"`
+	InputSchema *InputSchema `json:"input_schema"` // Changed from 'parameters' array
+	Metadata    interface{}  `json:"metadata"`
+
+	// Legacy fields for backwards compatibility (if needed)
+	Identifier         string          `json:"identifier,omitempty"`
+	ProviderResourceID *string         `json:"provider_resource_id,omitempty"`
+	ProviderID         string          `json:"provider_id,omitempty"`
+	Type               string          `json:"type,omitempty"`
+	Parameters         []ToolParameter `json:"parameters,omitempty"`
 }
 
 type ListToolsResponse struct {
@@ -158,8 +170,9 @@ type Usage struct {
 
 // LlamaStack tool invocation structures
 type ToolInvocationRequest struct {
-	ToolName string                 `json:"tool_name"`
-	Kwargs   map[string]interface{} `json:"kwargs"`
+	ToolName    string                 `json:"tool_name"`
+	ToolGroupID string                 `json:"toolgroup_id"`
+	Kwargs      map[string]interface{} `json:"kwargs"`
 }
 
 type ToolInvocationResult struct {
@@ -207,8 +220,9 @@ func init() {
 
 	// Initialize tool cache with configuration
 	toolCache = &ToolCache{
-		toolsByGroup:  make(map[string][]LlamaStackTool),
-		groupKeywords: make(map[string][]string),
+		toolsByGroup:      make(map[string][]LlamaStackTool),
+		toolToGroup:       make(map[string]string),
+		groupKeywords:     make(map[string][]string),
 		enableSmartFilter: os.Getenv("ENABLE_SMART_TOOL_FILTERING") == "true",
 	}
 
@@ -362,10 +376,10 @@ func (tc *ToolCache) refreshAllTools() error {
 		for _, tool := range toolsResp.Data {
 			isBlacklisted := false
 			for _, blacklisted := range tc.blacklistedTools {
-				if tool.Identifier == blacklisted {
+				if tool.Name == blacklisted {
 					isBlacklisted = true
 					blacklistedCount++
-					log.Printf("    ✗ %s - BLACKLISTED", tool.Identifier)
+					log.Printf("    ✗ %s - BLACKLISTED", tool.Name)
 					break
 				}
 			}
@@ -377,9 +391,14 @@ func (tc *ToolCache) refreshAllTools() error {
 		tc.toolsByGroup[group.Identifier] = filteredTools
 		allTools = append(allTools, filteredTools...)
 
+		// Build tool name -> toolgroup mapping
+		for _, tool := range filteredTools {
+			tc.toolToGroup[tool.Name] = group.Identifier
+		}
+
 		log.Printf("  ✓ %s: %d tools (%d blacklisted)", group.Identifier, len(filteredTools), blacklistedCount)
 		for _, tool := range filteredTools {
-			log.Printf("    • %s - %s", tool.Identifier, truncateString(tool.Description, 60))
+			log.Printf("    • %s - %s", tool.Name, truncateString(tool.Description, 60))
 		}
 	}
 
@@ -403,13 +422,14 @@ func (tc *ToolCache) buildKeywordIndex() {
 		textParts := []string{groupID} // Include group ID itself
 
 		for _, tool := range tools {
-			textParts = append(textParts, tool.Identifier)
+			textParts = append(textParts, tool.Name)
 			textParts = append(textParts, tool.Description)
 
-			// Also include parameter names and descriptions
-			for _, param := range tool.Parameters {
-				textParts = append(textParts, param.Name)
-				textParts = append(textParts, param.Description)
+			// Also include parameter names and descriptions from input schema
+			if tool.InputSchema != nil && tool.InputSchema.Properties != nil {
+				for propName := range tool.InputSchema.Properties {
+					textParts = append(textParts, propName)
+				}
 			}
 		}
 
@@ -485,9 +505,13 @@ func (tc *ToolCache) logCacheSummary() {
 		tools := tc.toolsByGroup[group.Identifier]
 		log.Printf("\n%s (%d tools):", group.Identifier, len(tools))
 		for _, tool := range tools {
-			paramCount := len(tool.Parameters)
+			// Count parameters from input schema
+			paramCount := 0
+			if tool.InputSchema != nil && tool.InputSchema.Properties != nil {
+				paramCount = len(tool.InputSchema.Properties)
+			}
 			log.Printf("  • %s (%d params) - %s",
-				tool.Identifier,
+				tool.Name,
 				paramCount,
 				truncateString(tool.Description, 70))
 		}
@@ -780,47 +804,57 @@ func handleCacheRefresh(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleModels(w http.ResponseWriter, r *http.Request) {
-	// Forward to LlamaStack's OpenAI-compatible models endpoint
-	targetURL := llamaStackURL + "/v1/openai/v1/models"
+	// Fetch models from LlamaStack
+	targetURL := llamaStackURL + "/v1/models"
 	if r.URL.RawQuery != "" {
 		targetURL += "?" + r.URL.RawQuery
 	}
 
-	log.Printf("Proxying %s %s to %s", r.Method, r.URL.Path, targetURL)
+	log.Printf("Fetching models from %s", targetURL)
 
-	proxyReq, err := http.NewRequest(r.Method, targetURL, nil)
+	resp, err := http.Get(targetURL)
 	if err != nil {
-		http.Error(w, "Failed to create proxy request", http.StatusInternalServerError)
-		return
-	}
-
-	// Copy headers
-	for key, values := range r.Header {
-		for _, value := range values {
-			proxyReq.Header.Add(key, value)
-		}
-	}
-
-	// Forward request
-	client := &http.Client{Timeout: 30 * time.Second}
-	resp, err := client.Do(proxyReq)
-	if err != nil {
-		log.Printf("Error forwarding request: %v", err)
-		http.Error(w, "Failed to forward request", http.StatusBadGateway)
+		log.Printf("Error fetching models: %v", err)
+		http.Error(w, "Failed to fetch models", http.StatusBadGateway)
 		return
 	}
 	defer resp.Body.Close()
 
-	// Copy response headers
-	for key, values := range resp.Header {
-		for _, value := range values {
-			w.Header().Add(key, value)
-		}
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		log.Printf("LlamaStack returned status %d: %s", resp.StatusCode, string(body))
+		http.Error(w, "Failed to fetch models", resp.StatusCode)
+		return
 	}
-	w.WriteHeader(resp.StatusCode)
 
-	// Copy response body
-	io.Copy(w, resp.Body)
+	// Parse LlamaStack response
+	var llamaResp LlamaStackModelsResponse
+	if err := json.NewDecoder(resp.Body).Decode(&llamaResp); err != nil {
+		log.Printf("Error decoding models response: %v", err)
+		http.Error(w, "Failed to parse models", http.StatusInternalServerError)
+		return
+	}
+
+	// Transform to OpenAI format
+	openaiModels := make([]OpenAIModel, 0, len(llamaResp.Data))
+	for _, model := range llamaResp.Data {
+		// Use identifier as the model ID (e.g., "openai/llama3-groq-tool-use:8b")
+		openaiModels = append(openaiModels, OpenAIModel{
+			ID:      model.Identifier,
+			Object:  "model",
+			Created: time.Now().Unix(),
+			OwnedBy: "library",
+		})
+	}
+
+	// Return OpenAI-formatted response
+	openaiResp := OpenAIModelsResponse{
+		Object: "list",
+		Data:   openaiModels,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(openaiResp)
 }
 
 func handleGenericProxy(w http.ResponseWriter, r *http.Request) {
@@ -1064,7 +1098,7 @@ func handleStreamingRequest(w http.ResponseWriter, r *http.Request, chatReq Chat
 	log.Printf("Streaming request - forwarding directly")
 
 	reqBody, _ := json.Marshal(chatReq)
-	proxyReq, err := http.NewRequest("POST", llamaStackURL+"/v1/openai/v1/chat/completions", bytes.NewReader(reqBody))
+	proxyReq, err := http.NewRequest("POST", llamaStackURL+"/v1/chat/completions", bytes.NewReader(reqBody))
 	if err != nil {
 		http.Error(w, "Failed to create proxy request", http.StatusInternalServerError)
 		return
@@ -1106,20 +1140,62 @@ func convertToOpenAITools(llamaTools []LlamaStackTool) []OpenAITool {
 		properties := make(map[string]OpenAIToolParameter)
 		required := make([]string, 0)
 
-		for _, param := range tool.Parameters {
-			properties[param.Name] = OpenAIToolParameter{
-				Type:        mapParameterType(param.ParameterType),
-				Description: param.Description,
+		// Handle new input_schema format (v0.3.4+)
+		if tool.InputSchema != nil {
+			// The input_schema is already in JSON Schema format
+			// We need to convert the generic properties to OpenAIToolParameter
+			for propName, propValue := range tool.InputSchema.Properties {
+				propMap, ok := propValue.(map[string]interface{})
+				if !ok {
+					continue
+				}
+
+				toolParam := OpenAIToolParameter{
+					Type: "string", // default
+				}
+
+				if typeVal, ok := propMap["type"].(string); ok {
+					toolParam.Type = typeVal
+				}
+				if descVal, ok := propMap["description"].(string); ok {
+					toolParam.Description = descVal
+				}
+				if enumVal, ok := propMap["enum"].([]interface{}); ok {
+					enumStrs := make([]string, 0, len(enumVal))
+					for _, e := range enumVal {
+						if s, ok := e.(string); ok {
+							enumStrs = append(enumStrs, s)
+						}
+					}
+					toolParam.Enum = enumStrs
+				}
+
+				properties[propName] = toolParam
 			}
-			if param.Required {
-				required = append(required, param.Name)
+			required = tool.InputSchema.Required
+		} else {
+			// Fallback to old parameters format for backwards compatibility
+			for _, param := range tool.Parameters {
+				properties[param.Name] = OpenAIToolParameter{
+					Type:        mapParameterType(param.ParameterType),
+					Description: param.Description,
+				}
+				if param.Required {
+					required = append(required, param.Name)
+				}
 			}
+		}
+
+		// Use Name field (new API), fallback to Identifier for backwards compat
+		toolName := tool.Name
+		if toolName == "" {
+			toolName = tool.Identifier
 		}
 
 		openaiTools = append(openaiTools, OpenAITool{
 			Type: "function",
 			Function: OpenAIFunction{
-				Name:        tool.Identifier,
+				Name:        toolName,
 				Description: tool.Description,
 				Parameters: OpenAIToolParameters{
 					Type:       "object",
@@ -1172,7 +1248,7 @@ func forwardToLlamaStack(ctx context.Context, chatReq ChatCompletionRequest) (*C
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "POST", llamaStackURL+"/v1/openai/v1/chat/completions", bytes.NewReader(reqBody))
+	req, err := http.NewRequestWithContext(ctx, "POST", llamaStackURL+"/v1/chat/completions", bytes.NewReader(reqBody))
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, "failed to create request")
@@ -1238,10 +1314,23 @@ func executeToolCall(ctx context.Context, toolCall ToolCall) (string, error) {
 		return "", fmt.Errorf("failed to parse tool arguments: %w", err)
 	}
 
+	// Look up toolgroup_id for this tool
+	toolCache.mu.RLock()
+	toolGroupID, exists := toolCache.toolToGroup[toolCall.Function.Name]
+	toolCache.mu.RUnlock()
+
+	if !exists {
+		err := fmt.Errorf("tool %s not found in cache", toolCall.Function.Name)
+		span.RecordError(err)
+		span.SetStatus(codes.Error, "tool not found")
+		return "", err
+	}
+
 	// Call LlamaStack tool runtime
 	invocationReq := ToolInvocationRequest{
-		ToolName: toolCall.Function.Name,
-		Kwargs:   args,
+		ToolName:    toolCall.Function.Name,
+		ToolGroupID: toolGroupID,
+		Kwargs:      args,
 	}
 
 	reqBody, err := json.Marshal(invocationReq)

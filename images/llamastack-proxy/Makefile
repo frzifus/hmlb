@@ -2,7 +2,7 @@
 
 # Build the Go binary
 build:
-	GOROOT=/usr/lib/golang go build -o llamastack-proxy main.go
+	GOROOT=/usr/lib/golang go build -o llamastack-proxy *.go
 
 # Run locally
 run: build

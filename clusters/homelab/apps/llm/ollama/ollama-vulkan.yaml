@@ -1,0 +1,90 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ollama-data
+  namespace: llm
+spec:
+  storageClassName: openebs-cache
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ollama
+  namespace: llm
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: ollama
+  template:
+    metadata:
+      labels:
+        app: ollama
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: "gpu.intel.com/device-id.0300-56a0.present"
+                operator: In
+                values:
+                - "true"
+      # initContainers:
+      #   - name: download-llama
+      #     image: ollama/ollama:0.13.1
+      #     # NOTE: Pull does not work without serve..
+      #     # https://github.com/ollama/ollama/issues/3369
+      #     command:
+      #       - /bin/sh
+      #       - -c
+      #       - |
+      #         ollama serve &
+      #         sleep 5 && ollama pull llama3.2:1b && echo "Killing 'ollama serve' process"
+      #         ps -ef | grep 'ollama serve' | grep -v grep | awk '{print $2}' | xargs -r kill -9
+      #     volumeMounts:
+      #       - mountPath: /root/.ollama
+      #         name: ollama-data
+      containers:
+        - name: ollama
+          image: ollama/ollama:0.13.1
+          env:
+            - name: OLLAMA_KEEP_ALIVE
+              value: "-1"
+            - name: OLLAMA_VULKAN
+              value: "1"
+            - name: OLLAMA_HOST
+              value: "0.0.0.0:11434"
+            - name: OLLAMA_INTEL_GPU
+              value: "true"
+          ports:
+            - containerPort: 11434
+          securityContext:
+            privileged: false
+          volumeMounts:
+            - mountPath: /root/.ollama
+              name: ollama-data
+          resources:
+            requests:
+              cpu: "2"
+              memory: "13Gi"
+            limits:
+              cpu: "2"
+              memory: "13Gi"
+              gpu.intel.com/i915: "1"
+      volumes:
+        - name: ollama-data
+          persistentVolumeClaim:
+            claimName: ollama-data
+      tolerations:
+      - key: "gpu.intel.com/i915"
+        operator: "Exists"
+        effect: "NoSchedule"
