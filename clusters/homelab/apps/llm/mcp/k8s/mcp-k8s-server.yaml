@@ -23,7 +23,7 @@ spec:
           - containerPort: 8080
             protocol: TCP
         command: ["./kubernetes-mcp-server"]
-        args: ["--sse-port", "8080"]
+        args: ["--sse-port", "8080", "--read-only"]
         resources: {}
 ---
 apiVersion: v1

@@ -27,7 +27,7 @@ spec:
   template:
     metadata:
       annotations:
-        instrumentation.opentelemetry.io/inject-sdk: "true"
+        instrumentation.opentelemetry.io/inject-python: "true"
       labels:
         app: open-webui
     spec:
@@ -38,7 +38,7 @@ spec:
             - containerPort: 8080
           env:
             - name: OPENAI_API_BASE_URL
-              value: "http://llamastack:8321/v1/openai/v1"
+              value: "http://llamastack-proxy:8322/v1"
             - name: OPENAI_API_KEY
               value: "fake"
             - name: ENABLE_OTEL
