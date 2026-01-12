@@ -23,7 +23,7 @@ spec:
         fsGroup: 65532
       containers:
       - name: klimlive
-        image: nginxinc/nginx-unprivileged:1.29.2-alpine-slim
+        image: nginxinc/nginx-unprivileged:1.29.3-alpine-slim
         ports:
         - containerPort: 8080
         volumeMounts:
