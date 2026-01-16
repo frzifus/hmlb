@@ -55,7 +55,7 @@ spec:
       #         name: ollama-data
       containers:
         - name: ollama
-          image: ollama/ollama:0.14.0
+          image: ollama/ollama:0.14.2
           env: # https://github.com/ollama/ollama/issues/13108
             - name: GGML_VK_DISABLE_INTEGER_DOT_PRODUCT
               value: "1"
