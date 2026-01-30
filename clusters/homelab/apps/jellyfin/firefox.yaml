@@ -17,7 +17,7 @@ spec:
       initContainers:
         - name: gluetun
           restartPolicy: Always
-          image: qmcgaw/gluetun:v3.40
+          image: qmcgaw/gluetun:v3.41
           securityContext:
             capabilities:
               add:
