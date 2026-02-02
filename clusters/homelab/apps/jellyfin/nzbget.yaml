@@ -485,7 +485,7 @@ spec:
         env:
           - name: NZBGET_HOST
             value: "http://nzbget:6789"
-      - image: nzbgetcom/nzbget:v25.4
+      - image: nzbgetcom/nzbget:v26.0
         name: nzbget
         command:
           - /app/nzbget/nzbget
