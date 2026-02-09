@@ -1,6 +1,6 @@
 ---
 clusterName: homelab
-talosVersion: v1.10.9
+talosVersion: v1.11.6
 endpoint: https://192.168.5.3:6443
 allowSchedulingOnMasters: true
 additionalApiServerCertSans:
@@ -53,17 +53,20 @@ patches:
 #             - siderolabs/tailscale
 
 controlPlane:
+  talosImageURL: factory.talos.dev/metal-installer-secureboot/2ffbcbedc61ac5530fabbec9ec4e565e78014b4d20218d60616f863512a42f4e
   extensionServices:
     - name: tailscale
       environment:
         - TS_AUTHKEY=${tsAuth}
+        - TS_EXTRA_ARGS=--reset
 
 worker:
-  talosImageURL: factory.talos.dev/installer-secureboot/2ffbcbedc61ac5530fabbec9ec4e565e78014b4d20218d60616f863512a42f4e
+  talosImageURL: factory.talos.dev/metal-installer-secureboot/2ffbcbedc61ac5530fabbec9ec4e565e78014b4d20218d60616f863512a42f4e
   extensionServices:
     - name: tailscale
       environment:
         - TS_AUTHKEY=${tsAuth}
+        - TS_EXTRA_ARGS=--reset
 
 nodes:
   - hostname: master1
@@ -153,7 +156,7 @@ nodes:
     installDisk: /dev/sda
     controlPlane: false
   - hostname: gpu2
-    ipAddress: 192.168.1.140 # TODO
+    ipAddress: 192.168.5.11
     installDisk: /dev/nvme0n1
     controlPlane: false
     patches:
