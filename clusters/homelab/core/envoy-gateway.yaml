@@ -39,7 +39,7 @@ spec:
       version: 1.5.4
   values:
     deployment:
-      replicas: 9 # NOTE: match node count to avoid invalid dns entries.
+      replicas: 8 # NOTE: match node count to avoid invalid dns entries.
       pod:
         labels:
           test: "true"
