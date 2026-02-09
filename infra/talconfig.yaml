@@ -1,7 +1,7 @@
 ---
 clusterName: homelab
 talosVersion: v1.10.9
-endpoint: https://192.168.5.2:6443
+endpoint: https://192.168.5.3:6443
 allowSchedulingOnMasters: true
 additionalApiServerCertSans:
   - home-cluster
@@ -67,8 +67,8 @@ worker:
 
 nodes:
   - hostname: master1
-    ipAddress: 192.168.5.2
-    installDisk: /dev/sda
+    ipAddress: 192.168.5.10
+    installDisk: /dev/nvme0n1
     controlPlane: true
   - hostname: master2
     ipAddress: 192.168.5.3
@@ -146,10 +146,6 @@ nodes:
         effect: "NoSchedule"
   - hostname: worker1
     ipAddress: 192.168.5.9
-    installDisk: /dev/nvme0n1
-    controlPlane: false
-  - hostname: worker2
-    ipAddress: 192.168.5.10
     installDisk: /dev/nvme0n1
     controlPlane: false
   - hostname: gpu1
