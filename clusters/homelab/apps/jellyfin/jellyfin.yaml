@@ -40,6 +40,9 @@ spec:
       - name: nfs-jellyfin-cache
         persistentVolumeClaim:
           claimName: jellyfin-transcode-cache
+      - name: jellyfin-backups
+        persistentVolumeClaim:
+          claimName: jellyfin-backups
       containers:
       - env:
         - name: TZ
@@ -80,6 +83,8 @@ spec:
           name: nfs-jellyfin-data
         - mountPath: /cache
           name: nfs-jellyfin-cache
+        - mountPath: /config/data/backups
+          name: jellyfin-backups
       dnsPolicy: ClusterFirst
       restartPolicy: Always
 ---
