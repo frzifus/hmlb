@@ -1,4 +1,4 @@
-FROM quay.io/fedora/fedora-silverblue:43
+FROM quay.io/fedora/fedora-silverblue:45
 
 # NOTE: Just to test RHEL9 version
 # FROM registry.redhat.io/rhel9/rhel-bootc:9.5
