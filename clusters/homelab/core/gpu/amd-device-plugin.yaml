@@ -69,7 +69,7 @@ spec:
      # NOTE: defaults ends with: ErrImagePull
      # Selected default image is:
      # registry.test.pensando.io:5000/device-metrics-exporter/rocm-metrics-exporter:v1
-     image: rocm/device-metrics-exporter:v1.4.1
+     image: rocm/device-metrics-exporter:v1.4.2
 
   # Specifythe node to be managed by this DeviceConfig Custom Resource
   selector:
