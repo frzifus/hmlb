@@ -66,5 +66,5 @@ spec:
             - name: cache
               mountPath: /.cache
           terminationMessagePolicy: File
-          image: 'docker.io/llamastack/distribution-starter:0.3.4'
+          image: 'docker.io/llamastack/distribution-starter:0.5.1'
       securityContext: {}
