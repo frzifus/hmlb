@@ -1,0 +1,52 @@
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: crc
+  labels:
+    app: crc
+spec:
+  running: true
+  template:
+    metadata:
+      labels:
+        app: crc
+        kubevirt.io/vm: crc
+    spec:
+      domain:
+        cpu:
+          cores: 4
+        devices:
+          disks:
+            - name: rootdisk
+              disk:
+                bus: virtio
+            - name: cloudinit
+              disk:
+                bus: virtio
+          interfaces:
+            - name: default
+              masquerade: {}
+        firmware:
+          bootloader:
+            efi:
+              secureBoot: false
+        machine:
+          type: q35
+        resources:
+          requests:
+            memory: 14Gi
+            cpu: "3"
+          limits:
+            memory: 14Gi
+      networks:
+        - name: default
+          pod: {}
+      volumes:
+        - name: rootdisk
+          persistentVolumeClaim:
+            claimName: crc-disk
+        - name: cloudinit
+          cloudInitNoCloud:
+            secretRef:
+              name: crc-cloud-init

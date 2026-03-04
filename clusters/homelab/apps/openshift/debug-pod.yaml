@@ -1,0 +1,53 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: crc-debug
+  namespace: openshift
+spec:
+  nodeSelector:
+    kubernetes.io/hostname: gpu2
+  containers:
+    - name: debug
+      image: fedora:43
+      command:
+        - /bin/bash
+        - -c
+        - |
+          set -euo pipefail
+          dnf install -y openssh-clients jq
+          # Add CRC DNS entries pointing to the service
+          CRC_SVC="crc-api.openshift.svc.cluster.local"
+          CRC_IP=$(getent hosts "$CRC_SVC" | awk '{print $1}')
+          echo "$CRC_IP api.crc.testing console-openshift-console.apps-crc.testing oauth-openshift.apps-crc.testing" >> /etc/hosts
+          # Install oc client
+          if [ -f /disk/bundle/oc ]; then
+            cp /disk/bundle/oc /usr/local/bin/oc
+            chmod +x /usr/local/bin/oc
+            ln -sf /usr/local/bin/oc /usr/local/bin/kubectl
+          fi
+          # Setup kubeconfig and SSH key
+          mkdir -p ~/.kube ~/.ssh
+          if [ -f /disk/bundle/kubeconfig ]; then
+            cp /disk/bundle/kubeconfig ~/.kube/config
+            # Disable TLS verify since certs don't match service IP
+            sed -i 's/certificate-authority-data:.*/insecure-skip-tls-verify: true/' ~/.kube/config
+          fi
+          if [ -f /disk/bundle/id_ecdsa_crc ]; then
+            cp /disk/bundle/id_ecdsa_crc ~/.ssh/id_ecdsa_crc
+            chmod 600 ~/.ssh/id_ecdsa_crc
+          fi
+          echo "Ready. SSH: ssh -i ~/.ssh/id_ecdsa_crc -o StrictHostKeyChecking=no core@crc-api.openshift.svc.cluster.local"
+          echo "OC: oc login -u kubeadmin https://api.crc.testing:6443"
+          sleep infinity
+      env:
+        - name: KUBECONFIG
+          value: /root/.kube/config
+      volumeMounts:
+        - name: crc-disk
+          mountPath: /disk
+  volumes:
+    - name: crc-disk
+      persistentVolumeClaim:
+        claimName: crc-disk
+  restartPolicy: Never

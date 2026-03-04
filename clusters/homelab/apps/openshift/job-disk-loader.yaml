@@ -1,0 +1,56 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: crc-disk-loader
+  namespace: openshift
+spec:
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      containers:
+        - name: loader
+          image: fedora:43
+          env:
+            - name: CRC_VERSION
+              value: "4.21.0"
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -euo pipefail
+              dnf install -y wget qemu-img
+              BUNDLE_URL="https://developers.redhat.com/content-gateway/file/pub/openshift-v4/clients/crc/bundles/openshift/${CRC_VERSION}/crc_libvirt_${CRC_VERSION}_amd64.crcbundle"
+              BUNDLE_DIR="crc_libvirt_${CRC_VERSION}_amd64"
+
+              echo "Downloading and extracting CRC bundle ${CRC_VERSION} directly to PVC..."
+              cd /disk
+              wget -O- "${BUNDLE_URL}" | tar --zstd -xvf - "${BUNDLE_DIR}/crc.qcow2"
+
+              echo "Converting qcow2 to raw format..."
+              qemu-img convert -f qcow2 -O raw -p "${BUNDLE_DIR}/crc.qcow2" /disk/disk.img
+
+              echo "Cleaning up qcow2..."
+              rm -rf "${BUNDLE_DIR}"
+
+              echo "Setting ownership to qemu (UID 107)..."
+              chown 107:107 /disk/disk.img
+
+              echo "Done. Disk image ready at /disk/disk.img"
+              ls -lh /disk/disk.img
+          resources:
+            requests:
+              cpu: "1"
+              memory: 2Gi
+            limits:
+              cpu: "2"
+              memory: 4Gi
+          volumeMounts:
+            - name: crc-disk
+              mountPath: /disk
+      volumes:
+        - name: crc-disk
+          persistentVolumeClaim:
+            claimName: crc-disk
+      restartPolicy: Never
