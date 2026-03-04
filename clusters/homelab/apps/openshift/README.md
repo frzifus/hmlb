@@ -10,36 +10,35 @@ CRC runs as a KubeVirt VM with cloud-init handling bootstrap:
 ### Example
 
 ```bash
-╰─❯ k get pods                   
+╰─❯ k get pods
 NAME                      READY   STATUS      RESTARTS   AGE
 crc-debug                 1/1     Running     0          118m
 virt-launcher-crc-m4jkx   2/2     Running     0          2m58s
-╭─     /clusters/homelab/apps/openshift    main
+
 ╰─❯ k get vmi -o wide
 NAME   AGE    PHASE     IP            NODENAME   READY   LIVE-MIGRATABLE   PAUSED
 crc    3m6s   Running   10.244.8.16   gpu2       True    False
-╭─     /clusters/homelab/apps/openshift    main
+
 ╰─❯ k top pod
 NAME                      CPU(cores)   MEMORY(bytes)
 crc-debug                 24m          5Mi
 virt-launcher-crc-m4jkx   1874m        6296Mi
-╭─     /clusters/homelab/apps/openshift    main
+
 ╰─❯ k exec  -it crc-debug -- bash
 [root@crc-debug /]# oc get nodes
 NAME   STATUS   ROLES                         AGE   VERSION
 crc    Ready    control-plane,master,worker   34d   v1.34.2
+
 [root@crc-debug /]# ssh -i ~/.ssh/id_ecdsa_crc -o StrictHostKeyChecking=no core@crc-api 
 Red Hat Enterprise Linux CoreOS 9.6.20260112-0
   Part of OpenShift 4.21, RHCOS is a Kubernetes-native operating system
   managed by the Machine Config Operator (`clusteroperator/machine-config`).
 
-WARNING: Direct SSH access to machines is not recommended; instead,
-make configuration changes via `machineconfig` objects:
-  https://docs.openshift.com/container-platform/4.21/architecture/architecture-rhcos.html
----
 Last login: Wed Mar  4 20:57:00 2026 from 10.244.8.38
 [core@crc ~]$ 
 ```
+
+NOTE: cannot migrate VMI: PVC crc-disk is not shared, **live migration requires that all PVCs must be shared (using ReadWriteMany access mode)**
 
 ## Common kubectl virt commands
 
