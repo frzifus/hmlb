@@ -11,7 +11,7 @@ spec:
     spec:
       containers:
         - name: loader
-          image: fedora:43
+          image: fedora:45
           env:
             - name: CRC_VERSION
               value: "4.21.0"

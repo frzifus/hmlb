@@ -9,7 +9,7 @@ spec:
     kubernetes.io/hostname: gpu2
   containers:
     - name: debug
-      image: fedora:43
+      image: fedora:45
       command:
         - /bin/bash
         - -c
