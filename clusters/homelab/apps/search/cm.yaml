@@ -1,0 +1,596 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: searxng-config
+  namespace: search
+data:
+  settings.yml: |
+    use_default_settings: true
+
+    general:
+      locale: de
+      language: auto
+      instance_name: "Homelab SearXNG"
+      enable_metrics: true
+      open_metrics: ""
+
+    ui:
+      default_locale: de
+      theme: simple
+      simple_style: auto
+      center_alignment: false
+      query_in_title: false
+      search_on_category_select: true
+      hotkeys: default
+      url_formatting: pretty
+      results_on_new_tab: false
+
+    search:
+      autocomplete: duckduckgo
+      safe_search: 0
+      doi_resolver: oadoi.org
+
+    server:
+      secret_key: "change-this-secret"
+      limiter: false
+      image_proxy: true
+      method: GET
+
+    outgoing:
+      request_timeout: 2.0
+      max_request_timeout: 10.0
+      pool_connections: 100
+      pool_maxsize: 10
+      enable_http2: true
+
+    engines:
+      # Enabled engines
+      - name: ahmia
+        disabled: false # default: false
+      - name: apple app store
+        disabled: false # default: true
+      - name: arch linux wiki
+        disabled: true # default: false
+      - name: arxiv
+        disabled: true # default: false
+      - name: askubuntu
+        disabled: false # default: false
+      - name: astrophysics data system
+        disabled: true # default: false
+      - name: azure
+        disabled: true # default: false
+      - name: bandcamp
+        disabled: false # default: false
+      - name: bing images
+        disabled: true # default: false
+      - name: brave
+        disabled: true # default: false
+      - name: brave.images
+        disabled: true # default: false
+      - name: braveapi
+        disabled: true # default: false
+      - name: bt4g
+        disabled: true # default: false
+      - name: chefkoch
+        disabled: true # default: false
+      - name: cloudflareai
+        disabled: false # default: false
+      - name: codeberg
+        disabled: false # default: true
+      - name: core.ac.uk
+        disabled: true # default: false
+      - name: currency
+        disabled: true # default: false
+      - name: dailymotion
+        disabled: true # default: false
+      - name: deepl
+        disabled: false # default: false
+      - name: deviantart
+        disabled: true # default: false
+      - name: devicons
+        disabled: true # default: false
+      - name: dictzone
+        disabled: true # default: false
+      - name: docker hub
+        disabled: false # default: false
+      - name: duckduckgo images
+        disabled: false # default: false
+      - name: duckduckgo news
+        disabled: false # default: false
+      - name: duckduckgo videos
+        disabled: false # default: false
+      - name: ebay
+        disabled: true # default: false
+      - name: elasticsearch
+        disabled: true # default: false
+      - name: etymonline
+        disabled: true # default: false
+      - name: fdroid
+        disabled: false # default: true
+      - name: flickr
+        disabled: false # default: false
+      - name: flickr_api
+        disabled: true # default: false
+      - name: freesound
+        disabled: true # default: false
+      - name: genius
+        disabled: true # default: false
+      - name: gentoo
+        disabled: true # default: false
+      - name: github
+        disabled: false # default: false
+      - name: github code
+        disabled: false # default: false
+      - name: google
+        disabled: false # default: false
+      - name: google images
+        disabled: false # default: false
+      - name: google news
+        disabled: false # default: false
+      - name: google play apps
+        disabled: false # default: true
+      - name: google scholar
+        disabled: true # default: false
+      - name: google videos
+        disabled: false # default: false
+      - name: hoogle
+        disabled: true # default: false
+      - name: imgur
+        disabled: false # default: true
+      - name: kickass
+        disabled: true # default: false
+      - name: lemmy comments
+        disabled: true # default: false
+      - name: lemmy communities
+        disabled: true # default: false
+      - name: lemmy posts
+        disabled: true # default: false
+      - name: lemmy users
+        disabled: true # default: false
+      - name: libretranslate
+        disabled: false # default: false
+      - name: lingva
+        disabled: true # default: false
+      - name: lucide
+        disabled: false # default: false
+      - name: mankier
+        disabled: false # default: false
+      - name: mastodon hashtags
+        disabled: false # default: false
+      - name: mastodon users
+        disabled: false # default: false
+      - name: mdn
+        disabled: false # default: false
+      - name: media.ccc.de
+        disabled: false # default: true
+      - name: mediathekviewweb
+        disabled: false # default: true
+      - name: mixcloud
+        disabled: true # default: false
+      - name: mymemory translated
+        disabled: true # default: false
+      - name: openairedatasets
+        disabled: true # default: false
+      - name: openairepublications
+        disabled: true # default: false
+      - name: openstreetmap
+        disabled: false # default: false
+      - name: openverse
+        disabled: false # default: false
+      - name: pdbe
+        disabled: false # default: false
+      - name: pexels
+        disabled: true # default: false
+      - name: photon
+        disabled: true # default: false
+      - name: pinterest
+        disabled: false # default: false
+      - name: piped
+        disabled: true # default: false
+      - name: piped.music
+        disabled: true # default: false
+      - name: piratebay
+        disabled: false # default: false
+      - name: podcastindex
+        disabled: false # default: false
+      - name: pubmed
+        disabled: false # default: false
+      - name: pypi
+        disabled: true # default: false
+      - name: radio browser
+        disabled: true # default: false
+      - name: reddit
+        disabled: false # default: true
+      - name: reuters
+        disabled: false # default: false
+      - name: semantic scholar
+        disabled: true # default: false
+      - name: solidtorrents
+        disabled: true # default: false
+      - name: soundcloud
+        disabled: true # default: false
+      - name: springer nature
+        disabled: true # default: false
+      - name: stackoverflow
+        disabled: false # default: false
+      - name: startpage
+        disabled: true # default: false
+      - name: superuser
+        disabled: true # default: false
+      - name: tagesschau
+        disabled: false # default: true
+      - name: tootfinder
+        disabled: false # default: false
+      - name: torch
+        disabled: true # default: false
+      - name: Torznab EZTV
+        disabled: true # default: false
+      - name: unsplash
+        disabled: true # default: false
+      - name: wallhaven
+        disabled: true # default: false
+      - name: wikicommons.audio
+        disabled: true # default: false
+      - name: wikicommons.files
+        disabled: true # default: false
+      - name: wikicommons.images
+        disabled: true # default: false
+      - name: wikidata
+        disabled: true # default: false
+      - name: wikinews
+        disabled: false # default: false
+      - name: wikipedia
+        disabled: false # default: false
+      - name: wiktionary
+        disabled: true # default: false
+      - name: wolframalpha_api
+        disabled: true # default: false
+      - name: wordnik
+        disabled: true # default: false
+      - name: wttr.in
+        disabled: true # default: false
+      - name: yahoo news
+        disabled: false # default: false
+      - name: youtube
+        disabled: false # default: false
+      - name: youtube_api
+        disabled: true # default: false
+
+      # Disabled engines
+      - name: 1337x
+        disabled: true # default: true
+      - name: 1x
+        disabled: true # default: true
+      - name: 360search
+        disabled: true # default: true
+      - name: 360search videos
+        disabled: true # default: true
+      - name: 9gag
+        disabled: true # default: true
+      - name: acfun
+        disabled: true # default: true
+      - name: adobe stock
+        disabled: true # default: true
+      - name: adobe stock audio
+        disabled: true # default: true
+      - name: adobe stock video
+        disabled: true # default: true
+      - name: alpine linux packages
+        disabled: true # default: true
+      - name: anaconda
+        disabled: true # default: true
+      - name: annas archive
+        disabled: true # default: true
+      - name: ansa
+        disabled: true # default: true
+      - name: apk mirror
+        disabled: true # default: true
+      - name: apple maps
+        disabled: true # default: true
+      - name: artic
+        disabled: true # default: false
+      - name: artstation
+        disabled: true # default: true
+      - name: ask
+        disabled: true # default: true
+      - name: baidu
+        disabled: true # default: true
+      - name: baidu images
+        disabled: true # default: true
+      - name: baidu kaifa
+        disabled: true # default: true
+      - name: bilibili
+        disabled: true # default: true
+      - name: bing
+        disabled: true # default: true
+      - name: bing news
+        disabled: true # default: false
+      - name: bing videos
+        disabled: true # default: false
+      - name: bitbucket
+        disabled: true # default: true
+      - name: bitchute
+        disabled: true # default: true
+      - name: bpb
+        disabled: true # default: true
+      - name: brave.news
+        disabled: true # default: false
+      - name: brave.videos
+        disabled: true # default: false
+      - name: btdigg
+        disabled: true # default: true
+      - name: cachy os packages
+        disabled: true # default: true
+      - name: caddy.community
+        disabled: true # default: true
+      - name: chinaso images
+        disabled: true # default: true
+      - name: chinaso news
+        disabled: true # default: true
+      - name: chinaso videos
+        disabled: true # default: true
+      - name: crates.io
+        disabled: true # default: true
+      - name: crossref
+        disabled: true # default: true
+      - name: crowdview
+        disabled: true # default: true
+      - name: ddg definitions
+        disabled: true # default: true
+      - name: deezer
+        disabled: true # default: true
+      - name: destatis
+        disabled: true # default: true
+      - name: discuss.python
+        disabled: true # default: true
+      - name: duckduckgo
+        disabled: false # default: false
+      - name: duckduckgo weather
+        disabled: true # default: true
+      - name: duden
+        disabled: true # default: true
+      - name: emojipedia
+        disabled: true # default: true
+      - name: encyclosearch
+        disabled: true # default: true
+      - name: erowid
+        disabled: true # default: true
+      - name: findthatmeme
+        disabled: true # default: true
+      - name: free software directory
+        disabled: true # default: true
+      - name: frinkiac
+        disabled: true # default: true
+      - name: fynd
+        disabled: true # default: true
+      - name: fyyd
+        disabled: true # default: true
+      - name: geizhals
+        disabled: true # default: true
+      - name: gitea.com
+        disabled: true # default: true
+      - name: gitlab
+        disabled: true # default: true
+      - name: goodreads
+        disabled: true # default: true
+      - name: google play movies
+        disabled: true # default: true
+      - name: grokipedia
+        disabled: true # default: true
+      - name: habrahabr
+        disabled: true # default: true
+      - name: hackernews
+        disabled: true # default: true
+      - name: hex
+        disabled: true # default: true
+      - name: huggingface
+        disabled: true # default: true
+      - name: huggingface datasets
+        disabled: true # default: true
+      - name: huggingface spaces
+        disabled: true # default: true
+      - name: il post
+        disabled: true # default: true
+      - name: imdb
+        disabled: true # default: true
+      - name: ina
+        disabled: true # default: true
+      - name: ipernity
+        disabled: true # default: true
+      - name: iqiyi
+        disabled: true # default: true
+      - name: jisho
+        disabled: true # default: true
+      - name: lib.rs
+        disabled: true # default: true
+      - name: library genesis
+        disabled: true # default: true
+      - name: library of congress
+        disabled: true # default: true
+      - name: lobste.rs
+        disabled: true # default: true
+      - name: marginalia
+        disabled: true # default: true
+      - name: material icons
+        disabled: true # default: true
+      - name: metacpan
+        disabled: true # default: true
+      - name: microsoft learn
+        disabled: true # default: true
+      - name: minecraft wiki
+        disabled: true # default: true
+      - name: mojeek
+        disabled: true # default: true
+      - name: mojeek images
+        disabled: true # default: true
+      - name: mojeek news
+        disabled: true # default: true
+      - name: moviepilot
+        disabled: true # default: true
+      - name: mozhi
+        disabled: true # default: true
+      - name: mwmbl
+        disabled: true # default: true
+      - name: national vulnerability database
+        disabled: true # default: true
+      - name: naver
+        disabled: true # default: true
+      - name: naver images
+        disabled: true # default: true
+      - name: naver news
+        disabled: true # default: true
+      - name: naver videos
+        disabled: true # default: true
+      - name: niconico
+        disabled: true # default: true
+      - name: nixos wiki
+        disabled: true # default: true
+      - name: npm
+        disabled: true # default: true
+      - name: nyaa
+        disabled: true # default: true
+      - name: odysee
+        disabled: true # default: true
+      - name: ollama
+        disabled: true # default: true
+      - name: openalex
+        disabled: true # default: true
+      - name: openclipart
+        disabled: true # default: true
+      - name: openlibrary
+        disabled: true # default: true
+      - name: openmeteo
+        disabled: true # default: true
+      - name: openrepos
+        disabled: true # default: true
+      - name: packagist
+        disabled: true # default: true
+      - name: peertube
+        disabled: true # default: true
+      - name: pi-hole.community
+        disabled: true # default: true
+      - name: pixabay images
+        disabled: true # default: true
+      - name: pixabay videos
+        disabled: true # default: true
+      - name: pixiv
+        disabled: true # default: true
+      - name: pkg.go.dev
+        disabled: false # default: true
+      - name: presearch
+        disabled: true # default: true
+      - name: presearch images
+        disabled: true # default: true
+      - name: presearch news
+        disabled: true # default: true
+      - name: presearch videos
+        disabled: true # default: true
+      - name: pub.dev
+        disabled: true # default: true
+      - name: public domain image archive
+        disabled: true # default: true
+      - name: quark
+        disabled: true # default: true
+      - name: quark images
+        disabled: true # default: true
+      - name: qwant
+        disabled: true # default: true
+      - name: qwant images
+        disabled: true # default: false
+      - name: qwant news
+        disabled: true # default: false
+      - name: qwant videos
+        disabled: true # default: false
+      - name: repology
+        disabled: true # default: true
+      - name: right dao
+        disabled: true # default: true
+      - name: rottentomatoes
+        disabled: true # default: true
+      - name: rubygems
+        disabled: true # default: true
+      - name: rumble
+        disabled: true # default: true
+      - name: searchmysite
+        disabled: true # default: true
+      - name: selfhst icons
+        disabled: true # default: true
+      - name: senscritique
+        disabled: true # default: true
+      - name: sepiasearch
+        disabled: true # default: false
+      - name: seznam
+        disabled: true # default: true
+      - name: sogou
+        disabled: true # default: true
+      - name: sogou images
+        disabled: true # default: true
+      - name: sogou videos
+        disabled: true # default: true
+      - name: sogou wechat
+        disabled: true # default: true
+      - name: sourcehut
+        disabled: true # default: true
+      - name: startpage images
+        disabled: true # default: false
+      - name: startpage news
+        disabled: true # default: false
+      - name: steam
+        disabled: false # default: true
+      - name: svgrepo
+        disabled: true # default: true
+      - name: tineye
+        disabled: true # default: true
+      - name: tmdb
+        disabled: true # default: true
+      - name: tokyotoshokan
+        disabled: true # default: true
+      - name: uxwing
+        disabled: true # default: true
+      - name: vimeo
+        disabled: true # default: false
+      - name: voidlinux
+        disabled: true # default: true
+      - name: wiby
+        disabled: true # default: true
+      - name: wikibooks
+        disabled: true # default: true
+      - name: wikicommons.videos
+        disabled: true # default: false
+      - name: wikimini
+        disabled: true # default: true
+      - name: wikiquote
+        disabled: true # default: true
+      - name: wikisource
+        disabled: true # default: true
+      - name: wikispecies
+        disabled: true # default: true
+      - name: wikiversity
+        disabled: true # default: true
+      - name: wikivoyage
+        disabled: true # default: true
+      - name: wolframalpha
+        disabled: true # default: true
+      - name: woxikon.de synonyme
+        disabled: true # default: true
+      - name: yacy
+        disabled: true # default: true
+      - name: yacy images
+        disabled: true # default: true
+      - name: yahoo
+        disabled: true # default: true
+      - name: yandex
+        disabled: true # default: true
+      - name: yandex images
+        disabled: true # default: true
+      - name: yandex music
+        disabled: true # default: true
+      - name: yep
+        disabled: true # default: true
+      - name: yep images
+        disabled: true # default: true
+      - name: yep news
+        disabled: true # default: true
+      - name: z-library
+        disabled: true # default: true
+
