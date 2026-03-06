@@ -19,3 +19,4 @@ resources:
   - observability/operator.yaml
   - observability/config.yaml
   - cnpg-system.yaml
+  - spegel.yaml
