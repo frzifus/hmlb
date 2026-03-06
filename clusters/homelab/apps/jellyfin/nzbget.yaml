@@ -479,7 +479,7 @@ spec:
       - image: frebib/nzbget-exporter@sha256:af2cb4ef63b5801f6e0002562dfe3e36e1c4bf1777e0a96d2cad9c322722a692
         name: nzbget-exporter
         ports:
-          - name: http
+          - name: metrics
             containerPort: 9452
             protocol: TCP
         env:
@@ -587,6 +587,7 @@ spec:
     app: nzbget
   ports:
     - protocol: TCP
+      name: http
       port: 6789
       targetPort: 6789
   type: ClusterIP
@@ -601,6 +602,7 @@ spec:
     app: nzbget
   ports:
     - protocol: TCP
+      name: http
       port: 8000
       targetPort: 8000
   type: ClusterIP
@@ -676,5 +678,5 @@ spec:
     - backendRefs:
         - group: ""
           kind: Service
-          name: nzbget
-          port: 6789
+          name: nzbget-oauth2-proxy
+          port: 4180

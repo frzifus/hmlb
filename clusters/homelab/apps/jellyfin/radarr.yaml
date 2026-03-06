@@ -15,11 +15,10 @@ spec:
     metadata:
       labels:
         app: radarr
-      # NOTE: Its based on dotnet6, which is not supported.
-      #       Downgrading to autoinstrumentation-dotnet:1.2.0 doesnt help.
-      # annotations:
-      #   instrumentation.opentelemetry.io/inject-dotnet: "central-old-dotnet"
-      #   instrumentation.opentelemetry.io/otel-dotnet-auto-runtime: "linux-musl-x64"
+      annotations:
+        instrumentation.opentelemetry.io/inject-dotnet: "central"
+        instrumentation.opentelemetry.io/otel-dotnet-auto-runtime: "linux-musl-x64"
+        instrumentation.opentelemetry.io/otel-dotnet-auto-log-directory: "/config/logs"
     spec:
       securityContext:
         fsGroup: 1000 # NOTE: set fsGroup for permission to /data/downloads
@@ -40,6 +39,14 @@ spec:
               value: "1000"
             - name: PGID
               value: "1000"
+            - name: OTEL_DOTNET_AUTO_LOG_LEVEL
+              value: "debug"
+            - name: OTEL_LOG_LEVEL
+              value: "debug"
+            - name: DOTNET_STARTUP_HOOKS_OUTPUT
+              value: "1"
+            - name: COREHOST_TRACE
+              value: "1"
           volumeMounts:
             - name: config
               mountPath: /config

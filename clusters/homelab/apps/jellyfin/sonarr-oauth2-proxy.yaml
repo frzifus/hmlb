@@ -1,0 +1,93 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: sonarr-oauth2-proxy
+  name: sonarr-oauth2-proxy
+  namespace: jellyfin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sonarr-oauth2-proxy
+  template:
+    metadata:
+      labels:
+        app: sonarr-oauth2-proxy
+    spec:
+      containers:
+      - name: oauth2-proxy
+        image: quay.io/oauth2-proxy/oauth2-proxy:v7.14.3
+        ports:
+          - name: proxy
+            containerPort: 4180
+            protocol: TCP
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "125m"
+          limits:
+            memory: "128Mi"
+            cpu: "250m"
+        env:
+        - name: OAUTH2_PROXY_COOKIE_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: oauth2-proxy-secret
+              key: cookie-secret
+        - name: OAUTH2_PROXY_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: oauth2-proxy-secret
+              key: client-id
+        - name: OAUTH2_PROXY_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: oauth2-proxy-secret
+              key: client-secret
+        args:
+        - "--provider=oidc"
+        - "--oidc-issuer-url=https://auth.klimlive.de/application/o/download/"
+        - "--insecure-oidc-allow-unverified-email=true"
+        - "--email-domain=*"
+        - "--upstream=http://sonarr.jellyfin.svc.cluster.local:8989"
+        - "--http-address=0.0.0.0:4180"
+        - "--skip-provider-button=true"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sonarr-oauth2-proxy
+  namespace: jellyfin
+spec:
+  selector:
+    app: sonarr-oauth2-proxy
+  ports:
+    - protocol: TCP
+      name: proxy
+      port: 4180
+      targetPort: 4180
+  type: ClusterIP
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: sonarr
+  namespace: jellyfin
+  # labels:
+  #   external-dns: "true"
+spec:
+  parentRefs:
+    - name: services
+      namespace: infra
+      sectionName: main
+  hostnames: [
+    "sonarr.klimlive.de"
+  ]
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: sonarr-oauth2-proxy
+          port: 4180
