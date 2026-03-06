@@ -18,3 +18,4 @@ resources:
   - nginx-ingress.yaml
   - observability/operator.yaml
   - observability/config.yaml
+  - cnpg-system.yaml
