@@ -47,6 +47,54 @@ spec:
               value: "true"
             - name: OTEL_EXPORTER_OTLP_INSECURE
               value: "true"
+            - name: AUDIO_TTS_ENGINE
+              value: "openai"
+            - name: AUDIO_TTS_MODEL
+              value: "hexgrad/Kokoro-82M"
+            - name: AUDIO_TTS_VOICE
+              value: "af_sarah"
+            - name: AUDIO_TTS_SPLIT_ON
+              value: "punctuation"
+            - name: AUDIO_TTS_API_KEY
+              value: "fake"
+            - name: AUDIO_TTS_OPENAI_API_BASE_URL
+              value: "http://whisper-open-ai:8000/v1"
+            - name: ENABLE_PERSISTENT_CONFIG
+              value: "false"
+            - name: ENABLE_OAUTH_PERSISTENT_CONFIG
+              value: "false"
+            - name: ENABLE_LOGIN_FORM
+              value: "false"
+            - name: ENABLE_SIGNUP
+              value: "false"
+            - name: ENABLE_OAUTH_SIGNUP
+              value: "true"
+            - name: DEFAULT_USER_ROLE
+              value: "user"
+            - name: OAUTH_MERGE_ACCOUNTS_BY_EMAIL
+              value: "true"
+            - name: OPENID_PROVIDER_URL
+              value: "https://auth.klimlive.de/application/o/llm/.well-known/openid-configuration"
+            - name: OAUTH_SCOPES
+              valueFrom:
+                secretKeyRef:
+                  name: openwebui-secrets
+                  key: OAUTH_SCOPES
+            - name: OAUTH_PROVIDER_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: openwebui-secrets
+                  key: OAUTH_PROVIDER_NAME
+            - name: OAUTH_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: openwebui-secrets
+                  key: OAUTH_CLIENT_ID
+            - name: OAUTH_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: openwebui-secrets
+                  key: OAUTH_CLIENT_SECRET
           volumeMounts:
             - mountPath: /app/backend/data
               name: open-webui-data
