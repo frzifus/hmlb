@@ -12,8 +12,15 @@ patches:
     cluster:
       proxy:
         disabled: true
+  # https://spegel.dev/docs/getting-started/#talos
   - |-
     machine:
+      files:
+        - path: /etc/cri/conf.d/20-customization.part
+          op: create
+          content: |
+            [plugins."io.containerd.cri.v1.images"]
+              discard_unpacked_layers = false
       sysctls:
         net.ipv4.ip_unprivileged_port_start: "0"
       systemDiskEncryption:
@@ -29,16 +36,16 @@ patches:
                 passphrase: ${diskEncryption}
               slot: 0
   - |-
-    - op: add
-      path: /machine/kubelet/extraMounts
-      value:
-        - destination: /var/local
-          type: bind
-          source: /var/local
-          options:
-            - bind
-            - rshared
-            - rw
+    machine:
+      kubelet:
+        extraMounts:
+          - destination: /var/local
+            type: bind
+            source: /var/local
+            options:
+              - bind
+              - rshared
+              - rw
 
 # NOTE: Contains
 # schematic:
@@ -87,9 +94,8 @@ nodes:
     controlPlane: false
     patches:
       - |-
-        - op: add
-          path: /machine/sysctls
-          value:
+        machine:
+          sysctls:
             vm.nr_hugepages: "1024"
       - |- # https://www.talos.dev/v1.9/advanced/advanced-networking/#bonding
         machine:
@@ -120,9 +126,8 @@ nodes:
     controlPlane: false
     patches:
       - |-
-        - op: add
-          path: /machine/sysctls
-          value:
+        machine:
+          sysctls:
             vm.nr_hugepages: "1024"
       - |- # https://www.talos.dev/v1.9/advanced/advanced-networking/#bonding
         machine:
