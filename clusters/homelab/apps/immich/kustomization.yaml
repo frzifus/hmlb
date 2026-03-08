@@ -8,6 +8,8 @@ resources:
   - configmap.yaml
   - pvc.yaml
   - redis.yaml
+  - otel-redis-sidecar.yaml
+  - otel-postgres-sidecar.yaml
   - database.yaml
   - immich-server.yaml
   - immich-machine-learning.yaml

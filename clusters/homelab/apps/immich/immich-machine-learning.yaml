@@ -17,12 +17,17 @@ spec:
       labels:
         app.kubernetes.io/name: immich-machine-learning
         app.kubernetes.io/instance: immich
+      annotations:
+        instrumentation.opentelemetry.io/inject-python: "central"
     spec:
       containers:
         - name: immich-machine-learning
           image: ghcr.io/immich-app/immich-machine-learning:release
           ports:
             - containerPort: 3003
+          env:
+            - name: OTEL_SERVICE_NAME
+              value: immich-machine-learning
           envFrom:
             - configMapRef:
                 name: immich-config

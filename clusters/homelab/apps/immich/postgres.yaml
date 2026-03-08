@@ -4,6 +4,9 @@ metadata:
   name: database
   namespace: immich
 spec:
+#   inheritedMetadata:
+#     annotations:
+#       sidecar.opentelemetry.io/inject: "postgres-sidecar"
   instances: 3
 
   storage:

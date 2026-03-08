@@ -20,6 +20,8 @@ spec:
       labels:
         app.kubernetes.io/name: immich-server
         app.kubernetes.io/instance: immich
+      annotations:
+        instrumentation.opentelemetry.io/inject-nodejs: "central"
     spec:
       containers:
         - name: immich-server
@@ -32,6 +34,8 @@ spec:
           env:
             - name: TZ
               value: Europe/Berlin
+            - name: OTEL_SERVICE_NAME
+              value: immich-server
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
