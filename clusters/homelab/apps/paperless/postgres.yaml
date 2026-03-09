@@ -1,0 +1,21 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: database
+  namespace: paperless
+spec:
+  instances: 1
+
+  storage:
+    size: 10Gi
+    storageClass: openebs-crucial
+
+  superuserSecret:
+    name: paperless-secrets
+
+  bootstrap:
+    initdb:
+      database: paperless
+      owner: paperless
+      secret:
+        name: paperless-secrets

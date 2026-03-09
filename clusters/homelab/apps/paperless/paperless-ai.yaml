@@ -1,0 +1,91 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: paperless-ai-data
+  namespace: paperless
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: paperless-ai
+  namespace: paperless
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: paperless-ai
+  template:
+    metadata:
+      labels:
+        app: paperless-ai
+    spec:
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: paperless-ai
+          image: docker.io/clusterzx/paperless-ai:3.0.9
+          ports:
+            - containerPort: 3000
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: PAPERLESS_AI_PORT
+              value: "3000"
+            - name: PAPERLESS_API_URL
+              value: "http://server:8000/api"
+            - name: PAPERLESS_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: paperless-secrets
+                  key: PAPERLESS_AI_API_TOKEN
+            - name: AI_PROVIDER
+              value: "ollama"
+            - name: OLLAMA_API_URL
+              value: "http://ollama.llm.svc.cluster.local:11434"
+            - name: OLLAMA_MODEL
+              value: "llama3.2"
+            - name: SCAN_INTERVAL
+              value: "*/30 * * * *"
+            - name: PROCESS_PREDEFINED_DOCUMENTS
+              value: "no"
+            - name: TAGS
+              value: "pre-process"
+            - name: ADD_AI_PROCESSED_TAG
+              value: "yes"
+            - name: AI_PROCESSED_TAG_NAME
+              value: "ai-processed"
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: paperless-ai-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: paperless-ai
+  namespace: paperless
+spec:
+  selector:
+    app: paperless-ai
+  ports:
+    - port: 3000
+      targetPort: 3000
