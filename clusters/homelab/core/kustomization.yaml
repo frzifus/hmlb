@@ -8,7 +8,6 @@ bases:
 resources:
   - cilium.yaml
   - metrics-server.yaml
-  - kepler.yaml
   - cert-manager.yaml
   - envoy-gateway.yaml
   - storage/openebs.yaml
