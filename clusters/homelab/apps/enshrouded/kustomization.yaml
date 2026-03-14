@@ -6,4 +6,8 @@ namespace: enshrouded
 
 resources:
   - namespace.yaml
+  - secret.yaml
+  - pvc.yaml
   - server.yaml
+  # Optional: playit.gg tunnel proxy (uncomment to enable)
+  # - playit.yaml

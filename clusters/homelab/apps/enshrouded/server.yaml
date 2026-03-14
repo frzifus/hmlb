@@ -1,16 +1,3 @@
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: enshrouded-state
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 10Gi
-  storageClassName: openebs-crucial
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -39,11 +26,11 @@ spec:
             claimName: enshrouded-state
       containers:
         - name: enshrouded-server
-          image: sknnr/enshrouded-dedicated-server:latest
+          image: sknnr/enshrouded-dedicated-server:proton-v2.3.2
           ports:
-            - containerPort: 15636
-              protocol: UDP
             - containerPort: 15637
+              protocol: UDP
+            - containerPort: 27015
               protocol: UDP
           env:
             - name: SERVER_NAME
@@ -51,11 +38,14 @@ spec:
             - name: SERVER_SLOTS
               value: "16"
             - name: SERVER_PASSWORD
-              value: ""
-            - name: GAME_PORT
-              value: "15636"
-            - name: QUERY_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: enshrouded-server
+                  key: server-password
+            - name: PORT
               value: "15637"
+            - name: STEAM_PORT
+              value: "27015"
           volumeMounts:
             - mountPath: /home/steam/enshrouded/savegame
               name: enshrouded-state
@@ -79,10 +69,32 @@ spec:
   ports:
     - protocol: UDP
       name: game
-      port: 15636
-      targetPort: 15636
-    - protocol: UDP
-      name: query
       port: 15637
       targetPort: 15637
+    - protocol: UDP
+      name: query
+      port: 27015
+      targetPort: 27015
+  type: ClusterIP
+---
+# Optional: Expose the game server on the LAN via MetalLB (shared IP with ingress-nginx)
+apiVersion: v1
+kind: Service
+metadata:
+  name: enshrouded-server-lb
+  annotations:
+    metallb.universe.tf/allow-shared-ip: "shared-lan"
+spec:
+  selector:
+    app: enshrouded-server
+  ports:
+    - protocol: UDP
+      name: game
+      port: 15637
+      targetPort: 15637
+    - protocol: UDP
+      name: query
+      port: 27015
+      targetPort: 27015
   type: LoadBalancer
+  loadBalancerClass: metallb
