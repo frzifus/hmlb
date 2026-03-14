@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: playit
-          image: ghcr.io/playit-cloud/playit-agent:0.16
+          image: ghcr.io/playit-cloud/playit-agent:0.17
           env:
             - name: SECRET_KEY
               valueFrom:
