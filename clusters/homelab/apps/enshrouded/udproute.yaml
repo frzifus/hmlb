@@ -1,0 +1,29 @@
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: UDPRoute
+metadata:
+  name: enshrouded-game
+  namespace: enshrouded
+spec:
+  parentRefs:
+  - name: services
+    namespace: infra
+    sectionName: enshrouded-game
+  rules:
+  - backendRefs:
+    - name: enshrouded-server
+      port: 15637
+---
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: UDPRoute
+metadata:
+  name: enshrouded-query
+  namespace: enshrouded
+spec:
+  parentRefs:
+  - name: services
+    namespace: infra
+    sectionName: enshrouded-query
+  rules:
+  - backendRefs:
+    - name: enshrouded-server
+      port: 27015

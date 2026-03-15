@@ -89,3 +89,22 @@ spec:
         certificateRefs:
           - name: services-tls-gateway
 
+    - name: enshrouded-game
+      protocol: UDP
+      port: 15637
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              kubernetes.io/metadata.name: enshrouded
+
+    - name: enshrouded-query
+      protocol: UDP
+      port: 27015
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              kubernetes.io/metadata.name: enshrouded
