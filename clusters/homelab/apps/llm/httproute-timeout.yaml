@@ -1,0 +1,15 @@
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: llm-timeout-policy
+  namespace: llm
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: llm
+  timeout:
+    http:
+      requestTimeout: 1200s
+      connectionIdleTimeout: 1200s
