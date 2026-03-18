@@ -46,8 +46,8 @@ spec:
             cpu: 500m
             memory: 4Gi
           limits:
-            cpu: 4000m
-            memory: 8Gi
+            cpu: 6000m
+            memory: 12Gi
         securityContext:
           allowPrivilegeEscalation: false
         volumeMounts:
