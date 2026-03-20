@@ -6,7 +6,7 @@ metadata:
   namespace: paperless
 spec:
   mode: deployment
-  image: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.147.0
+  image: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.148.0
   env:
     - name: DB_USERNAME
       valueFrom:
