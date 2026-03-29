@@ -27,6 +27,13 @@ spec:
     createNamespace: false
   upgrade:
     crds: CreateReplace
+  values:
+    queryService:
+      configVars:
+        storage:
+          metrics_ttl_duration_hrs: 720
+          traces_ttl_duration_hrs: 24
+          logs_ttl_duration_hrs: 24
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
