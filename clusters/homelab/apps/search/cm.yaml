@@ -574,9 +574,11 @@ data:
       - name: woxikon.de synonyme
         disabled: true # default: true
       - name: yacy
-        disabled: true # default: true
+        disabled: false
+        base_url: http://yacy.search.svc.cluster.local:8090
       - name: yacy images
-        disabled: true # default: true
+        disabled: false
+        base_url: http://yacy.search.svc.cluster.local:8090
       - name: yahoo
         disabled: true # default: true
       - name: yandex

@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yacy
+  namespace: search
+  labels:
+    app: yacy
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: yacy
+  template:
+    metadata:
+      labels:
+        app: yacy
+    spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+        fsGroup: 1000
+      containers:
+      - name: yacy
+        image: yacy/yacy_search_server@sha256:69aa75aa2d9bcbcc0ff748ddeb4c71c37e24967ce4f8d2627e55479d8a1f8286
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+        ports:
+        - containerPort: 8090
+          name: http
+        - containerPort: 9090
+          name: p2p
+        env:
+        - name: YACY_HTTP_PORT
+          value: "8090"
+        - name: YACY_P2P_PORT
+          value: "9090"
+        - name: YACY_INSTANCE_NAME
+          value: "Homelab Yacy"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        volumeMounts:
+        - name: yacy-data
+          mountPath: /opt/yacy_search_server/DATA
+      volumes:
+      - name: yacy-data
+        persistentVolumeClaim:
+          claimName: yacy-data

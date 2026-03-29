@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: yacy
+  namespace: search
+spec:
+  selector:
+    app: yacy
+  ports:
+  - name: http
+    port: 8090
+    targetPort: 8090
+  - name: p2p
+    port: 9090
+    targetPort: 9090
+  type: ClusterIP
