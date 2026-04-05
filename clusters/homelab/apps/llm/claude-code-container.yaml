@@ -1,0 +1,98 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: claude-container-data
+  namespace: llm
+spec:
+  storageClassName: openebs-cache
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: claude-workspace
+  namespace: llm
+spec:
+  storageClassName: openebs-crucial
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: claude-container
+  namespace: llm
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: claude-container
+  template:
+    metadata:
+      labels:
+        app: claude-container
+    spec:
+      containers:
+        - name: claude-container
+          image: nezhar/claude-container:1.6.12
+          command: ["/bin/sh"]
+          args: ["-c", "sleep infinity"]
+          env:
+            # Ollama configuration
+            - name: ANTHROPIC_AUTH_TOKEN
+              value: "ollama"
+            - name: ANTHROPIC_API_KEY
+              value: ""
+            - name: ANTHROPIC_BASE_URL
+              value: "http://ollama.llm.svc.cluster.local:11434"
+            # Model selection - Qwen 3.5 397B
+            - name: ANTHROPIC_MODEL
+              value: "qwen3.5:397b-cloud"
+            - name: ANTHROPIC_CUSTOM_MODEL_OPTION
+              value: "qwen3.5:397b-cloud"
+            - name: ANTHROPIC_CUSTOM_MODEL_OPTION_NAME
+              value: "qwen 3.5 (ollama)"
+            - name: ANTHROPIC_CUSTOM_MODEL_OPTION_DESCRIPTION
+              value: "Custom deployment routed through the internal LLM gateway"
+            # Telemetry configuration
+            - name: CLAUDE_CODE_ENABLE_TELEMETRY
+              value: "1"
+            - name: OTEL_METRICS_EXPORTER
+              value: "otlp"
+            - name: OTEL_LOGS_EXPORTER
+              value: "otlp"
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: "http/protobuf"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://backend.observability.svc.cluster.local:4318"
+            - name: OTEL_LOG_TOOL_DETAILS
+              value: "1"
+          volumeMounts:
+            - mountPath: /home/claude/.claude
+              name: claude-data
+            - mountPath: /workspace
+              name: workspace
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+      volumes:
+        - name: claude-data
+          persistentVolumeClaim:
+            claimName: claude-container-data
+        - name: workspace
+          persistentVolumeClaim:
+            claimName: claude-workspace
