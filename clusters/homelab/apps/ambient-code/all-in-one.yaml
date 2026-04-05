@@ -24,15 +24,7 @@ spec:
     singular: agenticsession
   scope: Namespaced
   versions:
-  - additionalPrinterColumns:
-    - description: Current phase of the agentic session
-      jsonPath: .status.phase
-      name: Phase
-      type: string
-    - jsonPath: .metadata.creationTimestamp
-      name: Age
-      type: date
-    name: v1alpha1
+  - name: v1alpha1
     schema:
       openAPIV3Schema:
         properties:
@@ -53,80 +45,77 @@ spec:
                       workflows)
                     type: string
                 type: object
-              autoPushOnComplete:
-                default: false
-                description: When true, the runner will commit and push changes automatically
-                  after it finishes
-                type: boolean
               displayName:
                 description: A descriptive display name for the agentic session generated
                   from prompt and website
                 type: string
-              interactive:
-                description: When true, run session in interactive chat mode using
-                  inbox/outbox files
-                type: boolean
+              environmentVariables:
+                additionalProperties:
+                  type: string
+                description: 'Key-value pairs injected as environment variables into
+                  all pod containers (init-hydrate, runner, state-sync). Reserved
+                  variables (SESSION_NAME, S3_ENDPOINT, S3_BUCKET, AWS_ACCESS_KEY_ID,
+                  AWS_SECRET_ACCESS_KEY, NAMESPACE, SYNC_INTERVAL) cannot be overridden
+                  in init-hydrate and state-sync containers. Common conventions: RUNNER_TYPE
+                  identifies the runner framework (e.g. "claude-agent-sdk", "gemini-cli"),
+                  RUNNER_STATE_DIR sets the framework state directory relative to
+                  /workspace (defaults to ".claude").'
+                type: object
+              inactivityTimeout:
+                description: Seconds of inactivity before auto-stopping a session.
+                  0 disables auto-shutdown. If omitted, falls back to project-level
+                  inactivityTimeoutSeconds, then 24h default.
+                minimum: 0
+                type: integer
+              initialPrompt:
+                description: Initial prompt used only on first SDK invocation for
+                  brand new sessions (ignored on continuations or workflow restarts).
+                type: string
               llmSettings:
                 description: LLM configuration settings
                 properties:
                   maxTokens:
-                    default: 4000
+                    default: 200000
                     type: integer
                   model:
-                    default: claude-3-7-sonnet-latest
+                    default: qwen3.5:397b-cloud
                     type: string
                   temperature:
                     default: 0.7
                     type: number
                 type: object
-              mainRepoIndex:
-                default: 0
-                description: Index of the repo in repos array treated as the main
-                  repo (Claude working dir). Defaults to 0 (first repo).
-                type: integer
-              prompt:
-                description: Optional initial prompt for the agentic session. If using
-                  a workflow with startupPrompt in ambient.json, this can be omitted.
-                type: string
               repos:
-                description: List of repositories. Each has an input (required) and
-                  an optional output mapping.
+                description: List of Git repositories to clone and work with
                 items:
                   properties:
-                    input:
-                      properties:
-                        branch:
-                          default: main
-                          description: Input branch to checkout
-                          type: string
-                        url:
-                          description: Input (upstream) Git repository URL
-                          type: string
-                      required:
-                      - url
-                      type: object
-                    output:
-                      description: Optional output (fork/target) repository
-                      properties:
-                        branch:
-                          default: main
-                          description: Output branch to push to
-                          type: string
-                        url:
-                          description: Output Git repository URL (fork or same as
-                            input)
-                          type: string
-                      type: object
+                    autoPush:
+                      default: false
+                      description: When true, automatically commit and push changes
+                        to this repository after session completion
+                      type: boolean
+                    branch:
+                      default: main
+                      description: Branch to checkout
+                      type: string
+                    url:
+                      description: Git repository URL
+                      type: string
                   required:
-                  - input
+                  - url
                   type: object
                 type: array
+              stopOnRunFinished:
+                description: When true, automatically stop the session when the agent
+                  completes its run (RUN_FINISHED event). Useful for one-shot tasks
+                  triggered by automation.
+                type: boolean
               timeout:
                 default: 300
                 description: Timeout in seconds for the agentic session
                 type: integer
               userContext:
                 description: Authenticated caller identity captured at creation time
+                  (used for authorization and audit)
                 properties:
                   displayName:
                     description: Human-readable display name
@@ -137,30 +126,51 @@ spec:
                       type: string
                     type: array
                   userId:
-                    description: Stable user identifier (from SSO)
+                    description: Stable user identifier (from SSO, always overwritten
+                      from auth token)
                     type: string
                 type: object
             type: object
           status:
             properties:
               completionTime:
+                description: Timestamp when the session reached a terminal phase.
                 format: date-time
                 type: string
-              has_workspace_changes:
-                description: Whether workspace has uncommitted changes (for cleanup
-                  decisions)
-                type: boolean
-              is_error:
-                description: Whether the run ended with an error
-                type: boolean
-              jobName:
-                description: Name of the Kubernetes job created for this session
+              conditions:
+                description: Detailed condition set describing reconciliation progress.
+                items:
+                  properties:
+                    lastTransitionTime:
+                      format: date-time
+                      type: string
+                    message:
+                      type: string
+                    observedGeneration:
+                      format: int64
+                      type: integer
+                    reason:
+                      type: string
+                    status:
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      type: string
+                  required:
+                  - type
+                  - status
+                  type: object
+                type: array
+              lastActivityTime:
+                description: Timestamp of last recorded AG-UI activity in this session.
+                format: date-time
                 type: string
-              message:
-                description: Status message or error details
-                type: string
-              num_turns:
-                description: Number of conversation turns in the run
+              observedGeneration:
+                description: Spec generation that the operator has fully reconciled.
+                format: int64
                 type: integer
               phase:
                 default: Pending
@@ -168,60 +178,82 @@ spec:
                 - Pending
                 - Creating
                 - Running
+                - Stopping
+                - Stopped
                 - Completed
                 - Failed
-                - Stopped
-                - Error
                 type: string
-              repos:
-                description: Per-repo status tracking
+              reconciledRepos:
+                description: Current reconciliation state for each repository.
                 items:
                   properties:
-                    last_updated:
-                      description: Last time this repo status was updated
+                    branch:
+                      description: 'DEPRECATED: Use currentActiveBranch instead'
+                      type: string
+                    branches:
+                      description: All local branches available in this repository
+                      items:
+                        type: string
+                      type: array
+                    clonedAt:
                       format: date-time
                       type: string
+                    currentActiveBranch:
+                      description: Currently checked out branch (polled from filesystem)
+                      type: string
+                    defaultBranch:
+                      description: Default branch of the remote repository (e.g.,
+                        main, master)
+                      type: string
                     name:
-                      description: Repository name (derived from URL or spec.repos[].name)
                       type: string
                     status:
-                      description: Repository state
                       enum:
-                      - pushed
-                      - abandoned
-                      - diff
-                      - nodiff
+                      - Cloning
+                      - Ready
+                      - Failed
                       type: string
-                    total_added:
-                      description: Total lines added (from git diff)
-                      type: integer
-                    total_removed:
-                      description: Total lines removed (from git diff)
-                      type: integer
+                    url:
+                      type: string
                   type: object
                 type: array
-              result:
-                description: Final result text as reported by the runner
-                type: string
-              session_id:
-                description: Runner session identifier
+              reconciledWorkflow:
+                description: Current reconciliation state for the active workflow.
+                properties:
+                  appliedAt:
+                    format: date-time
+                    type: string
+                  branch:
+                    type: string
+                  gitUrl:
+                    type: string
+                  path:
+                    description: Optional path within the workflow repository
+                    type: string
+                  status:
+                    enum:
+                    - Cloning
+                    - Active
+                    - Failed
+                    type: string
+                type: object
+              sdkRestartCount:
+                description: Number of times the SDK has been restarted during this
+                  session.
+                type: integer
+              sdkSessionId:
+                description: SDK session identifier captured for resume support.
                 type: string
               startTime:
+                description: Timestamp when the session runner started executing.
                 format: date-time
                 type: string
-              stateDir:
-                description: Directory path where session state files are stored
+              stoppedReason:
+                description: Reason the session was stopped.
+                enum:
+                - user
+                - inactivity
                 type: string
-              subtype:
-                description: Result subtype (e.g., success, error, interrupted)
-                type: string
-              total_cost_usd:
-                description: Total cost of the run in USD as reported by the runner
-                type: number
-              usage:
-                description: Token and request usage breakdown
-                type: object
-                x-kubernetes-preserve-unknown-fields: true
             type: object
         type: object
     served: true
@@ -272,6 +304,34 @@ spec:
                   - role
                   type: object
                 type: array
+              inactivityTimeoutSeconds:
+                default: 86400
+                description: Default inactivity timeout for sessions in this project
+                  (seconds). 0 disables. Overridden by session-level spec.inactivityTimeout.
+                minimum: 0
+                type: integer
+              repositories:
+                description: Git repositories configured for this project
+                items:
+                  properties:
+                    branch:
+                      description: Optional branch override (defaults to repository's
+                        default branch)
+                      type: string
+                    provider:
+                      description: Git hosting provider (auto-detected from URL if
+                        not specified)
+                      enum:
+                      - github
+                      - gitlab
+                      type: string
+                    url:
+                      description: Repository URL (HTTPS or SSH format)
+                      type: string
+                  required:
+                  - url
+                  type: object
+                type: array
               runnerSecretsName:
                 description: Name of the Kubernetes Secret in this namespace that
                   stores runner configuration key/value pairs
@@ -285,6 +345,13 @@ spec:
                 description: Number of group RoleBindings successfully created
                 minimum: 0
                 type: integer
+              limitRangeReady:
+                description: Whether the default LimitRange for CA bin-packing is
+                  provisioned
+                type: boolean
+              scheduledSessionRBACReady:
+                description: Whether RBAC for scheduled session triggers is provisioned
+                type: boolean
             type: object
         type: object
         x-kubernetes-validations:
@@ -292,11 +359,21 @@ spec:
           rule: self.metadata.name == 'projectsettings'
     served: true
     storage: true
+    subresources:
+      status: {}
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: agentic-operator
+  namespace: ambient-code
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: ambient-api-server
+  name: ambient-api-server
   namespace: ambient-code
 ---
 apiVersion: v1
@@ -309,6 +386,14 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: frontend
+  namespace: ambient-code
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: public-api
+  name: public-api
   namespace: ambient-code
 ---
 apiVersion: v1
@@ -333,6 +418,9 @@ rules:
   - get
   - list
   - watch
+  - create
+  - update
+  - patch
 - apiGroups:
   - vteam.ambient-code
   resources:
@@ -380,7 +468,9 @@ rules:
   - get
   - list
   - watch
+  - create
   - delete
+  - deletecollection
 - apiGroups:
   - ""
   resources:
@@ -416,12 +506,49 @@ rules:
   - watch
   - create
 - apiGroups:
+  - ""
+  resources:
+  - serviceaccounts
+  verbs:
+  - get
+  - create
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - serviceaccounts/token
+  verbs:
+  - create
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - roles
+  verbs:
+  - get
+  - create
+  - update
+  - delete
+- apiGroups:
   - rbac.authorization.k8s.io
   resources:
   - rolebindings
   verbs:
   - get
   - create
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - limitranges
+  verbs:
+  - get
+  - create
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
 - apiGroups:
   - ""
   resources:
@@ -599,6 +726,14 @@ rules:
   - list
   - watch
 - apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - project.openshift.io
   resources:
   - projects
@@ -682,6 +817,14 @@ rules:
   - get
 - apiGroups:
   - ""
+  resourceNames:
+  - ambient-runner-secrets
+  resources:
+  - secrets
+  verbs:
+  - get
+- apiGroups:
+  - ""
   resources:
   - secrets
   verbs:
@@ -700,6 +843,14 @@ rules:
   resources:
   - pods
   - pods/log
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - events
   verbs:
   - get
   - list
@@ -801,6 +952,14 @@ rules:
   resources:
   - pods
   - pods/log
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - events
   verbs:
   - get
   - list
@@ -941,6 +1100,19 @@ rules:
   - get
   - list
   - watch
+  - create
+  - delete
+- apiGroups:
+  - batch
+  resources:
+  - cronjobs
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
   - delete
 - apiGroups:
   - ""
@@ -1076,10 +1248,268 @@ subjects:
 ---
 apiVersion: v1
 data:
+  agent-registry.json: |
+    [
+      {
+        "id": "claude-agent-sdk",
+        "displayName": "Claude Code",
+        "description": "Anthropic Claude with full coding capabilities",
+        "framework": "claude-agent-sdk",
+        "provider": "anthropic",
+        "container": {
+          "image": "quay.io/ambient_code/vteam_claude_runner:latest",
+          "port": 8001,
+          "env": {
+            "RUNNER_TYPE": "claude-agent-sdk",
+            "RUNNER_STATE_DIR": ".claude"
+          },
+          "resources": {
+            "requests": {"cpu": "500m", "memory": "512Mi"},
+            "limits": {"cpu": "2", "memory": "8Gi"}
+          }
+        },
+        "sandbox": {
+          "stateDir": ".claude",
+          "stateSyncImage": "quay.io/ambient_code/vteam_state_sync:latest",
+          "persistence": "s3",
+          "workspaceSize": "10Gi",
+          "terminationGracePeriod": 60,
+          "seed": {"cloneRepos": true, "hydrateState": true}
+        },
+        "auth": {
+          "requiredSecretKeys": ["ANTHROPIC_API_KEY"],
+          "secretKeyLogic": "any",
+          "vertexSupported": true
+        },
+        "featureGate": ""
+      },
+      {
+        "id": "gemini-cli",
+        "displayName": "Gemini CLI",
+        "description": "Google Gemini coding agent with built-in file, bash, and search tools",
+        "framework": "gemini-cli",
+        "provider": "google",
+        "container": {
+          "image": "quay.io/ambient_code/vteam_claude_runner:latest",
+          "port": 8001,
+          "env": {
+            "RUNNER_TYPE": "gemini-cli",
+            "RUNNER_STATE_DIR": ".gemini"
+          }
+        },
+        "sandbox": {
+          "stateDir": ".gemini",
+          "stateSyncImage": "quay.io/ambient_code/vteam_state_sync:latest",
+          "persistence": "s3",
+          "workspaceSize": "10Gi",
+          "terminationGracePeriod": 60,
+          "seed": {"cloneRepos": true, "hydrateState": true}
+        },
+        "auth": {
+          "requiredSecretKeys": ["GEMINI_API_KEY", "GOOGLE_API_KEY"],
+          "secretKeyLogic": "any",
+          "vertexSupported": true
+        },
+        "featureGate": "runner.gemini-cli.enabled"
+      }
+    ]
+kind: ConfigMap
+metadata:
+  name: ambient-agent-registry
+  namespace: ambient-code
+---
+apiVersion: v1
+data:
+  acl.yml: |
+    - claim: email
+      pattern: ^.*@(redhat\.com|ambient\.code)$
+  jwks.json: |
+    {"keys":[{"use":"sig","kty":"RSA","kid":"FA4jixwTu0r6vvS2rfhC-mxBLO2tagx_D05POwXP_EU","alg":"RS256","n":"tAPoSf8AE83mKXraK196ZNzq76kxMQDUexBA4j0LBk3ogSx-ONdexyq7bhbveQxvhBqbLbq-zvQ3cqNoewYRm-n5BoCQmhS-XMtqP8giT1vMlYz1wV87He5NL-R82lKyXQM4LYHTfhPMqZTSWJVQ_IoQ1tMJjsNhKfMORybXQufp9FR3Z0jXETpbTPgVjVBKns4VLWwIu2IamFhjapC6i-B-ZbsxB5K6HTWkdAvhWdtTbcQrJf3axYFor8eXXEWm4BdXpygsfy1FGVJwfJuTqDU07nwMdOvSrS-NHYJO5aRDwtMeNyv2g3GoXuQaD3p03kWKGQSNP7dENFrn3ygFEw","e":"AQAB"}]}
+kind: ConfigMap
+metadata:
+  labels:
+    app: ambient-api-server
+    component: auth
+  name: ambient-api-server-auth
+  namespace: ambient-code
+---
+apiVersion: v1
+data:
+  flags.json: |
+    {
+      "flags": [
+        {
+          "name": "runner.gemini-cli.enabled",
+          "description": "Enable Gemini CLI runner type for session creation",
+          "tags": [
+            {
+              "type": "scope",
+              "value": "workspace"
+            }
+          ]
+        },
+        {
+          "name": "ldap.autocomplete.enabled",
+          "description": "Enable LDAP user and group autocomplete for workspace sharing",
+          "tags": [
+            {
+              "type": "scope",
+              "value": "workspace"
+            }
+          ]
+        },
+        {
+          "name": "scheduled-session.reuse.enabled",
+          "description": "Enable reuse last session option for scheduled sessions",
+          "tags": [
+            {
+              "type": "scope",
+              "value": "workspace"
+            }
+          ]
+        },
+        {
+          "name": "jira-write",
+          "description": "Allow Jira MCP server to perform write operations in new sessions",
+          "tags": [
+            {
+              "type": "scope",
+              "value": "workspace"
+            }
+          ]
+        }
+      ]
+    }
+kind: ConfigMap
+metadata:
+  name: ambient-flags
+  namespace: ambient-code
+---
+apiVersion: v1
+data:
+  models.json: |
+    {
+      "version": 2,
+      "defaultModel": "qwen3.5:397b-cloud",
+      "providerDefaults": {
+        "anthropic": "qwen3.5:397b-cloud",
+        "google": "gemini-2.5-flash"
+      },
+      "models": [
+        {
+          "id": "claude-sonnet-4-5",
+          "label": "Claude Sonnet 4.5",
+          "vertexId": "claude-sonnet-4-5@20250929",
+          "provider": "anthropic",
+          "available": true,
+          "featureGated": false
+        },
+        {
+          "id": "qwen3.5:397b-cloud",
+          "label": "Qwen 3.5 397B (Ollama)",
+          "provider": "anthropic",
+          "available": true,
+          "featureGated": false
+        },
+        {
+          "id": "claude-opus-4-6",
+          "label": "Claude Opus 4.6",
+          "vertexId": "claude-opus-4-6@default",
+          "provider": "anthropic",
+          "available": true,
+          "featureGated": true
+        },
+        {
+          "id": "claude-opus-4-5",
+          "label": "Claude Opus 4.5",
+          "vertexId": "claude-opus-4-5@20251101",
+          "provider": "anthropic",
+          "available": true,
+          "featureGated": false
+        },
+        {
+          "id": "claude-haiku-4-5",
+          "label": "Claude Haiku 4.5",
+          "vertexId": "claude-haiku-4-5@20251001",
+          "provider": "anthropic",
+          "available": true,
+          "featureGated": false
+        },
+        {
+          "id": "claude-sonnet-4-6",
+          "label": "Claude Sonnet 4.6",
+          "vertexId": "claude-sonnet-4-6@default",
+          "provider": "anthropic",
+          "available": true,
+          "featureGated": true
+        },
+        {
+          "id": "gemini-2.5-flash",
+          "label": "Gemini 2.5 Flash",
+          "vertexId": "gemini-2.5-flash@default",
+          "provider": "google",
+          "available": true,
+          "featureGated": false
+        },
+        {
+          "id": "gemini-2.5-pro",
+          "label": "Gemini 2.5 Pro",
+          "vertexId": "gemini-2.5-pro@default",
+          "provider": "google",
+          "available": true,
+          "featureGated": true
+        },
+        {
+          "id": "gemini-2.5-flash-lite",
+          "label": "Gemini 2.5 Flash Lite",
+          "vertexId": "gemini-2.5-flash-lite@default",
+          "provider": "google",
+          "available": true,
+          "featureGated": true
+        },
+        {
+          "id": "gemini-2.5-flash-preview-04-17",
+          "label": "Gemini 2.5 Flash Preview 04.17",
+          "vertexId": "gemini-2.5-flash-preview-04-17@default",
+          "provider": "google",
+          "available": false,
+          "featureGated": true
+        },
+        {
+          "id": "gemini-3.1-flash-image-preview",
+          "label": "Gemini 3.1 Flash Image Preview",
+          "vertexId": "gemini-3.1-flash-image-preview@default",
+          "provider": "google",
+          "available": false,
+          "featureGated": true
+        }
+      ]
+    }
+kind: ConfigMap
+metadata:
+  name: ambient-models
+  namespace: ambient-code
+---
+apiVersion: v1
+data:
+  AMBIENT_CODE_RUNNER_IMAGE: vteam_claude_runner:latest
   ANTHROPIC_VERTEX_PROJECT_ID: ""
-  CLAUDE_CODE_USE_VERTEX: "0"
   CLOUD_ML_REGION: ""
   GOOGLE_APPLICATION_CREDENTIALS: ""
+  USE_VERTEX: "0"
+  ANTHROPIC_AUTH_TOKEN: "ollama"
+  ANTHROPIC_API_KEY: "sk-ant-fake-ollama-key"
+  ANTHROPIC_BASE_URL: "http://ollama.llm.svc.cluster.local:11434"
+  ANTHROPIC_MODEL: "qwen3.5:397b-cloud"
+  ANTHROPIC_CUSTOM_MODEL_OPTION: "qwen3.5:397b-cloud"
+  ANTHROPIC_CUSTOM_MODEL_OPTION_NAME: "qwen 3.5 (ollama)"
+  ANTHROPIC_CUSTOM_MODEL_OPTION_DESCRIPTION: "Custom deployment routed through the internal LLM gateway"
+  CLAUDE_CODE_ENABLE_TELEMETRY: "1"
+  OTEL_METRICS_EXPORTER: "otlp"
+  OTEL_LOGS_EXPORTER: "otlp"
+  OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://backend.observability.svc.cluster.local:4318"
+  OTEL_LOG_TOOL_DETAILS: "1"
 kind: ConfigMap
 metadata:
   labels:
@@ -1089,31 +1519,99 @@ metadata:
   namespace: ambient-code
 ---
 apiVersion: v1
-kind: Secret
+data:
+  init-databases.sh: |
+    #!/bin/bash
+    set -e
+
+    # Function to create database if it doesn't exist
+    # Uses parameterized queries to avoid SQL injection
+    create_db_if_not_exists() {
+      local db_name="$1"
+      # Validate database name contains only allowed characters
+      if [[ ! "$db_name" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]]; then
+        echo "ERROR: Invalid database name: $db_name"
+        exit 1
+      fi
+      echo "Checking database: $db_name"
+      # Check if database exists
+      if psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -tAc \
+        "SELECT 1 FROM pg_database WHERE datname = '$db_name'" | grep -q 1; then
+        echo "Database $db_name already exists"
+      else
+        echo "Creating database: $db_name"
+        psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE $db_name"
+        psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "GRANT ALL PRIVILEGES ON DATABASE $db_name TO $POSTGRES_USER"
+      fi
+      echo "Database $db_name ready"
+    }
+
+    # Create databases for each service
+    # Unleash feature flags
+    create_db_if_not_exists "unleash"
+
+    # MLflow experiment tracking
+    create_db_if_not_exists "mlflow"
+
+    echo "All databases initialized successfully"
+kind: ConfigMap
 metadata:
   labels:
-    app: vteam-e2e
-  name: github-app-secret
+    app: postgresql
+    app.kubernetes.io/name: postgresql
+  name: postgresql-init-scripts
   namespace: ambient-code
-stringData:
-  GITHUB_APP_ID: ""
-  GITHUB_CLIENT_ID: ""
-  GITHUB_CLIENT_SECRET: ""
-  GITHUB_PRIVATE_KEY: ""
-  GITHUB_STATE_SECRET: test-state-secret-for-e2e
-type: Opaque
 ---
 apiVersion: v1
-kind: Secret
+kind: Service
 metadata:
   annotations:
-    kubernetes.io/service-account.name: test-user
+    description: Exposes the ambient-api-server REST API
   labels:
-    app: vteam-e2e
-    component: test-user
-  name: test-user-token
+    app: ambient-api-server
+    component: api
+  name: ambient-api-server
   namespace: ambient-code
-type: kubernetes.io/service-account-token
+spec:
+  ports:
+  - name: api
+    port: 8000
+    protocol: TCP
+    targetPort: 8000
+  - name: grpc
+    port: 9000
+    protocol: TCP
+    targetPort: 9000
+  - name: metrics
+    port: 4433
+    protocol: TCP
+    targetPort: 4433
+  - name: health
+    port: 4434
+    protocol: TCP
+    targetPort: 4434
+  selector:
+    app: ambient-api-server
+    component: api
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: ambient-api-server
+    component: database
+  name: ambient-api-server-db
+  namespace: ambient-code
+spec:
+  ports:
+  - name: postgresql
+    port: 5432
+    protocol: TCP
+    targetPort: 5432
+  selector:
+    app: ambient-api-server
+    component: database
+  type: ClusterIP
 ---
 apiVersion: v1
 kind: Service
@@ -1150,6 +1648,111 @@ spec:
   type: ClusterIP
 ---
 apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: minio
+  name: minio
+  namespace: ambient-code
+spec:
+  ports:
+  - name: api
+    port: 9000
+    protocol: TCP
+    targetPort: 9000
+  - name: console
+    port: 9001
+    protocol: TCP
+    targetPort: 9001
+  selector:
+    app: minio
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: postgresql
+    app.kubernetes.io/name: postgresql
+  name: postgresql
+  namespace: ambient-code
+spec:
+  ports:
+  - name: postgresql
+    port: 5432
+    targetPort: postgresql
+  selector:
+    app: postgresql
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: public-api
+  name: public-api-service
+  namespace: ambient-code
+spec:
+  ports:
+  - name: http
+    port: 8081
+    protocol: TCP
+    targetPort: http
+  selector:
+    app: public-api
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: unleash
+    app.kubernetes.io/name: unleash
+  name: unleash
+  namespace: ambient-code
+spec:
+  ports:
+  - name: http
+    port: 4242
+    targetPort: 4242
+  selector:
+    app: unleash
+  type: ClusterIP
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  labels:
+    ambient-code.io/managed: "true"
+    app.kubernetes.io/managed-by: ambient-code
+  name: ambient-default-limits
+  namespace: ambient-code
+spec:
+  limits:
+  - default:
+      cpu: "2"
+      memory: 4Gi
+    defaultRequest:
+      cpu: 250m
+      memory: 256Mi
+    type: Container
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: ambient-api-server
+    component: database
+  name: ambient-api-server-db-data
+  namespace: ambient-code
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   labels:
@@ -1164,6 +1767,37 @@ spec:
     requests:
       storage: 5Gi
   storageClassName: openebs-cache
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: minio
+  name: minio-data
+  namespace: ambient-code
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: openebs-cache
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: postgresql
+    app.kubernetes.io/component: database
+    app.kubernetes.io/name: postgresql
+  name: postgresql-data
+  namespace: ambient-code
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -1183,7 +1817,21 @@ spec:
         app: agentic-operator
     spec:
       containers:
-      - env:
+      - args:
+        - --max-concurrent-reconciles=10
+        - --health-probe-bind-address=:8081
+        - --leader-elect=false
+        env:
+        - name: AMBIENT_CODE_RUNNER_IMAGE
+          value: quay.io/ambient_code/vteam_claude_runner:latest
+        - name: STATE_SYNC_IMAGE
+          value: quay.io/ambient_code/vteam_state_sync:latest
+        - name: IMAGE_PULL_POLICY
+          value: IfNotPresent
+        - name: POD_FSGROUP
+          value: "0"
+        - name: MAX_CONCURRENT_RECONCILES
+          value: "10"
         - name: NAMESPACE
           valueFrom:
             fieldRef:
@@ -1194,52 +1842,356 @@ spec:
               fieldPath: metadata.namespace
         - name: BACKEND_API_URL
           value: http://backend-service:8080/api
-        - name: AMBIENT_CODE_RUNNER_IMAGE
-          value: quay.io/ambient_code/vteam_claude_runner:latest
-        - name: CONTENT_SERVICE_IMAGE
-          value: quay.io/ambient_code/vteam_backend:latest
-        - name: IMAGE_PULL_POLICY
-          value: Always
-        - name: CLAUDE_CODE_USE_VERTEX
+        - name: USE_VERTEX
           valueFrom:
             configMapKeyRef:
-              key: CLAUDE_CODE_USE_VERTEX
+              key: USE_VERTEX
               name: operator-config
+              optional: true
         - name: CLOUD_ML_REGION
           valueFrom:
             configMapKeyRef:
               key: CLOUD_ML_REGION
               name: operator-config
+              optional: true
         - name: ANTHROPIC_VERTEX_PROJECT_ID
           valueFrom:
             configMapKeyRef:
               key: ANTHROPIC_VERTEX_PROJECT_ID
               name: operator-config
+              optional: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
           valueFrom:
             configMapKeyRef:
               key: GOOGLE_APPLICATION_CREDENTIALS
               name: operator-config
-        image: quay.io/ambient_code/vteam_operator:latest
+              optional: true
+        - name: LANGFUSE_ENABLED
+          valueFrom:
+            secretKeyRef:
+              key: LANGFUSE_ENABLED
+              name: ambient-admin-langfuse-secret
+              optional: true
+        - name: LANGFUSE_HOST
+          valueFrom:
+            secretKeyRef:
+              key: LANGFUSE_HOST
+              name: ambient-admin-langfuse-secret
+              optional: true
+        - name: LANGFUSE_PUBLIC_KEY
+          valueFrom:
+            secretKeyRef:
+              key: LANGFUSE_PUBLIC_KEY
+              name: ambient-admin-langfuse-secret
+              optional: true
+        - name: LANGFUSE_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              key: LANGFUSE_SECRET_KEY
+              name: ambient-admin-langfuse-secret
+              optional: true
+        - name: GOOGLE_OAUTH_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              key: GOOGLE_OAUTH_CLIENT_ID
+              name: google-workflow-app-secret
+              optional: true
+        - name: GOOGLE_OAUTH_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              key: GOOGLE_OAUTH_CLIENT_SECRET
+              name: google-workflow-app-secret
+              optional: true
+        - name: S3_ENDPOINT
+          value: http://minio.ambient-code.svc:9000
+        - name: S3_BUCKET
+          value: ambient-sessions
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: otel-collector.ambient-code.svc:4317
+        - name: DEPLOYMENT_ENV
+          value: production
+        - name: VERSION
+          value: latest
+        image: quay.io/ambient_code/vteam_operator:v0.1.4
+        imagePullPolicy: Always
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: health
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        name: agentic-operator
+        ports:
+        - containerPort: 8081
+          name: health
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: health
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+          limits:
+            cpu: 200m
+            memory: 512Mi
+          requests:
+            cpu: 50m
+            memory: 128Mi
+        volumeMounts:
+        - mountPath: /config/models
+          name: model-manifest
+          readOnly: true
+        - mountPath: /config/registry
+          name: agent-registry
+          readOnly: true
+      restartPolicy: Always
+      serviceAccountName: agentic-operator
+      volumes:
+      - configMap:
+          name: ambient-models
+          optional: true
+        name: model-manifest
+      - configMap:
+          name: ambient-agent-registry
+          optional: true
+        name: agent-registry
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ambient-api-server
+    component: api
+  name: ambient-api-server
+  namespace: ambient-code
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ambient-api-server
+      component: api
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: ambient-api-server
+        component: api
+    spec:
+      containers:
+      - command:
+        - /usr/local/bin/ambient-api-server
+        - serve
+        - --db-host-file=/secrets/db/db.host
+        - --db-port-file=/secrets/db/db.port
+        - --db-user-file=/secrets/db/db.user
+        - --db-password-file=/secrets/db/db.password
+        - --db-name-file=/secrets/db/db.name
+        - --enable-jwt=false
+        - --enable-authz=false
+        - --jwk-cert-file=/configs/authentication/jwks.json
+        - --enable-https=false
+        - --enable-grpc=true
+        - --grpc-enable-tls=false
+        - --api-server-bindaddress=:8000
+        - --metrics-server-bindaddress=:4433
+        - --health-check-server-bindaddress=:4434
+        - --enable-health-check-https=false
+        - --db-sslmode=disable
+        - --db-max-open-connections=50
+        - --enable-db-debug=false
+        - --enable-metrics-https=false
+        - --http-read-timeout=5s
+        - --http-write-timeout=30s
+        - --cors-allowed-origins=*
+        - --cors-allowed-headers=X-Ambient-Project
+        - --grpc-server-bindaddress=:9000
+        - --alsologtostderr
+        - -v=10
+        env:
+        - name: AMBIENT_ENV
+          value: development
+        image: quay.io/ambient_code/vteam_api_server:latest
         imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /healthcheck
+            port: 4434
+            scheme: HTTP
+          initialDelaySeconds: 15
+          periodSeconds: 5
+          timeoutSeconds: 1
+        name: api-server
+        ports:
+        - containerPort: 8000
+          name: api
+          protocol: TCP
+        - containerPort: 4433
+          name: metrics
+          protocol: TCP
+        - containerPort: 4434
+          name: health
+          protocol: TCP
+        - containerPort: 9000
+          name: grpc
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            httpHeaders:
+            - name: User-Agent
+              value: Probe
+            path: /healthcheck
+            port: 4434
+            scheme: HTTP
+          initialDelaySeconds: 20
+          periodSeconds: 10
+        resources:
+          limits:
+            cpu: 1
+            memory: 1Gi
+          requests:
+            cpu: 200m
+            memory: 512Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: false
+        volumeMounts:
+        - mountPath: /secrets/db
+          name: db-secrets
+          readOnly: true
+        - mountPath: /secrets/app
+          name: app-secrets
+          readOnly: true
+        - mountPath: /configs/authentication
+          name: auth-config
+          readOnly: true
+      initContainers:
+      - command:
+        - /usr/local/bin/ambient-api-server
+        - migrate
+        - --db-host-file=/secrets/db/db.host
+        - --db-port-file=/secrets/db/db.port
+        - --db-user-file=/secrets/db/db.user
+        - --db-password-file=/secrets/db/db.password
+        - --db-name-file=/secrets/db/db.name
+        - --db-sslmode=disable
+        - --alsologtostderr
+        - -v=10
+        image: quay.io/ambient_code/vteam_api_server:latest
+        imagePullPolicy: IfNotPresent
+        name: migration
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: false
+        volumeMounts:
+        - mountPath: /secrets/db
+          name: db-secrets
+      serviceAccountName: ambient-api-server
+      volumes:
+      - name: db-secrets
+        secret:
+          secretName: ambient-api-server-db
+      - name: app-secrets
+        secret:
+          secretName: ambient-api-server
+      - configMap:
+          name: ambient-api-server-auth
+        name: auth-config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ambient-api-server
+    component: database
+  name: ambient-api-server-db
+  namespace: ambient-code
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ambient-api-server
+      component: database
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: ambient-api-server
+        component: database
+    spec:
+      containers:
+      - env:
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              key: db.user
+              name: ambient-api-server-db
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: db.password
+              name: ambient-api-server-db
+        - name: POSTGRES_DB
+          valueFrom:
+            secretKeyRef:
+              key: db.name
+              name: ambient-api-server-db
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        image: postgres:16
         livenessProbe:
           exec:
             command:
             - /bin/sh
             - -c
-            - ps aux | grep '[o]perator' || exit 1
+            - pg_isready -U "$POSTGRES_USER"
           initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+        name: postgresql
+        ports:
+        - containerPort: 5432
+          name: postgresql
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -U "$POSTGRES_USER"
+          initialDelaySeconds: 10
           periodSeconds: 10
-        name: agentic-operator
-        resources:
-          limits:
-            cpu: 200m
-            memory: 256Mi
-          requests:
-            cpu: 50m
-            memory: 64Mi
-      restartPolicy: Always
-      serviceAccountName: agentic-operator
+          timeoutSeconds: 5
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: false
+          runAsNonRoot: true
+          runAsUser: 999
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: ambient-api-server-db-data
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        fsGroup: 999
+      volumes:
+      - name: ambient-api-server-db-data
+        persistentVolumeClaim:
+          claimName: ambient-api-server-db-data
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -1253,6 +2205,8 @@ spec:
   selector:
     matchLabels:
       app: backend-api
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
@@ -1275,10 +2229,12 @@ spec:
           value: main
         - name: SPEC_KIT_TEMPLATE
           value: spec-kit-template-claude-sh
-        - name: CONTENT_SERVICE_IMAGE
-          value: quay.io/ambient_code/vteam_backend:latest
         - name: IMAGE_PULL_POLICY
-          value: Always
+          valueFrom:
+            configMapKeyRef:
+              key: IMAGE_PULL_POLICY
+              name: operator-config
+              optional: true
         - name: GITHUB_APP_ID
           valueFrom:
             secretKeyRef:
@@ -1309,19 +2265,128 @@ spec:
               key: GITHUB_STATE_SECRET
               name: github-app-secret
               optional: true
+        - name: GOOGLE_OAUTH_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              key: GOOGLE_OAUTH_CLIENT_ID
+              name: google-workflow-app-secret
+              optional: true
+        - name: GOOGLE_OAUTH_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              key: GOOGLE_OAUTH_CLIENT_SECRET
+              name: google-workflow-app-secret
+              optional: true
+        - name: OAUTH_STATE_SECRET
+          valueFrom:
+            secretKeyRef:
+              key: OAUTH_STATE_SECRET
+              name: google-workflow-app-secret
+              optional: true
+        - name: BACKEND_URL
+          valueFrom:
+            secretKeyRef:
+              key: BACKEND_URL
+              name: google-workflow-app-secret
+              optional: true
+        - name: OPERATOR_IMAGE
+          valueFrom:
+            configMapKeyRef:
+              key: OPERATOR_IMAGE
+              name: operator-config
+              optional: true
         - name: OOTB_WORKFLOWS_REPO
-          value: https://github.com/ambient-code/ootb-ambient-workflows.git
+          value: https://github.com/ambient-code/workflows.git
         - name: OOTB_WORKFLOWS_BRANCH
           value: main
         - name: OOTB_WORKFLOWS_PATH
           value: workflows
-        - name: CLAUDE_CODE_USE_VERTEX
+        - name: USE_VERTEX
           valueFrom:
             configMapKeyRef:
-              key: CLAUDE_CODE_USE_VERTEX
+              key: USE_VERTEX
               name: operator-config
-        image: quay.io/ambient_code/vteam_backend:latest
-        imagePullPolicy: IfNotPresent
+              optional: true
+        - name: CLOUD_ML_REGION
+          valueFrom:
+            configMapKeyRef:
+              key: CLOUD_ML_REGION
+              name: operator-config
+              optional: true
+        - name: ANTHROPIC_VERTEX_PROJECT_ID
+          valueFrom:
+            configMapKeyRef:
+              key: ANTHROPIC_VERTEX_PROJECT_ID
+              name: operator-config
+              optional: true
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          valueFrom:
+            configMapKeyRef:
+              key: GOOGLE_APPLICATION_CREDENTIALS
+              name: operator-config
+              optional: true
+        - name: LDAP_URL
+          valueFrom:
+            configMapKeyRef:
+              key: LDAP_URL
+              name: ldap-config
+              optional: true
+        - name: LDAP_BASE_DN
+          valueFrom:
+            configMapKeyRef:
+              key: LDAP_BASE_DN
+              name: ldap-config
+              optional: true
+        - name: LDAP_GROUP_BASE_DN
+          valueFrom:
+            configMapKeyRef:
+              key: LDAP_GROUP_BASE_DN
+              name: ldap-config
+              optional: true
+        - name: LDAP_SKIP_TLS_VERIFY
+          valueFrom:
+            configMapKeyRef:
+              key: LDAP_SKIP_TLS_VERIFY
+              name: ldap-config
+              optional: true
+        - name: UNLEASH_URL
+          valueFrom:
+            secretKeyRef:
+              key: unleash-url
+              name: unleash-credentials
+              optional: true
+        - name: UNLEASH_CLIENT_KEY
+          valueFrom:
+            secretKeyRef:
+              key: client-api-token
+              name: unleash-credentials
+              optional: true
+        - name: UNLEASH_ADMIN_URL
+          valueFrom:
+            secretKeyRef:
+              key: unleash-admin-url
+              name: unleash-credentials
+              optional: true
+        - name: UNLEASH_ADMIN_TOKEN
+          valueFrom:
+            secretKeyRef:
+              key: admin-api-token
+              name: unleash-credentials
+              optional: true
+        - name: UNLEASH_PROJECT
+          valueFrom:
+            secretKeyRef:
+              key: unleash-project
+              name: unleash-credentials
+              optional: true
+        - name: UNLEASH_ENVIRONMENT
+          valueFrom:
+            secretKeyRef:
+              key: unleash-environment
+              name: unleash-credentials
+              optional: true
+        image: quay.io/ambient_code/vteam_backend:v0.1.4
+        imagePullPolicy: Always
         livenessProbe:
           httpGet:
             path: /health
@@ -1340,19 +2405,47 @@ spec:
           periodSeconds: 5
         resources:
           limits:
-            cpu: 500m
-            memory: 512Mi
+            cpu: "1"
+            memory: 1536Mi
           requests:
-            cpu: 100m
-            memory: 128Mi
+            cpu: 200m
+            memory: 512Mi
         volumeMounts:
         - mountPath: /workspace
           name: backend-state
+        - mountPath: /app/vertex
+          name: vertex-credentials
+          readOnly: true
+        - mountPath: /config/models
+          name: model-manifest
+          readOnly: true
+        - mountPath: /config/flags
+          name: flags-config
+          readOnly: true
+        - mountPath: /config/registry
+          name: agent-registry
+          readOnly: true
       serviceAccountName: backend-api
       volumes:
       - name: backend-state
         persistentVolumeClaim:
           claimName: backend-state-pvc
+      - name: vertex-credentials
+        secret:
+          optional: true
+          secretName: ambient-vertex
+      - configMap:
+          name: ambient-models
+          optional: true
+        name: model-manifest
+      - configMap:
+          name: ambient-flags
+          optional: true
+        name: flags-config
+      - configMap:
+          name: ambient-agent-registry
+          optional: true
+        name: agent-registry
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -1362,7 +2455,6 @@ metadata:
   name: frontend
   namespace: ambient-code
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: frontend
@@ -1373,7 +2465,14 @@ spec:
     spec:
       containers:
       - env:
+        - name: BACKEND_URL
+          value: http://backend-service.ambient-code.svc.cluster.local:8080/api
         - name: OC_TOKEN
+          valueFrom:
+            secretKeyRef:
+              key: token
+              name: test-user-token
+        - name: NEXT_PUBLIC_E2E_TOKEN
           valueFrom:
             secretKeyRef:
               key: token
@@ -1382,16 +2481,24 @@ spec:
           value: system:serviceaccount:ambient-code:test-user
         - name: OC_EMAIL
           value: test-user@vteam.local
-        - name: BACKEND_URL
-          value: http://backend-service:8080/api
         - name: NODE_ENV
           value: production
         - name: GITHUB_APP_SLUG
           value: ambient-code
-        - name: VTEAM_VERSION
-          value: v0.0.7
-        image: quay.io/ambient_code/vteam_frontend:latest
-        imagePullPolicy: IfNotPresent
+        - name: UNLEASH_URL
+          valueFrom:
+            secretKeyRef:
+              key: unleash-url
+              name: unleash-credentials
+              optional: true
+        - name: UNLEASH_CLIENT_KEY
+          valueFrom:
+            secretKeyRef:
+              key: client-api-token
+              name: unleash-credentials
+              optional: true
+        image: quay.io/ambient_code/vteam_frontend:v0.1.4
+        imagePullPolicy: Always
         livenessProbe:
           httpGet:
             path: /
@@ -1417,44 +2524,356 @@ spec:
             memory: 256Mi
       serviceAccountName: frontend
 ---
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   labels:
-    app: backend-api
-  name: backend-ingress
+    app: minio
+  name: minio
   namespace: ambient-code
 spec:
-  ingressClassName: nginx
-  rules:
-  - host: vteam.local
-    http:
-      paths:
-      - backend:
-          service:
-            name: backend-service
-            port:
-              name: http
-        path: /api
-        pathType: Prefix
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minio
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      containers:
+      - args:
+        - server
+        - /data
+        - --console-address
+        - :9001
+        env:
+        - name: MINIO_ROOT_USER
+          valueFrom:
+            secretKeyRef:
+              key: root-user
+              name: minio-credentials
+        - name: MINIO_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: root-password
+              name: minio-credentials
+        image: quay.io/minio/minio:latest
+        livenessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: /minio/health/live
+            port: 9000
+          initialDelaySeconds: 60
+          periodSeconds: 15
+          timeoutSeconds: 5
+        name: minio
+        ports:
+        - containerPort: 9000
+          name: api
+          protocol: TCP
+        - containerPort: 9001
+          name: console
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: /minio/health/ready
+            port: 9000
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          timeoutSeconds: 5
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 250m
+            memory: 256Mi
+        volumeMounts:
+        - mountPath: /data
+          name: data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: minio-data
 ---
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   labels:
-    app: frontend
-  name: frontend-ingress
+    app: postgresql
+    app.kubernetes.io/component: database
+    app.kubernetes.io/name: postgresql
+  name: postgresql
   namespace: ambient-code
 spec:
-  ingressClassName: nginx
-  rules:
-  - host: vteam.local
-    http:
-      paths:
-      - backend:
-          service:
-            name: frontend-service
-            port:
-              name: http
-        path: /
-        pathType: Prefix
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: postgresql
+        app.kubernetes.io/name: postgresql
+    spec:
+      securityContext:
+        fsGroup: 999
+      containers:
+      - env:
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              key: db.user
+              name: postgresql-credentials
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: db.password
+              name: postgresql-credentials
+        - name: POSTGRES_DB
+          valueFrom:
+            secretKeyRef:
+              key: db.name
+              name: postgresql-credentials
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        image: postgres:16
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -U "$POSTGRES_USER"
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+        name: postgresql
+        ports:
+        - containerPort: 5432
+          name: postgresql
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -U "$POSTGRES_USER"
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 256Mi
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: data
+        - mountPath: /docker-entrypoint-initdb.d
+          name: init-scripts
+          readOnly: true
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: postgresql-data
+      - configMap:
+          defaultMode: 493
+          name: postgresql-init-scripts
+        name: init-scripts
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: public-api
+  name: public-api
+  namespace: ambient-code
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: public-api
+  template:
+    metadata:
+      labels:
+        app: public-api
+        role: api-gateway
+    spec:
+      containers:
+      - env:
+        - name: PORT
+          value: "8081"
+        - name: BACKEND_URL
+          value: http://backend-service:8080
+        - name: GIN_MODE
+          value: release
+        - name: BACKEND_TIMEOUT
+          value: 30s
+        - name: RATE_LIMIT_RPS
+          value: "100"
+        - name: RATE_LIMIT_BURST
+          value: "200"
+        image: quay.io/ambient_code/vteam_public_api:v0.1.4
+        imagePullPolicy: Always
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        name: public-api
+        ports:
+        - containerPort: 8081
+          name: http
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        resources:
+          limits:
+            cpu: 200m
+            memory: 256Mi
+          requests:
+            cpu: 50m
+            memory: 128Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+      serviceAccountName: public-api
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: unleash
+    app.kubernetes.io/component: server
+    app.kubernetes.io/name: unleash
+  name: unleash
+  namespace: ambient-code
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: unleash
+  template:
+    metadata:
+      labels:
+        app: unleash
+        app.kubernetes.io/name: unleash
+    spec:
+      containers:
+      - env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              key: database-url
+              name: unleash-credentials
+        - name: DATABASE_SSL
+          valueFrom:
+            secretKeyRef:
+              key: database-ssl
+              name: unleash-credentials
+        - name: LOG_LEVEL
+          value: info
+        - name: INIT_ADMIN_API_TOKENS
+          valueFrom:
+            secretKeyRef:
+              key: admin-api-token
+              name: unleash-credentials
+        - name: INIT_CLIENT_API_TOKENS
+          valueFrom:
+            secretKeyRef:
+              key: client-api-token
+              name: unleash-credentials
+        - name: INIT_FRONTEND_API_TOKENS
+          valueFrom:
+            secretKeyRef:
+              key: frontend-api-token
+              name: unleash-credentials
+        - name: UNLEASH_DEFAULT_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: default-admin-password
+              name: unleash-credentials
+        image: unleashorg/unleash-server:5.11.3
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 4242
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 5
+        name: unleash
+        ports:
+        - containerPort: 4242
+          name: http
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 4242
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 256Mi
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    app: public-api
+  name: public-api-pdb
+  namespace: ambient-code
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: public-api
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: minio-init-bucket
+  namespace: ambient-code
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: mc
+        image: minio/mc:latest
+        env:
+        - name: MC_CONFIG_DIR
+          value: /tmp/.mc
+        command:
+        - /bin/sh
+        - -c
+        - |
+          set -e
+          mc alias set minio http://minio.ambient-code.svc:9000 minioadmin minioadmin123
+          mc mb --ignore-existing minio/ambient-sessions
+          echo "Bucket ambient-sessions is ready"
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+---

@@ -10,7 +10,7 @@ spec:
       namespace: infra
       sectionName: main
   hostnames: [
-  "ambient-code.klimlive.de"
+  "ambient.klimlive.de"
   ]
   rules:
     - backendRefs:
