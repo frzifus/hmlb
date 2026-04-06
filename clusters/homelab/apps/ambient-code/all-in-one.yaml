@@ -2150,7 +2150,7 @@ spec:
               name: ambient-api-server-db
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
-        image: postgres:16
+        image: postgres:18
         livenessProbe:
           exec:
             command:
@@ -2641,7 +2641,7 @@ spec:
               name: postgresql-credentials
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
-        image: postgres:16
+        image: postgres:18
         livenessProbe:
           exec:
             command:
