@@ -1,0 +1,66 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: signal-messenger
+  namespace: notification
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: signal-messenger-api
+  namespace: notification
+spec:
+  selector:
+    matchLabels:
+      app: signal-messenger-api
+  serviceName: "signal-messenger-api"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: signal-messenger-api
+    #   annotations:
+    #     instrumentation.opentelemetry.io/java-sdk: "true"
+    spec:
+      containers:
+        # NOTE: Signal REST API
+        # register: http://localhost:8080/v1/qrcodelink?device_name=signal-api
+        # docs: https://bbernhard.github.io/signal-cli-rest-api/
+        - name: signal-api
+          # image: bbernhard/signal-cli-rest-api:0.92
+          image: ghcr.io/frzifus/signal-cli-rest-api:0.97
+          ports:
+            - containerPort: 8080
+          env:
+            - name: MODE
+              value: "json-rpc"
+           #  - name: JAVA_OPTS
+           #    value: "-javaagent:/otel-auto-instrumentation-java-signal-api/javaagent.jar -Dotel.service.name=signal-cli -Dotel.traces.exporter=otlp -Dotel.exporter.otlp.endpoint=http://backend-collector.observability.svc.cluster.local:4317 -Dotel.exporter.otlp.insecure=true -Dotel.traces.sampler=parentbased_traceidratio -Dotel.traces.sampler.arg=1 -Dotel.propagators=tracecontext,baggage -Dotel.instrumentation.common.default-enabled=true -Dotel.instrumentation.okhttp-client.enabled=true -Dotel.instrumentation.jdbc.enabled=true"
+          volumeMounts:
+            - name: signal-data
+              mountPath: /home/.local/share/signal-cli
+      volumes:
+        - name: signal-data
+          persistentVolumeClaim:
+            claimName: signal-messenger
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: signal-messenger
+  namespace: notification
+spec:
+  selector:
+    app: signal-messenger-api
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
