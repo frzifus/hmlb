@@ -1,0 +1,37 @@
+---
+apiVersion: tekton.dev/v1
+kind: TaskRun
+metadata:
+  generateName: desktop-build-
+  namespace: cicd-builds
+spec:
+  taskRef:
+    name: desktop-image-build
+  params:
+    - name: GIT_URL
+      value: https://github.com/frzifus/hmlb.git
+    - name: GIT_REVISION
+      value: main
+    - name: IMAGE
+      value: ghcr.io/frzifus/desktop:latest
+    - name: DOCKERFILE
+      value: ./images/desktop/Containerfile
+    - name: CONTEXT
+      value: ./images/desktop
+  workspaces:
+    - name: dockerconfig
+      secret:
+        secretName: ghcr-credentials
+  computeResources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2"
+      memory: "4Gi"
+  podTemplate:
+    securityContext:
+      fsGroup: 65532
+    # nodeSelector:
+    #   kubernetes.io/hostname: worker1
+  serviceAccountName: build-bot

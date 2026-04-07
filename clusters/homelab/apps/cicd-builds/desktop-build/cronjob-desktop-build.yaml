@@ -1,0 +1,67 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: desktop-build-taskrun-template
+  namespace: cicd-builds
+data:
+  taskrun.yaml: |
+    apiVersion: tekton.dev/v1
+    kind: TaskRun
+    metadata:
+      generateName: desktop-build-scheduled-
+      namespace: cicd-builds
+    spec:
+      taskRef:
+        name: desktop-image-build
+      params:
+        - name: GIT_URL
+          value: https://github.com/frzifus/hmlb.git
+        - name: GIT_REVISION
+          value: main
+        - name: IMAGE
+          value: ghcr.io/frzifus/desktop:latest
+        - name: DOCKERFILE
+          value: ./images/desktop/Containerfile
+        - name: CONTEXT
+          value: ./images/desktop
+      workspaces:
+        - name: dockerconfig
+          secret:
+            secretName: ghcr-credentials
+      podTemplate:
+        securityContext:
+          fsGroup: 65532
+      serviceAccountName: build-bot
+---
+# CronJob to build desktop image daily at 14:00 UTC (like the GitHub Actions workflow)
+# NOTE: This uses a kubectl hack to create TaskRuns instead of the proper
+# Tekton Triggers (EventListener/TriggerTemplate) approach. It works, but for
+# production you'd want to use Tekton Triggers or the tkn CLI instead.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: build-desktop-daily
+  namespace: cicd-builds
+spec:
+  schedule: "00 12 * * *"  # Daily at 12:00 UTC
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: build-bot
+          containers:
+            - name: trigger-build
+              image: rancher/kubectl:v1.32.13
+              args:
+                - create
+                - -f
+                - /config/taskrun.yaml
+              volumeMounts:
+                - name: taskrun-template
+                  mountPath: /config
+          volumes:
+            - name: taskrun-template
+              configMap:
+                name: desktop-build-taskrun-template
+          restartPolicy: OnFailure

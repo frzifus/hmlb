@@ -19,3 +19,4 @@ resources:
   - observability/config.yaml
   - cnpg-system.yaml
   - spegel.yaml
+  - tekton-pipeline.yaml

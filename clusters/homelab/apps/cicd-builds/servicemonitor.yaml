@@ -1,0 +1,34 @@
+---
+# ServiceMonitor for Tekton Pipelines metrics
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: tekton-pipelines
+  namespace: tekton-pipelines
+  labels:
+    app: tekton-pipelines
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/part-of: tekton-pipelines
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s
+---
+# PodMonitor for Tekton TaskRuns and PipelineRuns
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: tekton-builds
+  namespace: cicd-builds
+  labels:
+    app: tekton-builds
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/managed-by: tekton-pipelines
+  podMetricsEndpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s

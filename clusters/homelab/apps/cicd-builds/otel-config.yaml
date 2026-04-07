@@ -1,0 +1,15 @@
+---
+# ConfigMap to enable OpenTelemetry tracing in Tekton
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-tracing
+  namespace: tekton-pipelines
+data:
+  enabled: "true"
+  # Point to your OpenTelemetry collector backend (HTTP endpoint)
+  endpoint: "http://backend.observability.svc.cluster.local:4318"
+  # Use HTTP protocol
+  protocol: "http"
+  # Sample all traces (100%)
+  sample-rate: "1.0"
