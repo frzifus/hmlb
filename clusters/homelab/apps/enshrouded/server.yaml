@@ -1,4 +1,17 @@
 ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: enshrouded-steam-cache
+  namespace: enshrouded
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: openebs-crucial
+  resources:
+    requests:
+      storage: 20Gi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -21,7 +34,7 @@ spec:
       containers:
       - env:
         - name: SERVER_NAME
-          value: "frzifus island"
+          value: "Mar-a-Lago"
         - name: SERVER_SLOTS
           value: "16"
         - name: SERVER_PASSWORD
@@ -36,6 +49,11 @@ spec:
         image: sknnr/enshrouded-dedicated-server:proton-v2.3.2
         imagePullPolicy: IfNotPresent
         name: enshrouded-server
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          sed -i 's|ln -sf /proc/1/fd/1|: # disabled symlink: ln -sf /proc/1/fd/1|' /home/steam/entrypoint.sh
+          exec /home/steam/entrypoint.sh 2>&1 | tee /home/steam/enshrouded/logs/enshrouded_server.log
         ports:
         - containerPort: 15637
           protocol: UDP
@@ -51,10 +69,28 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
         volumeMounts:
+        - mountPath: /home/steam/enshrouded
+          name: steam-cache
         - mountPath: /home/steam/enshrouded/savegame
           name: enshrouded-state
-      dnsPolicy: ClusterFirst
-      hostNetwork: false
+        - mountPath: /home/steam/enshrouded/logs
+          name: logs
+      - name: metrics-sidecar
+        image: ghcr.io/frzifus/enshrouded-sidecar:0.0.27
+        args:
+        - "-otlp.endpoint=backend.observability.svc.cluster.local:4317"
+        - "-log.file=/home/steam/enshrouded/logs/enshrouded_server.log"
+        - "-log.tail=500"
+        volumeMounts:
+        - mountPath: /home/steam/enshrouded/logs
+          name: logs
+          readOnly: true
+        securityContext:
+          allowPrivilegeEscalation: false
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: true
+      nodeSelector:
+        kubernetes.io/hostname: gpu2
       securityContext:
         fsGroup: 10000
         runAsGroup: 10000
@@ -63,25 +99,30 @@ spec:
       - name: enshrouded-state
         persistentVolumeClaim:
           claimName: enshrouded-state
+      - name: steam-cache
+        persistentVolumeClaim:
+          claimName: enshrouded-steam-cache
+      - name: logs
+        emptyDir: {}
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  name: enshrouded-server
-  # annotations:
-  #   metallb.universe.tf/allow-shared-ip: "enshrouded"
-spec:
-  selector:
-    app: enshrouded-server
-  ports:
-    - name: game-query
-      protocol: UDP
-      port: 15637
-      targetPort: 15637
-    - name: steam-traffic
-      protocol: UDP
-      port: 27015
-      targetPort: 27015
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: enshrouded-server
+#   # annotations:
+#   #   metallb.universe.tf/allow-shared-ip: "enshrouded"
+# spec:
+#   selector:
+#     app: enshrouded-server
+#   ports:
+#     - name: game-query
+#       protocol: UDP
+#       port: 15637
+#       targetPort: 15637
+#     - name: steam-traffic
+#       protocol: UDP
+#       port: 27015
+#       targetPort: 27015
   # loadBalancerIP: 192.168.5.111
   # clusterIP: 10.108.129.20
   # type: LoadBalancer
