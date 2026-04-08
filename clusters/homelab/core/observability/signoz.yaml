@@ -28,6 +28,9 @@ spec:
   upgrade:
     crds: CreateReplace
   values:
+    clickhouse:
+      persistence:
+        size: 40Gi
     queryService:
       configVars:
         storage:
