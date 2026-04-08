@@ -32,6 +32,8 @@ data:
       podTemplate:
         securityContext:
           fsGroup: 65532
+        nodeSelector:
+          kubernetes.io/hostname: worker1
       serviceAccountName: build-bot
 ---
 # CronJob to build desktop image daily at 14:00 UTC (like the GitHub Actions workflow)

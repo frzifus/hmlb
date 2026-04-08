@@ -12,6 +12,9 @@ patches:
     cluster:
       proxy:
         disabled: true
+      apiServer:
+        extraArgs:
+          feature-gates: UserNamespacesSupport=true
   # https://spegel.dev/docs/getting-started/#talos
   - |-
     machine:
@@ -38,6 +41,9 @@ patches:
   - |-
     machine:
       kubelet:
+        extraConfig:
+          featureGates:
+            UserNamespacesSupport: true
         extraMounts:
           - destination: /var/local
             type: bind
@@ -156,6 +162,11 @@ nodes:
     ipAddress: 192.168.5.9
     installDisk: /dev/nvme0n1
     controlPlane: false
+    patches:
+      - |-
+        machine:
+          sysctls:
+            user.max_user_namespaces: "11255"
   - hostname: gpu1
     ipAddress: 192.168.5.7 # TODO
     installDisk: /dev/sda

@@ -18,6 +18,8 @@ spec:
       value: ./images/desktop/Containerfile
     - name: CONTEXT
       value: ./images/desktop
+    - name: STORAGE_DRIVER
+      value: vfs
   workspaces:
     - name: dockerconfig
       secret:
@@ -30,8 +32,9 @@ spec:
       cpu: "2"
       memory: "4Gi"
   podTemplate:
+    hostUsers: false
     securityContext:
       fsGroup: 65532
-    # nodeSelector:
-    #   kubernetes.io/hostname: worker1
+    nodeSelector:
+      kubernetes.io/hostname: worker1
   serviceAccountName: build-bot

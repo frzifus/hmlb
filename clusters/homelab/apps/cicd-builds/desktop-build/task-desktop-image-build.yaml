@@ -11,12 +11,11 @@ spec:
     Clone a git repository and build+push a container image with buildah.
     Combined task that doesn't need a PVC.
 
-    NOTE: Currently runs privileged because Talos nodes don't have user namespaces enabled.
-    To run rootless, enable user namespaces on Talos nodes:
+    NOTE: Runs rootless with user namespaces enabled on worker1.
+    Requires Talos node configuration:
       machine:
         sysctls:
           user.max_user_namespaces: "15000"
-    Then remove 'privileged: true' and the varlibcontainers volume.
   params:
     - name: GIT_URL
       description: Git repository URL
@@ -114,6 +113,15 @@ spec:
           value: $(params.FORMAT)
         - name: TLSVERIFY
           value: $(params.TLSVERIFY)
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        capabilities:
+          add:
+            - SETUID
+            - SETGID
+        seccompProfile: # https://github.com/siderolabs/talos/issues/12287
+          type: Unconfined
       script: |
         #!/bin/bash
         set -e
@@ -124,6 +132,7 @@ spec:
         buildah "--storage-driver=${STORAGE_DRIVER}" bud \
           "--format=${FORMAT}" \
           "--tls-verify=${TLSVERIFY}" \
+          --isolation=chroot \
           --no-cache \
           -f "${DOCKERFILE}" \
           -t "${IMAGE}" \
@@ -139,13 +148,6 @@ spec:
         # Output results
         tee "$(results.IMAGE_DIGEST.path)" < /tmp/image-digest
         printf '%s' "${IMAGE}" | tee "$(results.IMAGE_URL.path)"
-      volumeMounts:
-        - name: varlibcontainers
-          mountPath: /var/lib/containers
-      securityContext:
-        privileged: true
   volumes:
     - name: git-home
-      emptyDir: {}
-    - name: varlibcontainers
       emptyDir: {}
