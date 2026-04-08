@@ -2806,7 +2806,7 @@ spec:
             secretKeyRef:
               key: default-admin-password
               name: unleash-credentials
-        image: unleashorg/unleash-server:5.11.3
+        image: unleashorg/unleash-server:5.12.8
         livenessProbe:
           httpGet:
             path: /health
