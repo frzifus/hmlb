@@ -1,0 +1,21 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: database
+  namespace: git
+spec:
+  instances: 1
+
+  storage:
+    size: 2Gi
+    storageClass: openebs-crucial
+
+  superuserSecret:
+    name: git-secrets
+
+  bootstrap:
+    initdb:
+      database: forgejodb
+      owner: forgejo
+      secret:
+        name: git-secrets

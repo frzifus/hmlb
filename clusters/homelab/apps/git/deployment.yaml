@@ -1,0 +1,88 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forgejo
+  namespace: git
+  labels:
+    app: forgejo
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: forgejo
+  template:
+    metadata:
+      labels:
+        app: forgejo
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+      - name: forgejo
+        image: codeberg.org/forgejo/forgejo:14-rootless
+        ports:
+        - containerPort: 3000
+          name: http
+        - containerPort: 2222
+          name: ssh
+        env:
+        - name: FORGEJO__server__SSH_LISTEN_PORT
+          value: "2222"
+        - name: FORGEJO__server__SSH_PORT
+          value: "22"
+        - name: FORGEJO__database__DB_TYPE
+          value: "postgres"
+        - name: FORGEJO__database__HOST
+          value: "database-rw:5432"
+        - name: FORGEJO__database__NAME
+          valueFrom:
+            secretKeyRef:
+              name: git-secrets
+              key: dbname
+        - name: FORGEJO__database__USER
+          valueFrom:
+            secretKeyRef:
+              name: git-secrets
+              key: username
+        - name: FORGEJO__database__PASSWD
+          valueFrom:
+            secretKeyRef:
+              name: git-secrets
+              key: password
+        - name: FORGEJO_ADMIN_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: git-secrets
+              key: git_admin_username
+        - name: FORGEJO_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: git-secrets
+              key: git_admin_password
+        - name: FORGEJO_ADMIN_EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: git-secrets
+              key: git_admin_email
+        - name: FORGEJO_REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: git-secrets
+              key: redis_password
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/gitea
+        - name: config
+          mountPath: /etc/forgejo
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: forgejo-data
+      - name: config
+        configMap:
+          name: forgejo-config

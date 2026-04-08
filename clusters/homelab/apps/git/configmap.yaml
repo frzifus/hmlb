@@ -1,0 +1,166 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: forgejo-config
+data:
+  app.ini: |
+    [server]
+    ROOT_URL = https://git.klimlive.de/
+    HTTP_PORT = 3000
+    DISABLE_SSH = true
+
+    [database]
+    DB_TYPE  = ${FORGEJO__database__DB_TYPE}
+    HOST     = ${FORGEJO__database__HOST}
+    NAME     = ${FORGEJO__database__NAME}
+    USER     = ${FORGEJO__database__USER}
+    PASSWD   = ${FORGEJO__database__PASSWD}
+
+    [service]
+    DISABLE_REGISTRATION = false
+    ALLOW_ONLY_EXTERNAL_REGISTRATION = true
+
+    [openid]
+    ENABLE_OPENID_SIGNIN = true
+    ENABLE_OPENID_SIGNUP = true
+
+    [redis]
+    ENABLED = true
+    HOST    = redis:6379
+    PASSWORD = ${FORGEJO_REDIS_PASSWORD}
+
+    [oauth2_client]
+    ;;
+    ;; Whether a new auto registered oauth2 user needs to confirm their email.
+    ;; Do not include to use the REGISTER_EMAIL_CONFIRM setting from the `[service]` section.
+    ;REGISTER_EMAIL_CONFIRM =
+    ;;
+    ;; Scopes for the openid connect oauth2 provider (separated by space, the openid scope is implicitly added).
+    ;; Typical values are profile and email.
+    ;; For more information about the possible values see https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims
+    ;OPENID_CONNECT_SCOPES =
+    ;;
+    ;; Automatically create user accounts for new oauth2 users.
+    ENABLE_AUTO_REGISTRATION = true
+    ;;
+    ;; The source of the username for new oauth2 accounts:
+    ;; userid = use the userid / sub attribute
+    ;; nickname = use the nickname attribute
+    ;; email = use the username part of the email attribute
+    ;; Note: `nickname` and `email` options will normalize input strings using the following criteria:
+    ;; - diacritics are removed
+    ;; - the characters in the set `['´\x60]` are removed
+    ;; - the characters in the set `[\s~+]` are replaced with `-`
+    ;USERNAME = nickname
+    ;;
+    ;; Update avatar if available from oauth2 provider.
+    ;; Update will be performed on each login.
+    ;UPDATE_AVATAR = false
+    ;;
+    ;; How to handle if an account / email already exists:
+    ;; disabled = show an error
+    ;; login = show an account linking login
+    ;; auto = link directly with the account
+    ACCOUNT_LINKING = auto
+
+
+    ;[mailer]
+    ;;
+    ;; NOTICE: this section is for Forgejo 1.18 and later. If you are using Forgejo 1.17 or older,
+    ;; please refer to
+    ;; https://codeberg.org/forgejo/forgejo/src/commit/8769df117d6cc2f4ab00d6e1d54ef4241d063f11/custom/conf/app.example.ini
+    ;; https://codeberg.org/forgejo/forgejo/src/commit/8769df117d6cc2f4ab00d6e1d54ef4241d063f11/docs/content/doc/advanced/config-cheat-sheet.en-us.md
+    ;;
+    ;ENABLED = false
+    ;;
+    ;; Buffer length of channel, keep it as it is if you don't know what it is.
+    ;SEND_BUFFER_LEN = 100
+    ;;
+    ;; Prefix displayed before subject in mail
+    ;SUBJECT_PREFIX =
+    ;;
+    ;; Mail server protocol. One of "smtp", "smtps", "smtp+starttls", "smtp+unix", "sendmail", "dummy".
+    ;; - sendmail: use the operating system's `sendmail` command instead of SMTP. This is common on Linux systems.
+    ;; - dummy: send email messages to the log as a testing phase.
+    ;; If your provider does not explicitly say which protocol it uses but does provide a port,
+    ;; you can set SMTP_PORT instead and this will be inferred.
+    ;; (Before 1.18, see the notice, this was controlled via MAILER_TYPE and IS_TLS_ENABLED.)
+    ;PROTOCOL =
+    ;;
+    ;; Mail server address, e.g. smtp.gmail.com.
+    ;; For smtp+unix, this should be a path to a unix socket instead.
+    ;; (Before 1.18, see the notice, this was combined with SMTP_PORT as HOST.)
+    ;SMTP_ADDR =
+    ;;
+    ;; Mail server port. Common ports are:
+    ;;   25:  insecure SMTP
+    ;;   465: SMTP Secure
+    ;;   587: StartTLS
+    ;; If no protocol is specified, it will be inferred by this setting.
+    ;; (Before 1.18, this was combined with SMTP_ADDR as HOST.)
+    ;SMTP_PORT =
+    ;;
+    ;; Enable HELO operation. Defaults to true.
+    ;ENABLE_HELO = true
+    ;;
+    ;; Custom hostname for HELO operation.
+    ;; If no value is provided, one is retrieved from system.
+    ;HELO_HOSTNAME =
+    ;;
+    ;; If set to `true`, completely ignores server certificate validation errors.
+    ;; This option is unsafe. Consider adding the certificate to the system trust store instead.
+    ;FORCE_TRUST_SERVER_CERT = false
+    ;;
+    ;; Use client certificate in connection.
+    ;USE_CLIENT_CERT = false
+    ;CLIENT_CERT_FILE = custom/mailer/cert.pem
+    ;CLIENT_KEY_FILE = custom/mailer/key.pem
+    ;;
+    ;; Mail from address, RFC 5322. This can be just an email address, or the `"Name" <email@example.com>` format
+    ;FROM =
+    ;;
+    ;; Sometimes it is helpful to use a different address on the envelope. Set this to use ENVELOPE_FROM as the from on the envelope. Set to `<>` to send an empty address.
+    ;ENVELOPE_FROM =
+    ;;
+    ;; If Forgejo sends mails on behave of users, it will just use the name also displayed in the WebUI. If you want e.g. `John Doe (by AppName) <johndoe@example.com>`,
+    ;; set it to `{{ .DisplayName }} (by {{ .AppName }})`. Available Variables: `.DisplayName`, `.AppName` and `.Domain`.
+    ;FROM_DISPLAY_NAME_FORMAT = {{ .DisplayName }}
+    ;;
+    ;; Mailer user name and password, if required by provider.
+    ;USER =
+    ;;
+    ;; Use PASSWD = `your password` for quoting if you use special characters in the password.
+    ;PASSWD =
+    ;;
+    ;; Alternative location to specify mailer password. You cannot specify both this and PASSWD, and must pick one
+    ;PASSWD_URI = file:/etc/forgejo/mailer_passwd
+    ;;
+    ;; Send mails only in plain text, without HTML alternative
+    ;SEND_AS_PLAIN_TEXT = false
+    ;;
+    ;; Specify an alternative sendmail binary
+    ;SENDMAIL_PATH = sendmail
+    ;;
+    ;; Specify any extra sendmail arguments
+    ;; WARNING: if your sendmail program interprets options you should set this to "--" or terminate these args with "--"
+    ;SENDMAIL_ARGS =
+    ;;
+    ;; Timeout for Sendmail
+    ;SENDMAIL_TIMEOUT = 5m
+    ;;
+    ;; convert \r\n to \n for Sendmail
+    ;SENDMAIL_CONVERT_CRLF = true
+
+    ;[session]
+    ;;
+    ;; Either "memory", "file", "redis", "db", "mysql", "couchbase", "memcache" or "postgres"
+    ;; Default is "memory". "db" will reuse the configuration in [database]
+    ;PROVIDER = memory
+    ;;
+    ;; Provider config options
+    ;; memory: doesn't have any config yet
+    ;; file: session file path, e.g. `data/sessions`
+    ;; redis: `redis://127.0.0.1:6379/0?pool_size=100&idle_timeout=180s` (or `redis+cluster://127.0.0.1:6379/0?pool_size=100&idle_timeout=180s` for a Redis cluster)
+    ;; mysql: go-sql-driver/mysql dsn config string, e.g. `root:password@/session_table`
+    ;PROVIDER_CONFIG = data/sessions ; Relative paths will be made absolute against _`AppWorkPath`_.
+
