@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: whisper-open-ai
+  namespace: llm
+  labels:
+    app: whisper-open-ai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: whisper-open-ai
+  template:
+    metadata:
+      labels:
+        app: whisper-open-ai
+      annotations:
+        instrumentation.opentelemetry.io/inject-python: "true"
+    spec:
+      containers:
+        - name: speech-service
+          image: dlaszlo/speech-service:cpu-latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: STT_MODEL_NAME
+              value: "Systran/faster-distil-whisper-small.en"
+            - name: STT_COMPUTE_TYPE
+              value: "int8"
+            - name: TTS_MODEL_NAME
+              value: "hexgrad/Kokoro-82M"
+            - name: TTS_LANG_CODE
+              value: "a"
+          volumeMounts:
+            - name: huggingface-cache
+              mountPath: /data/huggingface
+          resources:
+            requests:
+              cpu: "2"
+              memory: "4Gi"
+            limits:
+              cpu: "3"
+              memory: "4Gi"
+      volumes:
+        - name: huggingface-cache
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: whisper-open-ai
+spec:
+  selector:
+    app: whisper-open-ai
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+  type: ClusterIP
