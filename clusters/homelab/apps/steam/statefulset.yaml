@@ -1,161 +1,107 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: steam-headless
+  labels:
+    app: headless
+  name: homelab-headless
+  namespace: steam
 spec:
-  serviceName: "steam-headless"
+  serviceName: headless
   replicas: 1
+  revisionHistoryLimit: 10
   selector:
     matchLabels:
-      app: steam-headless
+      app: headless
+  podManagementPolicy: Parallel
   template:
     metadata:
       labels:
-        app: steam-headless
+        app: headless
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: "kubernetes.io/hostname"
-                operator: "In"
-                values:
-                - "worker1"
-      hostNetwork: false
-      securityContext:
-        fsGroup: 1000
       containers:
-      - name: steam-headless
-        image: josh5/steam-headless:debian-0.2.0
+      - env:
+        - name: DESKTOP_RESOLUTION
+          value: 1280x720
+        - name: DESKTOP_KEYBOARD_LAYOUT
+          value: de
+        - name: PRESSURE_VESSEL_FILESYSTEMS_RO
+        - name: STEAM_COMPAT_FLAGS
+          value: container-runtime-off
+        image: ghcr.io/frzifus/steam-headless:latest
+        imagePullPolicy: Always
+        name: steam
         ports:
-          - containerPort: 8083
-        securityContext:
-          privileged: true
-          allowPrivilegeEscalation: true
-          # runAsUser: 1000
-          runAsNonRoot: false
-          capabilities:
-            drop: ["ALL"]
-          seccompProfile:
-            type: RuntimeDefault
-        resources: #Change CPU and Memory below
-          requests:
-            memory: "4G"
-            cpu: "1"
+        - containerPort: 5900
+          name: vnc
+          protocol: TCP
+        - containerPort: 27036
+          name: steam-disc
+          protocol: UDP
+        - containerPort: 27031
+          name: steam-dl-1
+          protocol: UDP
+        - containerPort: 27032
+          name: steam-dl-2
+          protocol: UDP
+        - containerPort: 27033
+          name: steam-dl-3
+          protocol: UDP
+        - containerPort: 27034
+          name: steam-dl-4
+          protocol: UDP
+        - containerPort: 27035
+          name: steam-dl-5
+          protocol: UDP
+        resources:
           limits:
-            memory: "6G"
             cpu: "2"
-            gpu.intel.com/i915: 1
-            # nvidia.com/gpu: 1
+            gpu.intel.com/i915: "1"
+            memory: 6Gi
+          requests:
+            cpu: 100m
+            memory: 2Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsGroup: 5000
+          runAsNonRoot: true
+          runAsUser: 5000
+          seccompProfile: # https://github.com/siderolabs/talos/issues/12287 
+            type: Unconfined
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
         volumeMounts:
-        - name: home-dir
-          mountPath: /home/default/
-        - name: games-dir
-          mountPath: /mnt/games/
-        # - name: input-devices
-        #   mountPath: /dev/input/
-        - name: dshm
-          mountPath: /dev/shm
-        env: #Environmental Vars
-        - name: NAME
-          value: 'SteamHeadless'
-        - name: TZ
-          value: 'Europe/Berlin'
-        - name: USER_LOCALES
-          value: 'de_DE.UTF-8 UTF-8'
-        - name: DISPLAY
-          value: ':55'
-        - name: SHM_SIZE
-          value: '2G'
-        # - name: DOCKER_RUNTIME
-        #   value: 'nvidia'
-        - name: PUID
-          value: '1000'
-        - name: PGID
-          value: '1000'
-        - name: UMASK
-          value: '000'
-        - name: USER_PASSWORD
-          value: 'password' #changeme
-        - name: MODE
-          value: 'primary'
-        - name: WEB_UI_MODE
-          value: 'vnc'
-        - name: ENABLE_VNC_AUDIO
-          value: 'true'
-        - name: PORT_NOVNC_WEB
-          value: '8083'
-        - name: NEKO_NAT1TO1
-          value: ''
-        - name: ENABLE_SUNSHINE
-          value: 'false'
-        - name: SUNSHINE_USER
-          value: 'sam'
-        - name: SUNSHINE_PASS
-          value: 'password'
-        # - name: ENABLE_EVDEV_INPUTS
-        #   value: 'true'
-        # - name: NVIDIA_DRIVER_CAPABILITIES
-        #   value: 'all'
-        # - name: NVIDIA_VISIBLE_DEVICES
-        #   value: 'all'
+        - mountPath: /opt/steam/games
+          name: steam-games
+        - mountPath: /run/user
+          name: run-user
+        - mountPath: /dev/shm
+          name: dshm
+        - mountPath: /tmp
+          name: tmp
+      dnsPolicy: ClusterFirst
+      hostUsers: false
+      nodeSelector:
+        kubernetes.io/hostname: worker1
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        fsGroup: 5000
+      terminationGracePeriodSeconds: 30
       volumes:
-      - name: home-dir
+      - name: steam-games
         persistentVolumeClaim:
-          claimName: home
-      - name: games-dir
-        persistentVolumeClaim:
-          claimName: games
-      # - name: input-devices
-      #   hostPath:
-      #     path: /dev/input/
-      - name: dshm
-        emptyDir:
+          claimName: steam-games
+      - emptyDir:
           medium: Memory
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: steam
-spec:
-  selector:
-    app: steam-headless
-  ports:
-    - protocol: TCP
-      port: 8083
-      targetPort: 8083
-  type: ClusterIP
----
-# apiVersion: networking.k8s.io/v1
-# kind: Ingress
-# metadata:
-#   name: steam
-# spec:
-#   ingressClassName: nginx
-#   rules:
-#   - host: steam.homelab
-#     http:
-#       paths:
-#       - path: /
-#         pathType: Prefix
-#         backend:
-#           service:
-#             name: steam
-#             port:
-#               number: 8083
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: steam-tailscale
-spec:
-  defaultBackend:
-    service:
-      name: steam
-      port:
-        number: 8083
-  ingressClassName: tailscale
-  tls:
-    - hosts:
-        - steam
+        name: run-user
+      - emptyDir:
+          medium: Memory
+          sizeLimit: 2Gi
+        name: dshm
+      - emptyDir:
+          medium: Memory
+        name: tmp

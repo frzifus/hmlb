@@ -8,3 +8,5 @@ resources:
   - namespace.yaml
   - pvc.yaml
   - statefulset.yaml
+  - service.yaml
+  - novnc.yaml

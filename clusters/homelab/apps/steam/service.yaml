@@ -1,0 +1,50 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: headless
+  namespace: steam
+spec:
+  type: ClusterIP
+  ports:
+  - name: vnc
+    port: 5900
+    protocol: TCP
+    targetPort: vnc
+  selector:
+    app: headless
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: headless-p2p
+  namespace: steam
+spec:
+  type: LoadBalancer
+  ports:
+  - name: steam-disc
+    port: 27036
+    protocol: UDP
+    targetPort: steam-disc
+  - name: steam-dl-1
+    port: 27031
+    protocol: UDP
+    targetPort: steam-dl-1
+  - name: steam-dl-2
+    port: 27032
+    protocol: UDP
+    targetPort: steam-dl-2
+  - name: steam-dl-3
+    port: 27033
+    protocol: UDP
+    targetPort: steam-dl-3
+  - name: steam-dl-4
+    port: 27034
+    protocol: UDP
+    targetPort: steam-dl-4
+  - name: steam-dl-5
+    port: 27035
+    protocol: UDP
+    targetPort: steam-dl-5
+  selector:
+    app: headless
