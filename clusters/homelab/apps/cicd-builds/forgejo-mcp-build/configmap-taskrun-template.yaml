@@ -1,0 +1,43 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: forgejo-mcp-build-taskrun-template
+  namespace: cicd-builds
+data:
+  taskrun.yaml: |
+    apiVersion: tekton.dev/v1
+    kind: TaskRun
+    metadata:
+      generateName: forgejo-mcp-build-
+      namespace: cicd-builds
+    spec:
+      taskRef:
+        name: forgejo-mcp-image-build
+      params:
+        - name: GIT_URL
+          value: https://codeberg.org/goern/forgejo-mcp.git
+        - name: GIT_REVISION
+          value: main
+        - name: IMAGE
+          value: ghcr.io/frzifus/forgejo-mcp:latest
+        - name: STORAGE_DRIVER
+          value: vfs
+      workspaces:
+        - name: dockerconfig
+          secret:
+            secretName: ghcr-credentials
+      computeResources:
+        requests:
+          cpu: "500m"
+          memory: "1Gi"
+        limits:
+          cpu: "2"
+          memory: "4Gi"
+      podTemplate:
+        hostUsers: false
+        securityContext:
+          fsGroup: 65532
+        nodeSelector:
+          kubernetes.io/hostname: worker1
+      serviceAccountName: build-bot

@@ -1,0 +1,10 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - task-forgejo-mcp-build.yaml
+  - configmap-taskrun-template.yaml
+  - cronjob-forgejo-mcp-build.yaml
+
+namespace: cicd-builds

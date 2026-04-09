@@ -1,0 +1,127 @@
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: forgejo-mcp-image-build
+  namespace: cicd-builds
+  labels:
+    app.kubernetes.io/version: "1.0"
+spec:
+  description: |
+    Clone forgejo-mcp git repository, patch Containerfile for full registry paths,
+    and build+push container image with buildah.
+  params:
+    - name: GIT_URL
+      description: Git repository URL
+      type: string
+    - name: GIT_REVISION
+      description: Git revision (branch, tag, sha)
+      type: string
+      default: main
+    - name: IMAGE
+      description: Reference of the image to build and push
+      type: string
+    - name: STORAGE_DRIVER
+      description: Buildah storage driver
+      type: string
+      default: overlay
+  workspaces:
+    - name: dockerconfig
+      description: Docker config.json for registry authentication
+      optional: true
+  results:
+    - name: IMAGE_DIGEST
+      description: Digest of the image built
+    - name: IMAGE_URL
+      description: Image repository URL
+    - name: COMMIT_SHA
+      description: Git commit SHA that was built
+  steps:
+    - name: git-clone
+      image: ghcr.io/tektoncd-catalog/git-clone:v1.1.0
+      workingDir: /workspace
+      volumeMounts:
+        - name: git-home
+          mountPath: /home/git
+      env:
+        - name: HOME
+          value: /home/git
+        - name: PARAM_URL
+          value: $(params.GIT_URL)
+        - name: PARAM_REVISION
+          value: $(params.GIT_REVISION)
+      script: |
+        #!/usr/bin/env sh
+        set -eu
+
+        CHECKOUT_DIR="/workspace/source"
+
+        /ko-app/git-init \
+          -url="${PARAM_URL}" \
+          -revision="${PARAM_REVISION}" \
+          -path="${CHECKOUT_DIR}" \
+          -depth=1
+
+        cd "${CHECKOUT_DIR}"
+        git rev-parse HEAD | tee $(results.COMMIT_SHA.path)
+
+    - name: patch-containerfile
+      image: alpine:latest
+      workingDir: /workspace/source
+      script: |
+        #!/bin/sh
+        set -e
+
+        echo "Patching Containerfile to use full registry paths..."
+        sed -i 's|^FROM golang:|FROM docker.io/library/golang:|g' Containerfile
+        sed -i 's|^FROM alpine:|FROM docker.io/library/alpine:|g' Containerfile
+
+        echo "=== Patched Containerfile ==="
+        cat Containerfile
+
+    - name: build-and-push
+      image: quay.io/buildah/stable:v1.37
+      workingDir: /workspace/source
+      env:
+        - name: STORAGE_DRIVER
+          value: $(params.STORAGE_DRIVER)
+        - name: IMAGE
+          value: $(params.IMAGE)
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        capabilities:
+          add:
+            - SETUID
+            - SETGID
+        seccompProfile:
+          type: Unconfined
+      script: |
+        #!/bin/bash
+        set -e
+
+        [ "$(workspaces.dockerconfig.bound)" = "true" ] && export DOCKER_CONFIG="$(workspaces.dockerconfig.path)"
+
+        # Build the image
+        buildah "--storage-driver=${STORAGE_DRIVER}" bud \
+          --format=oci \
+          --tls-verify=true \
+          --isolation=chroot \
+          --no-cache \
+          -f ./Containerfile \
+          -t "${IMAGE}" \
+          .
+
+        # Push the image
+        buildah "--storage-driver=${STORAGE_DRIVER}" push \
+          --tls-verify=true \
+          --digestfile /tmp/image-digest \
+          "${IMAGE}" \
+          "docker://${IMAGE}"
+
+        # Output results
+        tee "$(results.IMAGE_DIGEST.path)" < /tmp/image-digest
+        printf '%s' "${IMAGE}" | tee "$(results.IMAGE_URL.path)"
+  volumes:
+    - name: git-home
+      emptyDir: {}

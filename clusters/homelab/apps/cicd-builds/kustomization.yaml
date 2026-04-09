@@ -12,3 +12,4 @@ resources:
   - servicemonitor.yaml
   - otel-config.yaml
   - desktop-build
+  - forgejo-mcp-build

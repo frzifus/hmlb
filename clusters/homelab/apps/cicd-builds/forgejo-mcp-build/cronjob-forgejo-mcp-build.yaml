@@ -1,0 +1,32 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: build-forgejo-mcp-daily
+  namespace: cicd-builds
+spec:
+  # Build daily at 11:00 UTC (1 hour before desktop build)
+  schedule: "00 11 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: build-bot
+          restartPolicy: OnFailure
+          containers:
+            - name: trigger-build
+              image: rancher/kubectl:v1.32.13
+              args:
+                - create
+                - -f
+                - /config/taskrun.yaml
+              volumeMounts:
+                - name: taskrun-template
+                  mountPath: /config
+          volumes:
+            - name: taskrun-template
+              configMap:
+                name: forgejo-mcp-build-taskrun-template
