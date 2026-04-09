@@ -83,7 +83,7 @@ spec:
         cat Containerfile
 
     - name: build-and-push
-      image: quay.io/buildah/stable:v1.37
+      image: quay.io/buildah/stable:v1.43
       workingDir: /workspace/source/$(params.CONTEXT_DIR)
       env:
         - name: STORAGE_DRIVER
