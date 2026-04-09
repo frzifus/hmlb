@@ -1,0 +1,46 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: acore-build-taskrun-template
+  namespace: cicd-builds
+data:
+  taskrun.yaml: |
+    apiVersion: tekton.dev/v1
+    kind: TaskRun
+    metadata:
+      generateName: acore-build-
+      namespace: cicd-builds
+    spec:
+      taskRef:
+        name: acore-image-build
+      params:
+        - name: GIT_URL
+          value: https://github.com/frzifus/hmlb.git
+        - name: GIT_REVISION
+          value: main
+        - name: IMAGE
+          value: ghcr.io/frzifus/acore:latest
+        - name: STORAGE_DRIVER
+          value: vfs
+        - name: CONTEXT_DIR
+          value: images/acore
+      workspaces:
+        - name: dockerconfig
+          secret:
+            secretName: ghcr-credentials
+      computeResources:
+        requests:
+          cpu: "1"
+          memory: "2Gi"
+        limits:
+          cpu: "3"
+          memory: "10Gi"
+      podTemplate:
+        hostUsers: false
+        securityContext:
+          fsGroup: 65532
+        nodeSelector:
+          kubernetes.io/hostname: worker1
+      serviceAccountName: build-bot
+      timeout: 6h0m0s

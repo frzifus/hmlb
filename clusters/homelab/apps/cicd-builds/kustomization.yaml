@@ -11,5 +11,6 @@ resources:
   # secret-registry.yaml - DO NOT apply, manage manually with real credentials
   - servicemonitor.yaml
   - otel-config.yaml
+  - acore
   - desktop-build
   - forgejo-mcp-build
