@@ -9,3 +9,6 @@ resources:
   - openwebui.yaml
   - llama-stack
   - vllm
+  - claude-container
+  - mcp
+  - cronjobs

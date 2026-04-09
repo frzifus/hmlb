@@ -1,0 +1,274 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: github-notification-check
+  namespace: llm
+spec:
+  podSelector:
+    matchLabels:
+      app: github-notification-check
+  policyTypes:
+    - Egress
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+    # Allow GitHub MCP server (llm namespace)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: llm
+          podSelector:
+            matchLabels:
+              app: github-mcp
+      ports:
+        - protocol: TCP
+          port: 8080
+
+    # Allow Forgejo MCP server (git namespace)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: git
+          podSelector:
+            matchLabels:
+              app: forgejo-mcp
+      ports:
+        - protocol: TCP
+          port: 8080
+
+    # Allow Forgejo git UI for git clone in initContainer (git namespace)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: git
+          podSelector:
+            matchLabels:
+              app: forgejo
+      ports:
+        - protocol: TCP
+          port: 3000
+
+    # Allow Ollama for LLM inference (llm namespace)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: llm
+          podSelector:
+            matchLabels:
+              app: ollama
+      ports:
+        - protocol: TCP
+          port: 11434
+
+    # Allow observability backend for telemetry (observability namespace)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: observability
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: backend
+      ports:
+        - protocol: TCP
+          port: 4318
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: github-notification-prompt
+  namespace: llm
+data:
+  prompt.txt: |
+    Working directory: /workspace/daily
+
+    Check my latest GitHub notifications and update the daily report repository.
+
+    Tasks:
+    1. Analyze recent GitHub activity (last 24 hours):
+       - PRs waiting for my review
+       - Issues I'm mentioned in
+       - Recent comments on my PRs/issues
+       - Any new assignments
+
+    2. Update files in /workspace/daily:
+
+       a) github/NEWS.md:
+          - Create directory if needed: mkdir -p github
+          - Add today's date as header (## YYYY-MM-DD)
+          - List notable events, PRs reviewed, issues closed
+          - Keep last 7 days of entries, archive older ones
+
+       b) github/TODO.md:
+          - Section "High Priority": PRs/issues needing immediate attention
+          - Section "Pending Review": PRs waiting for my review
+          - Section "Watching": Issues I'm involved in
+          - Remove completed items
+
+    3. Commit and push changes:
+       - cd /workspace/daily
+       - git add github/
+       - git commit -m "Update GitHub activity for $(date +%Y-%m-%d)"
+       - git push
+
+    Keep files concise and actionable.
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: github-notification-check
+  namespace: llm
+  labels:
+    app: github-notification-check
+spec:
+  # Run daily at 8am CET/CEST (6am UTC = 8am CEST in summer, 7am CET in winter)
+  schedule: "0 6 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: github-notification-check
+        spec:
+          restartPolicy: OnFailure
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+          initContainers:
+            - name: git-clone
+              image: alpine/git:latest
+              command:
+                - sh
+                - -c
+                - |
+                  set -e
+                  echo "Cloning daily repository..."
+                  # Use token for authentication (token hidden in secret)
+                  git clone http://${FORGEJO_TOKEN}@git-ui.git.svc.cluster.local:3000/frzifus/daily.git /workspace/daily
+                  cd /workspace/daily
+                  git config user.name "Yolo-Agent"
+                  git config user.email "yolo-agent@klimlive.de"
+                  echo "Repository cloned successfully"
+              env:
+                - name: FORGEJO_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: forgejo-mcp-token
+                      key: FORGEJO_ACCESS_TOKEN
+              volumeMounts:
+                - name: workspace
+                  mountPath: /workspace
+          containers:
+            - name: claude-checker
+              image: nezhar/claude-container:1.6.12
+              workingDir: /workspace/daily
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -e
+
+                  # Configure GitHub MCP server (suppress token output)
+                  echo "Setting up GitHub MCP server..."
+                  claude mcp add --transport http github http://github-mcp.llm.svc.cluster.local:8080 \
+                    --header "Authorization: Bearer ${GITHUB_TOKEN}" > /dev/null 2>&1
+
+                  # Configure Forgejo MCP server (suppress token output)
+                  echo "Setting up Forgejo MCP server..."
+                  claude mcp add --transport http forgejo http://forgejo-mcp.git.svc.cluster.local:8080 \
+                    --header "Authorization: Bearer ${FORGEJO_TOKEN}" > /dev/null 2>&1
+
+                  # Read prompt from ConfigMap
+                  PROMPT=$(cat /config/prompt.txt)
+
+                  # Run Claude with the prompt (non-interactive mode)
+                  echo "Running Claude with prompt..."
+                  echo "Working directory: $(pwd)"
+                  echo "Workspace contents:"
+                  ls -la /workspace/daily || echo "No daily dir"
+
+                  # Run claude and capture output
+                  claude --permission-mode bypassPermissions --output-format text --print "$PROMPT" 2>&1 || echo "Claude exited with code: $?"
+
+                  echo "---"
+                  echo "Final workspace state:"
+                  ls -la /workspace/daily/github 2>/dev/null || echo "No github directory created"
+              env:
+                # GitHub token for MCP authentication
+                - name: GITHUB_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: github-mcp-token
+                      key: GITHUB_PERSONAL_ACCESS_TOKEN
+                # Forgejo token for MCP authentication
+                - name: FORGEJO_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: forgejo-mcp-token
+                      key: FORGEJO_ACCESS_TOKEN
+                # Ollama/LLM configuration (same as deployment)
+                - name: ANTHROPIC_AUTH_TOKEN
+                  value: "ollama"
+                - name: ANTHROPIC_API_KEY
+                  value: ""
+                - name: ANTHROPIC_BASE_URL
+                  value: "http://ollama.llm.svc.cluster.local:11434"
+                - name: ANTHROPIC_MODEL
+                  value: "qwen3.5:397b-cloud"
+                - name: ANTHROPIC_CUSTOM_MODEL_OPTION
+                  value: "qwen3.5:397b-cloud"
+                - name: ANTHROPIC_CUSTOM_MODEL_OPTION_NAME
+                  value: "qwen 3.5 (ollama)"
+                - name: ANTHROPIC_CUSTOM_MODEL_OPTION_DESCRIPTION
+                  value: "Custom deployment routed through the internal LLM gateway"
+                # Telemetry
+                - name: CLAUDE_CODE_ENABLE_TELEMETRY
+                  value: "1"
+                - name: OTEL_METRICS_EXPORTER
+                  value: "otlp"
+                - name: OTEL_LOGS_EXPORTER
+                  value: "otlp"
+                - name: OTEL_EXPORTER_OTLP_PROTOCOL
+                  value: "http/protobuf"
+                - name: OTEL_EXPORTER_OTLP_ENDPOINT
+                  value: "http://backend.observability.svc.cluster.local:4318"
+                - name: OTEL_LOG_TOOL_DETAILS
+                  value: "1"
+              volumeMounts:
+                - name: prompt-config
+                  mountPath: /config
+                  readOnly: true
+                - name: claude-temp
+                  mountPath: /home/claude/.claude
+                - name: workspace
+                  mountPath: /workspace
+              resources:
+                requests:
+                  cpu: "250m"
+                  memory: "512Mi"
+                limits:
+                  cpu: "1"
+                  memory: "2Gi"
+          volumes:
+            - name: prompt-config
+              configMap:
+                name: github-notification-prompt
+            - name: claude-temp
+              emptyDir: {}
+            - name: workspace
+              emptyDir: {}

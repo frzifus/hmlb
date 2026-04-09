@@ -2,5 +2,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - forgejo-mcp.yaml
-  - forgejo-mcp-secret-git.yaml
+  - github-mcp-secret.yaml
+  - forgejo-mcp-secret.yaml
+  - github-notification
