@@ -1,0 +1,65 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: forgejo-mcp
+  namespace: git
+  labels:
+    app: forgejo-mcp
+spec:
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: forgejo-mcp
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forgejo-mcp
+  namespace: git
+  labels:
+    app: forgejo-mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: forgejo-mcp
+  template:
+    metadata:
+      labels:
+        app: forgejo-mcp
+    spec:
+      containers:
+        - name: forgejo-mcp-server
+          image: ghcr.io/frzifus/forgejo-mcp:latest
+          args:
+            - --transport
+            - http
+            - --http-port
+            - "8080"
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+          env:
+            - name: FORGEJO_ACCESS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: forgejo-mcp-token
+                  key: FORGEJO_ACCESS_TOKEN
+            - name: FORGEJO_URL
+              valueFrom:
+                secretKeyRef:
+                  name: forgejo-mcp-token
+                  key: FORGEJO_URL
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
