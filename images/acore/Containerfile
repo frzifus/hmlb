@@ -15,7 +15,7 @@ RUN sed -i 's|ORIGIN_REMOTE="https://github.com/azerothcore/azerothcore-wotlk.gi
 
 RUN ./acore.sh install-deps
 
-RUN ./acore.sh compiler all
+## RUN ./acore.sh compiler all
 
 RUN ./acore.sh client-data
 
@@ -35,7 +35,7 @@ RUN ./acore.sh module install mod-account-achievements
 # https://www.azerothcore.org/catalogue.html#/details/138432861
 RUN ./acore.sh module install mod-ah-bot
 # https://www.azerothcore.org/module-submit.html#/details/954883822
-RUN ./acore.sh module install mod-ollama-chat
+RUN git clone https://github.com/DustinHendrickson/mod-ollama-chat --branch=main /azerothcore-wotlk/modules/mod-ollama-chat
 
 # # # NOTE: Arena
 # # https://www.azerothcore.org/catalogue.html#/details/243375326
