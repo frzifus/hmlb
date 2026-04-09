@@ -1,6 +1,6 @@
 FROM debian:trixie-20260316
 
-RUN apt-get update && apt-get install -y git curl unzip sudo wget gnupg cmake make gcc g++ clang libssl-dev libbz2-dev libreadline-dev libncurses-dev libboost-all-dev
+RUN apt-get update && apt-get install -y git curl unzip sudo wget gnupg cmake make gcc g++ clang libssl-dev libbz2-dev libreadline-dev libncurses-dev libboost-all-dev libfmt-dev
 
 RUN git clone https://github.com/liyunfan1223/azerothcore-wotlk.git --branch=Playerbot /azerothcore-wotlk
 
@@ -23,18 +23,19 @@ RUN ./acore.sh client-data
 # https://www.azerothcore.org/catalogue.html#/details/74011079
 # .npc add 190010
 # > exec mod-transmog/data/sql
-RUN ./acore.sh module-install mod-transmog
+RUN ./acore.sh module install mod-transmog
 # https://www.azerothcore.org/catalogue.html#/details/113239863
-RUN ./acore.sh module-install mod-learn-spells
+RUN ./acore.sh module install mod-learn-spells
 # https://www.azerothcore.org/catalogue.html#/details/65892802
-RUN ./acore.sh module-install mod-duel-reset
+RUN ./acore.sh module install mod-duel-reset
 # https://www.azerothcore.org/catalogue.html#/details/291842397
-RUN ./acore.sh module-install mod-account-mounts
+RUN ./acore.sh module install mod-account-mounts
 # https://www.azerothcore.org/catalogue.html#/details/108285701
-RUN ./acore.sh module-install mod-account-achievements
+RUN ./acore.sh module install mod-account-achievements
 # https://www.azerothcore.org/catalogue.html#/details/138432861
-RUN ./acore.sh module-install mod-ah-bot
-
+RUN ./acore.sh module install mod-ah-bot
+# https://www.azerothcore.org/module-submit.html#/details/954883822
+RUN ./acore.sh module install mod-ollama-chat
 
 # # # NOTE: Arena
 # # https://www.azerothcore.org/catalogue.html#/details/243375326
