@@ -1,16 +1,1 @@
-{
-  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
-  extends: [
-    'config:recommended',
-  ],
-  kubernetes: {
-    managerFilePatterns: [
-      '/clusters/.+\\.yaml$/',
-    ],
-  },
-  flux: {
-    managerFilePatterns: [
-      '/clusters/.+\\.yaml$/',
-    ],
-  },
-}
+{\n  $schema: 'https://docs.renovatebot.com/renovate-schema.json',\n  extends: [\n    'config:recommended',\n  ],\n  kubernetes: {\n    managerFilePatterns: [\n      '/clusters/.+\\.yaml$/',\n    ],\n  },\n  flux: {\n    managerFilePatterns: [\n      '/clusters/.+\\.yaml$/',\n    ],\n  },\n  automerge: true,\n  automergeType: 'pr',\n  automergeStrategy: 'squash',\n  minor: {\n    automerge: false,\n  },\n  patch: {\n    automerge: true,\n  },\n}
