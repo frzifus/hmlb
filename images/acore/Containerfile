@@ -1,4 +1,4 @@
-FROM debian:trixie-20260316
+FROM debian:trixie-20260406
 
 RUN apt-get update && apt-get install -y git curl unzip sudo wget gnupg cmake make gcc g++ clang libssl-dev libbz2-dev libreadline-dev libncurses-dev libboost-all-dev libfmt-dev
 
