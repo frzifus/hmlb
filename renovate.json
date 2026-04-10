@@ -1,0 +1,1 @@
+{"extends": ["config:base"], "automerge": true, "automergeType": "pr", "automergeStrategy": "squash", "minor": { "automerge": false }, "patch": { "automerge": true }}
