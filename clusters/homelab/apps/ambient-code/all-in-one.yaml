@@ -2385,7 +2385,7 @@ spec:
               key: unleash-environment
               name: unleash-credentials
               optional: true
-        image: quay.io/ambient_code/vteam_backend:v0.1.4
+        image: quay.io/ambient_code/vteam_backend:v0.2.0
         imagePullPolicy: Always
         livenessProbe:
           httpGet:
