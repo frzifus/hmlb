@@ -18,7 +18,7 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: trigger-build
-              image: rancher/kubectl:v1.32.13
+              image: rancher/kubectl:v1.35.2
               args:
                 - create
                 - -f
