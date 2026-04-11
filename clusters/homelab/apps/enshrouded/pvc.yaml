@@ -3,6 +3,10 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: enshrouded-state
+  namespace: enshrouded
+  labels:
+    k8up.io/backup: "true"
+    app: enshrouded-server
 spec:
   accessModes:
     - ReadWriteOnce

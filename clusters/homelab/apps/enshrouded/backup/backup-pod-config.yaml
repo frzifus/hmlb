@@ -1,0 +1,24 @@
+---
+apiVersion: k8up.io/v1
+kind: PodConfig
+metadata:
+  name: enshrouded-backup-pod-config
+  namespace: enshrouded
+spec:
+  template:
+    spec:
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: enshrouded-server
+              topologyKey: kubernetes.io/hostname
+      securityContext:
+        fsGroup: 10000
+        runAsGroup: 10000
+        runAsUser: 10000
+      containers:
+        - name: k8up
+          securityContext:
+            allowPrivilegeEscalation: false

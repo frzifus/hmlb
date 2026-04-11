@@ -33,3 +33,89 @@ spec:
     crds: CreateReplace
   upgrade:
     crds: CreateReplace
+  values:
+    k8up:
+      envVars:
+        - name: BACKUP_PROMURL
+          value: "http://pushgateway.k8up.svc.cluster.local:9091"
+        - name: CLUSTER_NAME
+          value: "homelab"
+---
+# Prometheus Push Gateway for K8up metrics across all namespaces
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pushgateway
+  namespace: k8up
+  labels:
+    app: pushgateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pushgateway
+  template:
+    metadata:
+      labels:
+        app: pushgateway
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: pushgateway
+          image: prom/pushgateway:v1.10.0
+          args:
+            - --web.listen-address=:9091
+            - --web.telemetry-path=/metrics
+            - --persistence.interval=5m
+          ports:
+            - containerPort: 9091
+              name: http
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pushgateway
+  namespace: k8up
+  labels:
+    app: pushgateway
+spec:
+  selector:
+    app: pushgateway
+  ports:
+    - name: http
+      port: 9091
+      targetPort: 9091
+  type: ClusterIP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: pushgateway
+  namespace: k8up
+  labels:
+    app: pushgateway
+spec:
+  selector:
+    matchLabels:
+      app: pushgateway
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s

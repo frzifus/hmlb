@@ -1,0 +1,32 @@
+---
+apiVersion: k8up.io/v1
+kind: Backup
+metadata:
+  name: enshrouded-backup-test
+  namespace: enshrouded
+spec:
+  backend:
+    repoPasswordSecretRef:
+      name: enshrouded-backup-credentials
+      key: RESTIC_PASSWORD
+    s3:
+      endpoint: https://s3.us-west-000.backblazeb2.com
+      bucket: enshrouded-ff759ae6-7fe3-4ffc-a341-2770e6cd84ba
+      accessKeyIDSecretRef:
+        name: enshrouded-backup-credentials
+        key: ACCESS_KEY_ID
+      secretAccessKeySecretRef:
+        name: enshrouded-backup-credentials
+        key: SECRET_ACCESS_KEY
+  failedJobsHistoryLimit: 2
+  successfulJobsHistoryLimit: 3
+  # Target specific PVCs by label
+  labelSelectors:
+    - matchExpressions:
+      - key: k8up.io/backup
+        operator: In
+        values:
+          - "true"
+  # Follow enshrouded-server pod to same node (required for RWO volumes)
+  podConfigRef:
+    name: enshrouded-backup-pod-config
