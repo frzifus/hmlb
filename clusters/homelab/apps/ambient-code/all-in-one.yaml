@@ -2718,7 +2718,7 @@ spec:
           value: "100"
         - name: RATE_LIMIT_BURST
           value: "200"
-        image: quay.io/ambient_code/vteam_public_api:v0.1.4
+        image: quay.io/ambient_code/vteam_public_api:v0.2.0
         imagePullPolicy: Always
         livenessProbe:
           httpGet:
