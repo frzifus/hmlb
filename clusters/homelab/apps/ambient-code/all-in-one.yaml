@@ -1912,7 +1912,7 @@ spec:
           value: production
         - name: VERSION
           value: latest
-        image: quay.io/ambient_code/vteam_operator:v0.1.4
+        image: quay.io/ambient_code/vteam_operator:v0.2.0
         imagePullPolicy: Always
         livenessProbe:
           httpGet:
