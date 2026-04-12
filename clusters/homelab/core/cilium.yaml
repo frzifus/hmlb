@@ -68,6 +68,8 @@ spec:
     socketLB:
       enabled: true
       hostNamespaceOnly: true
+    bandwidthManager:
+      enabled: true
     hubble:
       enabled: true
       relay:
