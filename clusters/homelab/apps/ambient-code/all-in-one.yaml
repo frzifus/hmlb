@@ -2497,7 +2497,7 @@ spec:
               key: client-api-token
               name: unleash-credentials
               optional: true
-        image: quay.io/ambient_code/vteam_frontend:v0.2.0
+        image: quay.io/ambient_code/vteam_frontend:v0.2.5
         imagePullPolicy: Always
         livenessProbe:
           httpGet:
