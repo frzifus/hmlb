@@ -52,7 +52,7 @@ spec:
         kind: HelmRepository
         name: signoz
         namespace: observability
-      version: "0.15.0"
+      version: "0.15.1"
   values:
     clusterName: "homelab"
     otelCollectorEndpoint: "backend-signoz-otel-collector:4317"
