@@ -54,7 +54,7 @@ spec:
           serviceAccountName: build-bot
           containers:
             - name: trigger-build
-              image: rancher/kubectl:v1.35.2
+              image: rancher/kubectl:v1.36.0
               args:
                 - create
                 - -f
