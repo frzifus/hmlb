@@ -38,11 +38,36 @@ spec:
       namespace: cert-manager
   install:
     createNamespace: false
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: ClusterRole
+              name: opentelemetry-operator-manager
+            patch: |
+              - op: add
+                path: /rules/-
+                value:
+                  apiGroups: ["opentelemetry.io"]
+                  resources: ["clusterobservabilities"]
+                  verbs: ["get","list","watch","create","update","patch","delete"]
+              - op: add
+                path: /rules/-
+                value:
+                  apiGroups: ["opentelemetry.io"]
+                  resources: ["clusterobservabilities/status"]
+                  verbs: ["get","update","patch"]
+              - op: add
+                path: /rules/-
+                value:
+                  apiGroups: ["opentelemetry.io"]
+                  resources: ["clusterobservabilities/finalizers"]
+                  verbs: ["update"]
   values:
     manager:
       image:
         repository: ghcr.io/frzifus/opentelemetry-operator
-        tag: 0.151.0-co-rev-7
+        tag: 0.151.0-co-rev-9
       featureGates: "operator.clusterobservability"
       createRbacPermissions: true
       collectorImage:
