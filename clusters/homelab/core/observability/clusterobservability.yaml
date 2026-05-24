@@ -1,0 +1,8 @@
+apiVersion: opentelemetry.io/v1alpha1
+kind: ClusterObservability
+metadata:
+  name: gateway
+  namespace: observability
+spec:
+  exporter:
+    endpoint: "http://backend-signoz-otel-collector.observability.svc.cluster.local:4318"

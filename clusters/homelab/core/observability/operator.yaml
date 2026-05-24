@@ -40,6 +40,7 @@ spec:
     createNamespace: false
   values:
     manager:
+      featureGates: "operator.clusterobservability"
       collectorImage:
         repository: otel/opentelemetry-collector-k8s
       autoInstrumentation:

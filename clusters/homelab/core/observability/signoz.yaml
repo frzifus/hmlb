@@ -30,7 +30,7 @@ spec:
   values:
     clickhouse:
       persistence:
-        size: 40Gi
+        size: 50Gi
     queryService:
       configVars:
         storage:

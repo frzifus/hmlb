@@ -5,3 +5,6 @@ kind: Kustomization
 resources:
   - route.yaml
   - signoz.yaml
+  - weaver-registry.yaml
+  - weaver.yaml
+  - backend-collector.yaml
