@@ -40,7 +40,11 @@ spec:
     createNamespace: false
   values:
     manager:
+      image:
+        repository: ghcr.io/frzifus/opentelemetry-operator
+        tag: 0.151.0-co-rev-4
       featureGates: "operator.clusterobservability"
+      createRbacPermissions: true
       collectorImage:
         repository: otel/opentelemetry-collector-k8s
       autoInstrumentation:
