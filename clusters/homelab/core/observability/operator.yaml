@@ -42,7 +42,7 @@ spec:
     manager:
       image:
         repository: ghcr.io/frzifus/opentelemetry-operator
-        tag: 0.151.0-co-rev-6
+        tag: 0.151.0-co-rev-7
       featureGates: "operator.clusterobservability"
       createRbacPermissions: true
       collectorImage:
