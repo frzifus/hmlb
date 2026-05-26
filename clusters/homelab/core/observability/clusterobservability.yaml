@@ -6,3 +6,19 @@ metadata:
 spec:
   exporter:
     endpoint: "http://backend.observability.svc.cluster.local:4318"
+---
+apiVersion: opentelemetry.io/v1alpha1
+kind: TargetAllocator
+metadata:
+  name: gateway
+  namespace: observability
+spec:
+  allocationStrategy: consistent-hashing
+  filterStrategy: relabel-config
+  prometheusCR:
+    enabled: true
+    scrapeInterval: 30s
+    serviceMonitorSelector: {}
+    serviceMonitorNamespaceSelector: {}
+    podMonitorSelector: {}
+    podMonitorNamespaceSelector: {}
