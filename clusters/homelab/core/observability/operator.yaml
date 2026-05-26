@@ -67,7 +67,7 @@ spec:
     manager:
       image:
         repository: ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator
-        tag: main@sha256:a029ff5f1fddf038b72783fb442576969538c01817ab7bf0674c4df71d00d2cc
+        tag: main@sha256:5a19eaebb98c8a214e1b89a441d79a29c93ccb12ec1ccdb38bb2af3b1028813c
       featureGates: "operator.clusterobservability"
       createRbacPermissions: true
       collectorImage:
