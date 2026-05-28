@@ -26,8 +26,6 @@ spec:
       app: open-webui
   template:
     metadata:
-      annotations:
-        instrumentation.opentelemetry.io/inject-python: "true"
       labels:
         app: open-webui
     spec:
@@ -43,8 +41,12 @@ spec:
               value: "fake"
             - name: ENABLE_OTEL
               value: "true"
+            - name: ENABLE_OTEL_TRACES
+              value: "true"
             - name: ENABLE_OTEL_METRICS
               value: "true"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://backend-collector.observability.svc.cluster.local:4317"
             - name: OTEL_EXPORTER_OTLP_INSECURE
               value: "true"
             - name: AUDIO_TTS_ENGINE
