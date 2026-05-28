@@ -1,0 +1,27 @@
+---
+apiVersion: k8up.io/v1
+kind: PodConfig
+metadata:
+  name: backup-pod-config
+  namespace: immich
+  annotations:
+    kubernetes.io/ingress-bandwidth: "20M"
+    kubernetes.io/egress-bandwidth: "20M"
+spec:
+  template:
+    spec:
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: immich-server
+              topologyKey: kubernetes.io/hostname
+      securityContext:
+        fsGroup: 10000
+        runAsGroup: 10000
+        runAsUser: 10000
+      containers:
+        - name: k8up
+          securityContext:
+            allowPrivilegeEscalation: false
