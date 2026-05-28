@@ -44,7 +44,20 @@ spec:
         name: authentik
         user: authentik
     server:
+      resources:
+        requests:
+          cpu: 250m
+          memory: 512Mi
+        limits:
+          memory: 1Gi
       ingress:
         enabled: false
+    worker:
+      resources:
+        requests:
+          cpu: 250m
+          memory: 256Mi
+        limits:
+          memory: 512Mi
     postgresql:
       enabled: false
