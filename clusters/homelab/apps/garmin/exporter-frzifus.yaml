@@ -1,0 +1,68 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: frzifus-exporter
+  namespace: garmin
+  labels:
+    app: frzifus-exporter
+spec:
+  serviceName: frzifus-exporter
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frzifus-exporter
+  template:
+    metadata:
+      labels:
+        app: frzifus-exporter
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+      containers:
+        - name: garmin-exporter
+          image: ghcr.io/frzifus/garmin_exporter:otel-mfa-2
+          args:
+            - --garmin.username=$(GARMIN_USERNAME)
+            - --garmin.password=$(GARMIN_PASSWORD)
+            - --garmin.token-file=/data/garmin_token.json
+            - --no-web.disable-exporter-metrics
+          env:
+            - name: GARMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: garmin-exporter-frzifus
+                  key: username
+            - name: GARMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: garmin-exporter-frzifus
+                  key: password
+            - name: OTEL_SERVICE_NAME
+              value: garmin-exporter
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://backend.observability.svc.cluster.local:4318
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: http/protobuf
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: garmin.user=frzifus
+          ports:
+            - name: metrics
+              containerPort: 10045
+              protocol: TCP
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: garmin-exporter-frzifus
