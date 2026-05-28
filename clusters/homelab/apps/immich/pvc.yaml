@@ -4,13 +4,16 @@ kind: PersistentVolumeClaim
 metadata:
   name: immich-photos
   namespace: immich
+  labels:
+    k8up.io/backup: "true"
+    app: immich-server
 spec:
   storageClassName: openebs-crucial
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 350Gi
+      storage: 450Gi
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

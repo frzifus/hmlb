@@ -10,7 +10,7 @@ spec:
   instances: 3
 
   storage:
-    size: 10Gi
+    size: 20Gi
     storageClass: openebs-crucial
 
   imageName: ghcr.io/tensorchord/cloudnative-vectorchord:16.9-0.4.3
