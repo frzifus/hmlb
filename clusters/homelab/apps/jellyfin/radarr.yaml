@@ -13,13 +13,10 @@ spec:
       app: radarr
   template:
     metadata:
+      annotations:
+        obi.instrument: "true"
       labels:
         app: radarr
-      annotations:
-        instrumentation.opentelemetry.io/inject-dotnet: "central"
-        instrumentation.opentelemetry.io/otel-dotnet-auto-runtime: "linux-musl-x64"
-        instrumentation.opentelemetry.io/otel-dotnet-auto-log-directory: "/config/logs"
-    spec:
       securityContext:
         fsGroup: 1000 # NOTE: set fsGroup for permission to /data/downloads
       affinity: # NOTE: follow nzbget due to lack of RWX

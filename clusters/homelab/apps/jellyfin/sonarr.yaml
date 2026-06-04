@@ -13,6 +13,8 @@ spec:
       app: sonarr
   template:
     metadata:
+      annotations:
+        obi.instrument: "true"
       labels:
         app: sonarr
     spec:

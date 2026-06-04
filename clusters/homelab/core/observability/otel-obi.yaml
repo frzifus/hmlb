@@ -1,0 +1,114 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: observability
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: obi
+  namespace: observability
+  labels:
+    app: obi
+spec:
+  selector:
+    matchLabels:
+      app: obi
+  template:
+    metadata:
+      labels:
+        app: obi
+    spec:
+      hostPID: true # Required to access the processes on the host
+      serviceAccountName: obi # required if you want kubernetes metadata decoration
+      containers:
+        - name: autoinstrument
+          image: otel/ebpf-instrument:v0.9.0
+          securityContext:
+            runAsUser: 0
+            readOnlyRootFilesystem: true
+            capabilities:
+              add:
+                - BPF                 # <-- Important. Required for most eBPF probes to function correctly.
+                - SYS_PTRACE          # <-- Important. Allows OBI to access the container namespaces and inspect executables.
+                - NET_RAW             # <-- Important. Allows OBI to use socket filters for http requests.
+                - CHECKPOINT_RESTORE  # <-- Important. Allows OBI to open ELF files.
+                - DAC_READ_SEARCH     # <-- Important. Allows OBI to open ELF files.
+                - PERFMON             # <-- Important. Allows OBI to load BPF programs.
+                #- SYS_RESOURCE       # <-- pre 5.11 only. Allows OBI to increase the amount of locked memory.
+                #- SYS_ADMIN          # <-- Required for Go application trace context propagation, or if kernel.perf_event_paranoid >= 3 on Debian distributions.
+          env:
+            - name: OTEL_EBPF_CONFIG_PATH
+              value: "/config/obi-config.yml"
+            - name: OTEL_EBPF_KUBE_CLUSTER_NAME
+              value: "homelab"
+          volumeMounts:
+            - name: var-run-obi
+              mountPath: /var/run/obi
+            - name: cgroup
+              mountPath: /sys/fs/cgroup
+            - name: obi-config
+              mountPath: /config
+              readOnly: true
+      volumes:
+        - name: var-run-obi
+          emptyDir: { }
+        - name: cgroup
+          hostPath:
+            path: /sys/fs/cgroup
+        - name: obi-config
+          configMap:
+            name: obi-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: obi-config
+  namespace: observability
+data:
+  obi-config.yml: |
+    discovery:
+      instrument:
+        - k8s_namespace: jellyfin
+          k8s_pod_annotations:
+            obi.instrument: "true"
+    attributes:
+      kubernetes:
+        enable: true
+    otel_traces_export:
+      endpoint: http://backend.observability:4318
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: obi
+  namespace: observability
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: obi
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "nodes", "services"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["replicationcontrollers"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets", "statefulsets", "daemonsets"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: obi
+subjects:
+  - kind: ServiceAccount
+    name: obi
+    namespace: observability
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: obi
+
