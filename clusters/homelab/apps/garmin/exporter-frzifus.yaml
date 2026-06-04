@@ -22,9 +22,11 @@ spec:
         runAsUser: 65534
         runAsGroup: 65534
         fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: garmin-exporter
-          image: ghcr.io/frzifus/garmin_exporter:otel-mfa-2
+          image: ghcr.io/barnes-c/garmin_exporter:0.3
           args:
             - --garmin.username=$(GARMIN_USERNAME)
             - --garmin.password=$(GARMIN_PASSWORD)
