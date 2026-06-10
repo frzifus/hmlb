@@ -28,7 +28,7 @@ spec:
               topologyKey: kubernetes.io/hostname
       containers:
         - name: radarr
-          image: lscr.io/linuxserver/radarr:6.1.1
+          image: lscr.io/linuxserver/radarr:6.2.1
           env:
             - name: TZ
               value: Etc/UTC
