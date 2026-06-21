@@ -1,0 +1,19 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: tekton-dashboard
+  namespace: tekton-pipelines
+spec:
+  parentRefs:
+    - name: services
+      namespace: infra
+      sectionName: main
+  hostnames: [
+    "pipelines.klimlive.de"
+  ]
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: tekton-dashboard
+          port: 9097
