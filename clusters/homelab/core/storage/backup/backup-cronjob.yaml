@@ -1,0 +1,39 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: openebs-etcd-snapshot
+  namespace: openebs
+spec:
+  schedule: "0 2 * * *"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          securityContext:
+            fsGroup: 1001
+            runAsUser: 1001
+            runAsGroup: 1001
+          containers:
+            - name: etcd-snapshot
+              image: docker.io/openebs/etcd:3.6.4-debian-12-r0
+              command:
+                - sh
+                - -c
+                - |
+                  DATE=$(date +%Y-%m-%d_%H%M%S)
+                  etcdctl --endpoints=http://openebs-mayastor-etcd.openebs.svc:2379 snapshot save /snapshots/openebs-etcd-${DATE}.db
+                  # Keep only the 10 most recent snapshots
+                  ls -t /snapshots/openebs-etcd-*.db | tail -n +11 | xargs rm -f 2>/dev/null || true
+                  echo "Snapshot saved: openebs-etcd-${DATE}.db"
+                  ls -lh /snapshots/
+              volumeMounts:
+                - name: snapshots
+                  mountPath: /snapshots
+          volumes:
+            - name: snapshots
+              persistentVolumeClaim:
+                claimName: openebs-etcd-snapshots

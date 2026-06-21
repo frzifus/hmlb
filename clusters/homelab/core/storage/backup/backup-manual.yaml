@@ -1,0 +1,27 @@
+---
+apiVersion: k8up.io/v1
+kind: Backup
+metadata:
+  name: openebs-etcd-backup-manual
+  namespace: openebs
+spec:
+  backend:
+    repoPasswordSecretRef:
+      name: openebs-etcd-backup-credentials
+      key: RESTIC_PASSWORD
+    s3:
+      endpoint: https://s3.us-west-000.backblazeb2.com
+      bucket: openebs-etcd-65972de8-8230-455a-8300-69a153d70bad
+      accessKeyIDSecretRef:
+        name: openebs-etcd-backup-credentials
+        key: ACCESS_KEY_ID
+      secretAccessKeySecretRef:
+        name: openebs-etcd-backup-credentials
+        key: SECRET_ACCESS_KEY
+  failedJobsHistoryLimit: 2
+  successfulJobsHistoryLimit: 3
+  labelSelectors:
+    - matchLabels:
+        k8up.io/backup: "true"
+  podConfigRef:
+    name: openebs-etcd-backup-pod-config

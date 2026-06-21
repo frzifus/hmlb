@@ -1,0 +1,17 @@
+---
+apiVersion: k8up.io/v1
+kind: PodConfig
+metadata:
+  name: openebs-etcd-backup-pod-config
+  namespace: openebs
+spec:
+  template:
+    spec:
+      securityContext:
+        fsGroup: 1001
+        runAsUser: 1001
+        runAsGroup: 1001
+      containers:
+        - name: k8up
+          securityContext:
+            allowPrivilegeEscalation: false

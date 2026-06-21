@@ -1,0 +1,10 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+# TODO: unseal
+#  - backup-secret.yaml
+  - backup-pvc.yaml
+  - backup-cronjob.yaml
+  - backup-pod-config.yaml
+  - backup-schedule.yaml

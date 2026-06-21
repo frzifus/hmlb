@@ -6,3 +6,4 @@ resources:
   - cache.yaml
   - crucial.yaml
   - media.yaml
+  - backup/

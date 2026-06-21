@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: openebs-etcd-snapshots
+  namespace: openebs
+  labels:
+    k8up.io/backup: "true"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: openebs-cache
+  resources:
+    requests:
+      storage: 100Mi
