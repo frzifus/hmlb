@@ -1,0 +1,17 @@
+---
+apiVersion: k8up.io/v1
+kind: PodConfig
+metadata:
+  name: kube-etcd-backup-pod-config
+  namespace: kube-system
+spec:
+  template:
+    spec:
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsGroup: 1000
+      containers:
+        - name: k8up
+          securityContext:
+            allowPrivilegeEscalation: false

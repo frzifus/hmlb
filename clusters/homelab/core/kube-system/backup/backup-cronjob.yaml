@@ -1,0 +1,60 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: kube-etcd-snapshot
+  namespace: kube-system
+spec:
+  schedule: "0 2 * * *"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: etcd-snapshot
+              image: ghcr.io/siderolabs/talos-backup:latest
+              command:
+                - sh
+                - -c
+                - |
+                  DATE=$(date +%Y-%m-%d_%H%M%S)
+                  talos-backup snapshot --output /snapshots/kube-etcd-${DATE}.db
+                  # Keep only the 10 most recent snapshots
+                  ls -t /snapshots/kube-etcd-*.db | tail -n +11 | xargs rm -f 2>/dev/null || true
+                  echo "Snapshot saved: kube-etcd-${DATE}.db"
+                  ls -lh /snapshots/
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+              volumeMounts:
+                - name: snapshots
+                  mountPath: /snapshots
+                - name: talos-secrets
+                  mountPath: /var/run/secrets/talos.dev
+                  readOnly: true
+                - name: tmp
+                  mountPath: /tmp
+                - name: talos-state
+                  mountPath: /.talos
+          volumes:
+            - name: snapshots
+              persistentVolumeClaim:
+                claimName: kube-etcd-snapshots
+            - name: talos-secrets
+              secret:
+                secretName: talos-backup
+            - name: tmp
+              emptyDir: {}
+            - name: talos-state
+              emptyDir: {}

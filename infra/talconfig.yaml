@@ -66,6 +66,16 @@ patches:
 #             - siderolabs/tailscale
 
 controlPlane:
+  patches:
+    - |-
+      machine:
+        features:
+          kubernetesTalosAPIAccess:
+            enabled: true
+            allowedRoles:
+              - os:etcd:backup
+            allowedKubernetesNamespaces:
+              - kube-system
   talosImageURL: factory.talos.dev/metal-installer-secureboot/2ffbcbedc61ac5530fabbec9ec4e565e78014b4d20218d60616f863512a42f4e
   extensionServices:
     - name: tailscale

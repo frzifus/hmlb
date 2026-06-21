@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: kube-etcd-snapshots
+  namespace: kube-system
+  labels:
+    k8up.io/backup: "true"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: openebs-cache
+  resources:
+    requests:
+      storage: 5Gi
