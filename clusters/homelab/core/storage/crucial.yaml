@@ -32,7 +32,7 @@ metadata:
   name: openebs-crucial
 parameters:
   protocol: nvmf
-  repl: "1"
+  repl: "2"
   thin: "true"
   fsType: xfs
   poolAffinityTopologyLabel: |
