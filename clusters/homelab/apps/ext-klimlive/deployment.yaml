@@ -23,7 +23,7 @@ spec:
         fsGroup: 65532
       containers:
       - name: klimlive
-        image: nginxinc/nginx-unprivileged:1.31.1-alpine-slim
+        image: nginxinc/nginx-unprivileged:1.31.2-alpine-slim
         ports:
         - containerPort: 8080
         volumeMounts:
@@ -43,7 +43,7 @@ spec:
             drop:
               - ALL
       - name: cloudflared
-        image: cloudflare/cloudflared:2026.6.0
+        image: cloudflare/cloudflared:2026.6.1
         args:
           - tunnel
           - --no-autoupdate

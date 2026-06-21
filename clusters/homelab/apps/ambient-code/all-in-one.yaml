@@ -1912,7 +1912,7 @@ spec:
           value: production
         - name: VERSION
           value: latest
-        image: quay.io/ambient_code/vteam_operator:v0.2.19
+        image: quay.io/ambient_code/vteam_operator:v0.2.20
         imagePullPolicy: Always
         livenessProbe:
           httpGet:
@@ -2385,7 +2385,7 @@ spec:
               key: unleash-environment
               name: unleash-credentials
               optional: true
-        image: quay.io/ambient_code/vteam_backend:v0.2.19
+        image: quay.io/ambient_code/vteam_backend:v0.2.20
         imagePullPolicy: Always
         livenessProbe:
           httpGet:
@@ -2497,7 +2497,7 @@ spec:
               key: client-api-token
               name: unleash-credentials
               optional: true
-        image: quay.io/ambient_code/vteam_frontend:v0.2.19
+        image: quay.io/ambient_code/vteam_frontend:v0.2.20
         imagePullPolicy: Always
         livenessProbe:
           httpGet:
@@ -2718,7 +2718,7 @@ spec:
           value: "100"
         - name: RATE_LIMIT_BURST
           value: "200"
-        image: quay.io/ambient_code/vteam_public_api:v0.2.19
+        image: quay.io/ambient_code/vteam_public_api:v0.2.20
         imagePullPolicy: Always
         livenessProbe:
           httpGet:
@@ -2806,7 +2806,7 @@ spec:
             secretKeyRef:
               key: default-admin-password
               name: unleash-credentials
-        image: unleashorg/unleash-server:8.0.0
+        image: unleashorg/unleash-server:8.0.1
         livenessProbe:
           httpGet:
             path: /health
