@@ -102,6 +102,10 @@ spec:
 
         [ "$(workspaces.dockerconfig.bound)" = "true" ] && export DOCKER_CONFIG="$(workspaces.dockerconfig.path)"
 
+        DATE_TAG="$(date +%Y-%m-%d)"
+        IMAGE_BASE="${IMAGE%%:*}"
+        IMAGE_DATE="${IMAGE_BASE}:${DATE_TAG}"
+
         # Build the image
         buildah "--storage-driver=${STORAGE_DRIVER}" bud \
           --format=oci \
@@ -110,14 +114,21 @@ spec:
           --no-cache \
           -f ./Containerfile \
           -t "${IMAGE}" \
+          -t "${IMAGE_DATE}" \
           .
 
-        # Push the image
+        # Push latest tag
         buildah "--storage-driver=${STORAGE_DRIVER}" push \
           --tls-verify=true \
           --digestfile /tmp/image-digest \
           "${IMAGE}" \
           "docker://${IMAGE}"
+
+        # Push date tag
+        buildah "--storage-driver=${STORAGE_DRIVER}" push \
+          --tls-verify=true \
+          "${IMAGE_DATE}" \
+          "docker://${IMAGE_DATE}"
 
         # Output results
         tee "$(results.IMAGE_DIGEST.path)" < /tmp/image-digest

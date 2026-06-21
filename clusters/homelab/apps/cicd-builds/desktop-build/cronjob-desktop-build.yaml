@@ -43,10 +43,10 @@ data:
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: build-desktop-daily
+  name: build-desktop-weekly
   namespace: cicd-builds
 spec:
-  schedule: "00 12 * * *"  # Daily at 12:00 UTC
+  schedule: "0 7 * * 0"  # Weekly on Sunday at 07:00 UTC
   jobTemplate:
     spec:
       template:

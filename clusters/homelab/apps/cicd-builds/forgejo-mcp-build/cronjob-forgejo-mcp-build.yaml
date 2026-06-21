@@ -2,11 +2,11 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: build-forgejo-mcp-daily
+  name: build-forgejo-mcp-monthly
   namespace: cicd-builds
 spec:
-  # Build daily at 11:00 UTC (1 hour before desktop build)
-  schedule: "00 11 * * *"
+  # Build monthly on the first Thursday at 07:00 UTC
+  schedule: "0 7 1-7 * 4"
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 1
