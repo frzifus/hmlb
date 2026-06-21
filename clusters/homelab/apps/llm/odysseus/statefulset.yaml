@@ -1,0 +1,75 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: odysseus
+  namespace: llm
+  labels:
+    app: odysseus
+spec:
+  replicas: 1
+  serviceName: odysseus
+  selector:
+    matchLabels:
+      app: odysseus
+  template:
+    metadata:
+      labels:
+        app: odysseus
+    spec:
+      containers:
+      - name: odysseus
+        image: ghcr.io/pewdiepie-archdaemon/odysseus:1.0.0-dev.ed18192
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: OLLAMA_BASE_URL
+          value: "http://ollama.llm.svc.cluster.local:11434/v1"
+        - name: LLM_HOST
+          value: "ollama.llm.svc.cluster.local"
+        - name: SEARXNG_INSTANCE
+          value: "http://searxng.search.svc.cluster.local:8080"
+        - name: AUTH_ENABLED
+          value: "false"
+        # - name: ODYSSEUS_ADMIN_PASSWORD
+        #   value: "change_me_before_first_boot"
+        - name: DATABASE_URL
+          value: "sqlite:///./data/app.db"
+        ports:
+        - containerPort: 7000
+          name: http
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+        volumeMounts:
+        - name: data
+          mountPath: /app/data
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: odysseus
+  namespace: llm
+  labels:
+    app: odysseus
+spec:
+  selector:
+    app: odysseus
+  ports:
+    - name: http
+      protocol: TCP
+      port: 7000
+      targetPort: 7000
+  type: ClusterIP
