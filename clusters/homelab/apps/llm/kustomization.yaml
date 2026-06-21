@@ -7,7 +7,6 @@ resources:
   - huggingface-secret.yaml
   - otel-sdk-config.yaml
   - openwebui.yaml
-  - llama-stack
   - vllm
   - claude-container
   - mcp
