@@ -28,30 +28,6 @@ spec:
                   hostNetwork: true
                   dnsPolicy: ClusterFirstWithHostNet
 ---
-apiVersion: gateway.envoyproxy.io/v1alpha1
-kind: EnvoyPatchPolicy
-metadata:
-  name: only-listen-tailscale0
-  namespace: infra
-spec:
-  targetRef:
-    group: gateway.networking.k8s.io
-    kind: Gateway
-    name: services
-  type: JSONPatch
-  jsonPatches:
-    - type: "type.googleapis.com/envoy.config.listener.v3.Listener"
-      name: infra/services/main
-      operation:
-        op: add
-        path: "/socket_options"
-        value:
-          - description: SO_BINDTODEVICE
-            name: 25 # SO_BINDTODEVICE linux/include/asm-generic/socket.h
-            level: 1 # SOL_SOCKET
-            buf_value: dGFpbHNjYWxlMA== # echo -n tailscale0 | base64
-            state: STATE_PREBIND
----
 apiVersion: gateway.networking.k8s.io/v1
 kind: GatewayClass
 metadata:
