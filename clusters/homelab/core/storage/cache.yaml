@@ -11,6 +11,18 @@ spec:
     labelled:
       type: cache
 ---
+apiVersion: "openebs.io/v1beta3"
+kind: DiskPool
+metadata:
+  name: storage2-cache-ssd
+  namespace: openebs
+spec:
+  node: storage2
+  disks: ["/dev/disk/by-id/ata-SanDisk_Ultra_II_480GB_164803A01AD1"]
+  topology:
+    labelled:
+      type: cache
+---
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
@@ -19,7 +31,7 @@ metadata:
     storageclass.kubernetes.io/is-default-class: "true"
 parameters:
   protocol: nvmf
-  repl: "1"
+  repl: "2"
   thin: "true"
   fsType: xfs
   poolAffinityTopologyLabel: |
