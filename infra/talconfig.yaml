@@ -2,7 +2,7 @@
 clusterName: homelab
 talosVersion: v1.12.3
 endpoint: https://192.168.5.3:6443
-allowSchedulingOnMasters: true
+allowSchedulingOnMasters: false
 additionalApiServerCertSans:
   - home-cluster
 cniConfig:
