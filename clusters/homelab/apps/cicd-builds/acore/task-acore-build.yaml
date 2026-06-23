@@ -73,7 +73,7 @@ spec:
         git rev-parse HEAD | tee $(results.COMMIT_SHA.path)
 
     - name: patch-containerfile
-      image: docker.io/library/alpine:3.21
+      image: docker.io/library/alpine:3.24
       workingDir: /workspace/source/$(params.CONTEXT_DIR)
       script: |
         #!/bin/sh
@@ -86,7 +86,7 @@ spec:
         cat Containerfile
 
     - name: fetch-cosign
-      image: docker.io/library/alpine:3.21
+      image: docker.io/library/alpine:3.24
       volumeMounts:
         - name: cosign-bin
           mountPath: /cosign-bin
@@ -156,7 +156,7 @@ spec:
         printf '%s' "${IMAGE}" | tee "$(results.IMAGE_URL.path)"
 
     - name: cosign-sign
-      image: docker.io/library/alpine:3.21
+      image: docker.io/library/alpine:3.24
       volumeMounts:
         - name: cosign-bin
           mountPath: /cosign-bin

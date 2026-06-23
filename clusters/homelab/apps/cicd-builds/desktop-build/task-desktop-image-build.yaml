@@ -101,7 +101,7 @@ spec:
         git rev-parse HEAD | tee $(results.COMMIT_SHA.path)
 
     - name: fetch-cosign
-      image: docker.io/library/alpine:3.21
+      image: docker.io/library/alpine:3.24
       volumeMounts:
         - name: cosign-bin
           mountPath: /cosign-bin
@@ -179,7 +179,7 @@ spec:
         printf '%s' "${IMAGE}" | tee "$(results.IMAGE_URL.path)"
 
     - name: cosign-sign
-      image: docker.io/library/alpine:3.21
+      image: docker.io/library/alpine:3.24
       volumeMounts:
         - name: cosign-bin
           mountPath: /cosign-bin
