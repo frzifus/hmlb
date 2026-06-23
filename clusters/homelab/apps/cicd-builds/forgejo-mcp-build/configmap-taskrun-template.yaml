@@ -27,6 +27,9 @@ data:
         - name: dockerconfig
           secret:
             secretName: ghcr-credentials
+        - name: cosign-key
+          secret:
+            secretName: cosign-key
       computeResources:
         requests:
           cpu: "500m"
