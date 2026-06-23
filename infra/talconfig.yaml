@@ -1,6 +1,6 @@
 ---
 clusterName: homelab
-talosVersion: v1.12.3
+talosVersion: v1.13.5
 endpoint: https://192.168.5.3:6443
 allowSchedulingOnMasters: false
 additionalApiServerCertSans:
