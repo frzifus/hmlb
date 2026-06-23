@@ -1,0 +1,8 @@
+apiVersion: flightctl.io/v1beta1
+kind: Device
+metadata:
+  name: personal-desktop
+  labels:
+    fleet: desktop
+    role: workstation
+spec: {}

@@ -1,0 +1,33 @@
+apiVersion: flightctl.io/v1beta1
+kind: Fleet
+metadata:
+  name: desktop
+spec:
+  selector:
+    matchLabels:
+      fleet: desktop
+  template:
+    metadata:
+      labels:
+        fleet: desktop
+    spec:
+      os:
+        image: ghcr.io/frzifus/desktop:2026-06-23
+      config:
+        - name: tailscale-auth
+          secretRef:
+            name: tailscale-auth
+            namespace: flightctl
+            mountPath: /etc/default/tailscaled
+      systemd:
+        matchPatterns:
+          - tailscaled.service
+          - netbird.service
+      resources:
+        - monitorType: CPU
+          alertRules:
+            - severity: Warning
+              duration: 10m
+              percentage: 80
+              description: "CPU above 80% for 10m"
+          samplingInterval: 30s
