@@ -13,4 +13,23 @@
       '/clusters/.+\\.yaml$/',
     ],
   },
+  customManagers: [
+    {
+      customType: 'regex',
+      description: 'Cosign binary version in Tekton task scripts',
+      managerFilePatterns: ['/clusters/.+\\.yaml$/'],
+      matchStrings: [
+        'COSIGN_VERSION="(?<currentValue>v[^"]+)"',
+      ],
+      depNameTemplate: 'sigstore/cosign',
+      datasourceTemplate: 'github-releases',
+      extractVersionTemplate: '^v(?<version>.*)$',
+    },
+  ],
+  packageRules: [
+    {
+      matchPackageNames: ['sigstore/cosign'],
+      allowedVersions: '/^v2\\./',
+    },
+  ],
 }
