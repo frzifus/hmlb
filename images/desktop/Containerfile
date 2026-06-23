@@ -63,6 +63,10 @@ RUN dnf install -y \
 
 RUN touch /etc/containers/nodocker
 
+COPY ./etc/pki/containers/cosign.pub /etc/pki/containers/cosign.pub
+COPY ./etc/containers/policy.json /etc/containers/policy.json
+COPY ./etc/containers/registries.d/ghcr-frzifus.yaml /etc/containers/registries.d/ghcr-frzifus.yaml
+
 RUN dnf install -y \
     sway \
     axel \

@@ -1,0 +1,26 @@
+{
+  "default": [
+    { "type": "reject" }
+  ],
+  "transports": {
+    "docker": {
+      "ghcr.io/frzifus": [
+        {
+          "type": "sigstoreSigned",
+          "keyPath": "/etc/pki/containers/cosign.pub",
+          "signedIdentity": {
+            "type": "matchRepository"
+          }
+        }
+      ],
+      "": [
+        { "type": "insecureAcceptAnything" }
+      ]
+    },
+    "containers-storage": {
+      "": [
+        { "type": "insecureAcceptAnything" }
+      ]
+    }
+  }
+}
