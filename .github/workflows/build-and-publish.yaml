@@ -2,11 +2,7 @@
 name: Build  Desktop Image
 
 on:
-  push:
-    branches:
-      - main
-  schedule:
-    - cron: "0 14 * * *"
+  workflow_dispatch: # disabled — builds moved to Tekton pipeline with cosign signing
 
 jobs:
   build-and-publish:
