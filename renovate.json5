@@ -25,6 +25,16 @@
       datasourceTemplate: 'github-releases',
       extractVersionTemplate: '^v(?<version>.*)$',
     },
+    {
+      customType: 'regex',
+      description: 'Talos version in talconfig',
+      managerFilePatterns: ['/infra/talconfig\\.yaml$/'],
+      matchStrings: [
+        'talosVersion: (?<currentValue>v\\S+)',
+      ],
+      depNameTemplate: 'siderolabs/talos',
+      datasourceTemplate: 'github-releases',
+    },
   ],
   packageRules: [
     {
