@@ -29,7 +29,7 @@ spec:
               topologyKey: kubernetes.io/hostname
       containers:
         - name: sonarr
-          image: lscr.io/linuxserver/sonarr:4.0.17
+          image: lscr.io/linuxserver/sonarr:4.0.18
           env:
             - name: TZ
               value: Etc/UTC
