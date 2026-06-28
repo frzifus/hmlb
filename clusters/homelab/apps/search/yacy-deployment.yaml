@@ -23,7 +23,7 @@ spec:
         fsGroup: 1000
       containers:
       - name: yacy
-        image: yacy/yacy_search_server@sha256:667c38dcffd089de8d5b5c62f0dd069d8106e85ee901173f82c4e33b9fbcf631
+        image: yacy/yacy_search_server@sha256:3efe5d33d18b97c775a6abb93ca8f194f6776fe4d0586fee0b3f7fce17482c7e
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
