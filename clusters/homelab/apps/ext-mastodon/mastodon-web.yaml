@@ -25,7 +25,7 @@ spec:
         fsGroup: 991
       containers:
         - name: web
-          image: ghcr.io/mastodon/mastodon:v4.3.6
+          image: ghcr.io/mastodon/mastodon:v4.6.3
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
