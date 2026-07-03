@@ -1,0 +1,194 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mastodon-web
+  namespace: mastodon
+  labels:
+    app: mastodon-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mastodon-web
+  template:
+    metadata:
+      labels:
+        app: mastodon-web
+    spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+        runAsNonRoot: true
+        runAsUser: 991
+        runAsGroup: 991
+        fsGroup: 991
+      containers:
+        - name: web
+          image: ghcr.io/mastodon/mastodon:v4.3.6
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          command: ["bundle", "exec", "puma", "-C", "config/puma.rb"]
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: mastodon-config
+          env:
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: mastodon-secrets
+                  key: password
+            - name: SECRET_KEY_BASE
+              valueFrom:
+                secretKeyRef:
+                  name: mastodon-secrets
+                  key: SECRET_KEY_BASE
+            - name: OTP_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: mastodon-secrets
+                  key: OTP_SECRET
+            - name: VAPID_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mastodon-secrets
+                  key: VAPID_PRIVATE_KEY
+            - name: VAPID_PUBLIC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mastodon-secrets
+                  key: VAPID_PUBLIC_KEY
+            - name: ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mastodon-secrets
+                  key: ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY
+            - name: ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mastodon-secrets
+                  key: ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY
+            - name: ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT
+              valueFrom:
+                secretKeyRef:
+                  name: mastodon-secrets
+                  key: ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT
+            - name: OIDC_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: mastodon-secrets
+                  key: OIDC_CLIENT_ID
+            - name: OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: mastodon-secrets
+                  key: OIDC_CLIENT_SECRET
+          volumeMounts:
+            - name: mastodon-data
+              mountPath: /opt/mastodon/public/system
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+        - name: cloudflared
+          image: cloudflare/cloudflared:2026.6.1
+          args:
+            - tunnel
+            - --no-autoupdate
+            - --metrics
+            - 0.0.0.0:2000
+            - --protocol
+            - http2
+            - run
+            - --token
+            - $(TUNNEL_TOKEN)
+          env:
+            - name: TUNNEL_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: cloudflared-secret
+                  key: tunnel-token
+          resources:
+            requests:
+              cpu: "20m"
+              memory: "32Mi"
+            limits:
+              cpu: "100m"
+              memory: "64Mi"
+          ports:
+            - containerPort: 2000
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 2000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 10
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: 2000
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            failureThreshold: 5
+          securityContext:
+            runAsUser: 65532
+            runAsGroup: 65532
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+      volumes:
+        - name: mastodon-data
+          persistentVolumeClaim:
+            claimName: mastodon-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mastodon-web
+  namespace: mastodon
+spec:
+  selector:
+    app: mastodon-web
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mastodon-web-monitoring
+  namespace: mastodon
+spec:
+  selector:
+    app: mastodon-web
+  ports:
+    - name: http-metrics
+      protocol: TCP
+      port: 2000
+      targetPort: 2000
+  type: ClusterIP

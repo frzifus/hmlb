@@ -1,0 +1,13 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mastodon-data
+  namespace: mastodon
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: openebs-crucial
+  resources:
+    requests:
+      storage: 20Gi

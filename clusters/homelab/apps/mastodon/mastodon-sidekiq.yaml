@@ -1,0 +1,122 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mastodon-sidekiq
+  namespace: mastodon
+  labels:
+    app: mastodon-sidekiq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mastodon-sidekiq
+  template:
+    metadata:
+      labels:
+        app: mastodon-sidekiq
+    spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+        runAsNonRoot: true
+        runAsUser: 991
+        runAsGroup: 991
+        fsGroup: 991
+      containers:
+        - name: sidekiq
+          image: ghcr.io/mastodon/mastodon:v4.3.6
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          command:
+            - bundle
+            - exec
+            - sidekiq
+            - -q
+            - default
+            - -q
+            - ingress
+            - -q
+            - mailers
+            - -q
+            - pull
+            - -q
+            - push
+            - -q
+            - scheduler
+          envFrom:
+            - configMapRef:
+                name: mastodon-config
+          env:
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: mastodon-secrets
+                  key: password
+            - name: SECRET_KEY_BASE
+              valueFrom:
+                secretKeyRef:
+                  name: mastodon-secrets
+                  key: SECRET_KEY_BASE
+            - name: OTP_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: mastodon-secrets
+                  key: OTP_SECRET
+            - name: VAPID_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mastodon-secrets
+                  key: VAPID_PRIVATE_KEY
+            - name: VAPID_PUBLIC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mastodon-secrets
+                  key: VAPID_PUBLIC_KEY
+            - name: ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mastodon-secrets
+                  key: ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY
+            - name: ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mastodon-secrets
+                  key: ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY
+            - name: ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT
+              valueFrom:
+                secretKeyRef:
+                  name: mastodon-secrets
+                  key: ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT
+            - name: OIDC_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: mastodon-secrets
+                  key: OIDC_CLIENT_ID
+            - name: OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: mastodon-secrets
+                  key: OIDC_CLIENT_SECRET
+          volumeMounts:
+            - name: mastodon-data
+              mountPath: /opt/mastodon/public/system
+          readinessProbe:
+            exec:
+              command: ["pgrep", "-f", "sidekiq"]
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+      volumes:
+        - name: mastodon-data
+          persistentVolumeClaim:
+            claimName: mastodon-data
