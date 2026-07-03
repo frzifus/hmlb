@@ -26,7 +26,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: garmin-exporter
-          image: ghcr.io/barnes-c/garmin_exporter:0.3
+          image: ghcr.io/barnes-c/garmin_exporter:1.1.0
           args:
             - --garmin.username=$(GARMIN_USERNAME)
             - --garmin.password=$(GARMIN_PASSWORD)
