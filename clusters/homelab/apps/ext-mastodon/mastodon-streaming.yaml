@@ -27,7 +27,7 @@ spec:
         fsGroup: 991
       containers:
         - name: streaming
-          image: ghcr.io/mastodon/mastodon-streaming:v4.3.6
+          image: ghcr.io/mastodon/mastodon-streaming:v4.6.3
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
