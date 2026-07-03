@@ -1,0 +1,35 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mastodon-config
+  namespace: ext-mastodon
+data:
+  LOCAL_DOMAIN: "mastodon.klimlive.de"
+  SINGLE_USER_MODE: "true"
+  DB_HOST: "database-rw"
+  DB_PORT: "5432"
+  DB_NAME: "mastodon"
+  DB_USER: "mastodon"
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
+  STREAMING_API_BASE_URL: "ws://mastodon-streaming:4000"
+  RAILS_ENV: "production"
+  NODE_ENV: "production"
+  RAILS_SERVE_STATIC_FILES: "true"
+  RAILS_LOG_LEVEL: "warn"
+  SMTP_DELIVERY_METHOD: "none"
+  # SSO via Authentik — disables local login, all auth goes through OIDC
+  OMNIAUTH_ONLY: "true"
+  OIDC_ENABLED: "true"
+  OIDC_DISPLAY_NAME: "Authentik"
+  OIDC_DISCOVERY: "true"
+  OIDC_ISSUER: "https://auth.klimlive.de/application/o/mastodon/"
+  OIDC_SCOPE: "openid,profile,email"
+  OIDC_UID_FIELD: "preferred_username"
+  OIDC_REDIRECT_URI: "https://mastodon.klimlive.de/auth/auth/openid_connect/callback"
+  OIDC_SECURITY_ASSUME_EMAIL_IS_VERIFIED: "true"
+  # Native OTel tracing (Mastodon >=4.3.0)
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://backend-collector.observability.svc.cluster.local:4318"
+  OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+  OTEL_EXPORTER_OTLP_INSECURE: "true"
