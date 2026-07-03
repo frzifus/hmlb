@@ -5,8 +5,12 @@ metadata:
   name: mastodon-db-migrate
   namespace: ext-mastodon
 spec:
+  ttlSecondsAfterFinished: 300
   backoffLimit: 3
   template:
+    metadata:
+      labels:
+        app: mastodon-db-migrate
     spec:
       restartPolicy: OnFailure
       securityContext:

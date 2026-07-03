@@ -322,6 +322,51 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
+  name: mastodon-db-migrate-egress
+  namespace: ext-mastodon
+spec:
+  podSelector:
+    matchLabels:
+      app: mastodon-db-migrate
+  policyTypes:
+    - Egress
+  egress:
+    # DNS
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    # PostgreSQL
+    - to:
+        - podSelector:
+            matchLabels:
+              cnpg.io/cluster: database
+      ports:
+        - port: 5432
+          protocol: TCP
+    # Redis
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: redis
+      ports:
+        - port: 6379
+          protocol: TCP
+    # OTel backend-collector (native OTLP HTTP tracing)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: observability
+      ports:
+        - port: 4318
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
   name: database-egress
   namespace: ext-mastodon
 spec:
