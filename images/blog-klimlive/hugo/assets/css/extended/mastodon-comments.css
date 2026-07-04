@@ -1,0 +1,48 @@
+#mastodon-comments {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.mastodon-comment {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.mastodon-comment-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.mastodon-comment-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+
+.mastodon-comment-author {
+  font-weight: 600;
+}
+
+.mastodon-comment-date {
+  margin-left: auto;
+  font-size: 0.85rem;
+  color: var(--secondary);
+}
+
+.mastodon-comment-content {
+  line-height: 1.6;
+}
+
+.mastodon-comment-content p {
+  margin: 0.25rem 0;
+}
+
+.mastodon-no-comments {
+  color: var(--secondary);
+  font-style: italic;
+}

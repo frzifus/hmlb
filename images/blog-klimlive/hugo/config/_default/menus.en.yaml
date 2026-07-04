@@ -1,0 +1,13 @@
+main:
+  - name: Posts
+    url: /posts/
+    weight: 10
+  - name: Archive
+    url: /archive/
+    weight: 20
+  - name: Search
+    url: /search/
+    weight: 30
+  - name: Impressum
+    url: /impressum/
+    weight: 40

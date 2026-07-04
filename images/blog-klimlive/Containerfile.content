@@ -1,0 +1,8 @@
+FROM docker.io/hugomods/hugo:go-git-0.163.3 AS builder
+
+COPY hugo/ /src
+
+RUN hugo --minify --source /src
+
+FROM scratch
+COPY --from=builder /src/public/ /content/

@@ -1,0 +1,13 @@
+en:
+  label: English
+  weight: 1
+  title: klimlive.de
+  params:
+    description: A tech blog by Benedikt Bongartz
+
+de:
+  label: Deutsch
+  weight: 2
+  title: klimlive.de
+  params:
+    description: Ein Tech-Blog von Benedikt Bongartz

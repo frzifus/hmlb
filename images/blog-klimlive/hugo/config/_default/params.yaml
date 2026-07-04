@@ -1,0 +1,34 @@
+env: production
+
+homeInfoParams:
+  Title: klimlive.de
+  Content: Software, infrastructure, and open source.
+
+socialIcons:
+  - name: github
+    url: https://github.com/frzifus
+  - name: mastodon
+    url: https://mastodon.klimlive.de/@frzifus
+  - name: matrix
+    url: https://matrix.to/#/@frzifus:matrix.org
+  - name: linkedin
+    url: https://www.linkedin.com/in/benedikt-b-b11788192/
+
+ShowReadingTime: true
+ShowShareButtons: true
+ShowPostNavLinks: true
+ShowBreadCrumbs: true
+ShowCodeCopyButtons: true
+ShowToc: true
+TocOpen: false
+
+defaultTheme: auto
+disableThemeToggle: false
+
+mastodonInstance: https://mastodon.klimlive.de
+
+label:
+  text: klimlive.de
+
+assets:
+  disableFingerprinting: false

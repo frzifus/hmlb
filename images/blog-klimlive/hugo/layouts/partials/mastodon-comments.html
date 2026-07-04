@@ -1,0 +1,79 @@
+{{ if .Params.mastodonPostId }}
+<div id="mastodon-comments">
+  <h2>{{ i18n "comments" | default "Comments" }}</h2>
+  <p>
+    {{ i18n "comments_cta" | default "Reply to" }}
+    <a href="{{ site.Params.mastodonInstance }}/@frzifus/{{ .Params.mastodonPostId }}" target="_blank" rel="noopener">
+      {{ i18n "comments_toot" | default "this post on Mastodon" }}
+    </a>
+    {{ i18n "comments_appear" | default "and your reply will appear here." }}
+  </p>
+  <div id="mastodon-comments-list"></div>
+</div>
+
+<script>
+(function() {
+  const instance = {{ site.Params.mastodonInstance }};
+  const postId = {{ .Params.mastodonPostId }};
+
+  if (!postId) return;
+
+  const commentsEl = document.getElementById('mastodon-comments-list');
+
+  fetch(instance + '/api/v1/statuses/' + postId + '/context')
+    .then(function(response) { return response.json(); })
+    .then(function(data) {
+      if (!data.descendants || data.descendants.length === 0) {
+        commentsEl.innerHTML = '<p class="mastodon-no-comments">No comments yet.</p>';
+        return;
+      }
+
+      data.descendants.forEach(function(reply) {
+        const comment = document.createElement('div');
+        comment.classList.add('mastodon-comment');
+
+        const header = document.createElement('div');
+        header.classList.add('mastodon-comment-header');
+
+        const avatar = document.createElement('img');
+        avatar.src = reply.account.avatar_static;
+        avatar.alt = reply.account.display_name || reply.account.username;
+        avatar.classList.add('mastodon-comment-avatar');
+        avatar.loading = 'lazy';
+        avatar.width = 48;
+        avatar.height = 48;
+
+        const author = document.createElement('a');
+        author.href = reply.account.url;
+        author.target = '_blank';
+        author.rel = 'noopener';
+        author.classList.add('mastodon-comment-author');
+        author.textContent = reply.account.display_name || reply.account.username;
+
+        const time = document.createElement('time');
+        time.datetime = reply.created_at;
+        time.classList.add('mastodon-comment-date');
+        const date = new Date(reply.created_at);
+        time.textContent = date.toLocaleDateString(undefined, {
+          year: 'numeric', month: 'short', day: 'numeric'
+        });
+
+        header.appendChild(avatar);
+        header.appendChild(author);
+        header.appendChild(time);
+
+        const content = document.createElement('div');
+        content.classList.add('mastodon-comment-content');
+        content.innerHTML = reply.content;
+
+        comment.appendChild(header);
+        comment.appendChild(content);
+        commentsEl.appendChild(comment);
+      });
+    })
+    .catch(function(err) {
+      console.error('Failed to load Mastodon comments:', err);
+    });
+})();
+</script>
+{{ end }}

@@ -1,0 +1,21 @@
+baseURL: https://blog.klimlive.de
+title: klimlive.de
+theme: PaperMod
+defaultContentLanguage: en
+enableRobotsTXT: true
+
+pagination:
+  pagerSize: 10
+
+outputs:
+  home:
+    - HTML
+    - RSS
+    - JSON
+
+markup:
+  highlight:
+    style: monokai
+    lineNos: false
+    codeFences: true
+    guessSyntax: true
