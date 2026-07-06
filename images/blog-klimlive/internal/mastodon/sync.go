@@ -74,12 +74,22 @@ func syncPost(client *Client, path, blogBaseURL string) error {
 	slug := strings.TrimSuffix(filepath.Base(path), ".md")
 	postURL := fmt.Sprintf("%s/posts/%s/", strings.TrimRight(blogBaseURL, "/"), slug)
 
-	tootText := composeToot(fm.Title, fm.Summary, postURL)
-
-	log.Printf("posting to mastodon: %s", fm.Title)
-	tootID, err := client.PostStatus(tootText, "public")
+	existingID, err := client.FindStatusByURL(postURL)
 	if err != nil {
-		return fmt.Errorf("post to mastodon: %w", err)
+		log.Printf("warning: could not check existing posts: %v", err)
+	}
+
+	var tootID string
+	if existingID != "" {
+		log.Printf("already posted %s → toot %s", fm.Title, existingID)
+		tootID = existingID
+	} else {
+		tootText := composeToot(fm.Title, fm.Summary, postURL)
+		log.Printf("posting to mastodon: %s", fm.Title)
+		tootID, err = client.PostStatus(tootText, "public")
+		if err != nil {
+			return fmt.Errorf("post to mastodon: %w", err)
+		}
 	}
 
 	log.Printf("posted %s → toot %s", fm.Title, tootID)
