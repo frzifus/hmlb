@@ -111,7 +111,7 @@ RUN dnf install -y \
 COPY ./etc/pki/rpm-gpg/RPM-GPG-KEY-bitwarden /etc/pki/rpm-gpg/RPM-GPG-KEY-bitwarden
 COPY ./etc/yum.repos.d/bitwarden.repo /etc/yum.repos.d/bitwarden.repo
 RUN rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-bitwarden
-RUN dnf install -y bitwarden
+RUN mkdir -p /var/opt/Bitwarden && dnf install -y bitwarden
 
 RUN dnf install -y \
     mesa-libGL-devel \
