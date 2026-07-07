@@ -111,7 +111,11 @@ RUN dnf install -y \
 COPY ./etc/pki/rpm-gpg/RPM-GPG-KEY-bitwarden /etc/pki/rpm-gpg/RPM-GPG-KEY-bitwarden
 COPY ./etc/yum.repos.d/bitwarden.repo /etc/yum.repos.d/bitwarden.repo
 RUN rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-bitwarden
-RUN mkdir -p /var/opt/Bitwarden && dnf install -y bitwarden
+# Bitwarden installs to /opt which is a symlink to /var/opt on ostree;
+# /var is not part of the immutable image, so relocate to /usr/lib/bitwarden.
+RUN mkdir -p /var/opt/Bitwarden && dnf install -y bitwarden && \
+    mv /var/opt/Bitwarden /usr/lib/bitwarden && \
+    sed -i 's|/opt/Bitwarden/bitwarden|/usr/lib/bitwarden/bitwarden|' /usr/share/applications/bitwarden.desktop
 
 RUN dnf install -y \
     mesa-libGL-devel \
