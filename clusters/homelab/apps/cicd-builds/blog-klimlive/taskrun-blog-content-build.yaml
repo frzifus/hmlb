@@ -1,0 +1,33 @@
+---
+apiVersion: tekton.dev/v1
+kind: TaskRun
+metadata:
+  generateName: blog-klimlive-content-build-
+  namespace: cicd-builds
+spec:
+  taskRef:
+    name: blog-klimlive-content-build
+  params:
+    - name: GIT_URL
+      value: https://github.com/frzifus/hmlb.git
+    - name: GIT_REVISION
+      value: main
+    - name: IMAGE
+      value: ghcr.io/frzifus/blog-klimlive-content:latest
+    - name: DOCKERFILE
+      value: ./images/blog-klimlive/Containerfile.content
+    - name: CONTEXT
+      value: ./images/blog-klimlive
+  workspaces:
+    - name: dockerconfig
+      secret:
+        secretName: ghcr-credentials
+    - name: cosign-key
+      secret:
+        secretName: cosign-key
+  podTemplate:
+    securityContext:
+      fsGroup: 65532
+    nodeSelector:
+      kubernetes.io/hostname: worker1
+  serviceAccountName: build-bot

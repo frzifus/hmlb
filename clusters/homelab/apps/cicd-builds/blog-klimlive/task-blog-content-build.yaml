@@ -1,0 +1,232 @@
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: blog-klimlive-content-build
+  namespace: cicd-builds
+  labels:
+    app.kubernetes.io/version: "1.0"
+spec:
+  description: |
+    Clone the blog repository and build the Hugo content image.
+    Runs rootless buildah with user namespaces on worker1.
+  params:
+    - name: GIT_URL
+      description: Git repository URL
+      type: string
+    - name: GIT_REVISION
+      description: Git revision (branch, tag, sha)
+      type: string
+      default: main
+    - name: IMAGE
+      description: Reference of the image to build and push
+      type: string
+    - name: DOCKERFILE
+      description: Path to the Containerfile
+      type: string
+      default: ./images/blog-klimlive/Containerfile.content
+    - name: CONTEXT
+      description: Build context directory
+      type: string
+      default: ./images/blog-klimlive
+    - name: BUILDER_IMAGE
+      description: Buildah builder image
+      type: string
+      default: quay.io/buildah/stable:v1.43
+    - name: STORAGE_DRIVER
+      description: Buildah storage driver
+      type: string
+      default: overlay
+    - name: FORMAT
+      description: Format of the built container (oci or docker)
+      type: string
+      default: oci
+    - name: TLSVERIFY
+      description: Verify TLS on registry
+      type: string
+      default: "true"
+  workspaces:
+    - name: dockerconfig
+      description: Docker config.json for registry authentication
+      optional: true
+    - name: cosign-key
+      description: Cosign private key for image signing
+      optional: true
+  results:
+    - name: IMAGE_DIGEST
+      description: Digest of the image built
+    - name: IMAGE_URL
+      description: Image repository URL
+    - name: COMMIT_SHA
+      description: Git commit SHA that was built
+  steps:
+    - name: git-clone
+      image: ghcr.io/tektoncd-catalog/git-clone:v1.7.0
+      workingDir: /workspace
+      volumeMounts:
+        - name: git-home
+          mountPath: /home/git
+      env:
+        - name: HOME
+          value: /home/git
+        - name: PARAM_URL
+          value: $(params.GIT_URL)
+        - name: PARAM_REVISION
+          value: $(params.GIT_REVISION)
+        - name: PARAM_DEPTH
+          value: "1"
+        - name: PARAM_SUBDIRECTORY
+          value: source
+        - name: PARAM_DELETE_EXISTING
+          value: "true"
+      script: |
+        #!/usr/bin/env sh
+        set -eu
+
+        CHECKOUT_DIR="/workspace/${PARAM_SUBDIRECTORY}"
+
+        /ko-app/git-init \
+          -url="${PARAM_URL}" \
+          -revision="${PARAM_REVISION}" \
+          -path="${CHECKOUT_DIR}" \
+          -depth="${PARAM_DEPTH}" \
+          -submodules=true
+
+        cd "${CHECKOUT_DIR}"
+        git rev-parse HEAD | tee $(results.COMMIT_SHA.path)
+
+    - name: mastodon-sync
+      image: ghcr.io/frzifus/blog-klimlive-sync:2026-07-06
+      command: ["/sync"]
+      env:
+        - name: MASTODON_INSTANCE_URL
+          value: https://mastodon.klimlive.de
+        - name: MASTODON_ACCESS_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: mastodon-api-token
+              key: access-token
+        - name: CONTENT_DIR
+          value: /workspace/source/images/blog-klimlive/hugo/content
+        - name: BLOG_BASE_URL
+          value: https://blog.klimlive.de
+
+    - name: fetch-cosign
+      image: docker.io/library/alpine:3.24
+      volumeMounts:
+        - name: cosign-bin
+          mountPath: /cosign-bin
+      script: |
+        #!/bin/sh
+        set -e
+        COSIGN_VERSION="v2.4.1"
+        wget -q "https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign-linux-amd64" -O /cosign-bin/cosign
+        chmod +x /cosign-bin/cosign
+
+    - name: build-and-push
+      image: $(params.BUILDER_IMAGE)
+      workingDir: /workspace/source
+      volumeMounts:
+        - name: cosign-bin
+          mountPath: /cosign-bin
+      env:
+        - name: STORAGE_DRIVER
+          value: $(params.STORAGE_DRIVER)
+        - name: DOCKERFILE
+          value: $(params.DOCKERFILE)
+        - name: CONTEXT
+          value: $(params.CONTEXT)
+        - name: IMAGE
+          value: $(params.IMAGE)
+        - name: FORMAT
+          value: $(params.FORMAT)
+        - name: TLSVERIFY
+          value: $(params.TLSVERIFY)
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        capabilities:
+          add:
+            - SETUID
+            - SETGID
+        seccompProfile:
+          type: Unconfined
+      script: |
+        #!/bin/bash
+        set -e
+
+        [ "$(workspaces.dockerconfig.bound)" = "true" ] && export DOCKER_CONFIG="$(workspaces.dockerconfig.path)"
+
+        DATE_TAG="$(date +%Y-%m-%d)"
+        IMAGE_BASE="${IMAGE%%:*}"
+        IMAGE_DATE="${IMAGE_BASE}:${DATE_TAG}"
+
+        # Build the image
+        buildah "--storage-driver=${STORAGE_DRIVER}" bud \
+          "--format=${FORMAT}" \
+          "--tls-verify=${TLSVERIFY}" \
+          --isolation=chroot \
+          --no-cache \
+          -f "${DOCKERFILE}" \
+          -t "${IMAGE}" \
+          -t "${IMAGE_DATE}" \
+          "${CONTEXT}"
+
+        # Push latest tag
+        buildah "--storage-driver=${STORAGE_DRIVER}" push \
+          "--tls-verify=${TLSVERIFY}" \
+          --digestfile /cosign-bin/image-digest \
+          "${IMAGE}" \
+          "docker://${IMAGE}"
+
+        # Push date tag
+        buildah "--storage-driver=${STORAGE_DRIVER}" push \
+          "--tls-verify=${TLSVERIFY}" \
+          "${IMAGE_DATE}" \
+          "docker://${IMAGE_DATE}"
+
+        # Output results
+        tee "$(results.IMAGE_DIGEST.path)" < /cosign-bin/image-digest
+        printf '%s' "${IMAGE}" | tee "$(results.IMAGE_URL.path)"
+
+    - name: cosign-sign
+      image: docker.io/library/alpine:3.24
+      volumeMounts:
+        - name: cosign-bin
+          mountPath: /cosign-bin
+      env:
+        - name: IMAGE
+          value: $(params.IMAGE)
+        - name: COSIGN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: cosign-key
+              key: cosign.password
+              optional: true
+      script: |
+        #!/bin/sh
+        set -e
+
+        if [ "$(workspaces.cosign-key.bound)" != "true" ]; then
+          echo "cosign-key workspace not bound, skipping signing"
+          exit 0
+        fi
+
+        [ "$(workspaces.dockerconfig.bound)" = "true" ] && export DOCKER_CONFIG="$(workspaces.dockerconfig.path)"
+
+        COSIGN=/cosign-bin/cosign
+        COSIGN_MAJOR=$($COSIGN version 2>&1 | sed -n 's/.*GitVersion:[[:space:]]*v\([0-9]*\)\..*/\1/p')
+        if [ "$COSIGN_MAJOR" != "2" ]; then
+          echo "ERROR: cosign major version is ${COSIGN_MAJOR}, expected 2"
+          exit 1
+        fi
+
+        DIGEST=$(cat /cosign-bin/image-digest)
+        IMAGE_BASE="${IMAGE%%:*}"
+        echo "Signing ${IMAGE_BASE}@${DIGEST}"
+        $COSIGN sign --yes --key "$(workspaces.cosign-key.path)/cosign.key" "${IMAGE_BASE}@${DIGEST}"
+  volumes:
+    - name: git-home
+      emptyDir: {}
+    - name: cosign-bin
+      emptyDir: {}

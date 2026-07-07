@@ -1,0 +1,65 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: blog-klimlive-sync-taskrun-template
+  namespace: cicd-builds
+data:
+  taskrun.yaml: |
+    apiVersion: tekton.dev/v1
+    kind: TaskRun
+    metadata:
+      generateName: blog-klimlive-sync-scheduled-
+      namespace: cicd-builds
+    spec:
+      taskRef:
+        name: blog-klimlive-sync-build
+      params:
+        - name: GIT_URL
+          value: https://github.com/frzifus/hmlb.git
+        - name: GIT_REVISION
+          value: main
+        - name: IMAGE
+          value: ghcr.io/frzifus/blog-klimlive-sync:latest
+        - name: DOCKERFILE
+          value: ./images/blog-klimlive/Containerfile.sync
+        - name: CONTEXT
+          value: ./images/blog-klimlive
+      workspaces:
+        - name: dockerconfig
+          secret:
+            secretName: ghcr-credentials
+      podTemplate:
+        securityContext:
+          fsGroup: 65532
+        nodeSelector:
+          kubernetes.io/hostname: worker1
+      serviceAccountName: build-bot
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: build-blog-klimlive-sync-quarterly
+  namespace: cicd-builds
+spec:
+  schedule: "0 9 1 1,4,7,10 *"  # Quarterly on 1st of Jan/Apr/Jul/Oct at 09:00 UTC
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: build-bot
+          containers:
+            - name: trigger-build
+              image: rancher/kubectl:v1.36.2
+              args:
+                - create
+                - -f
+                - /config/taskrun.yaml
+              volumeMounts:
+                - name: taskrun-template
+                  mountPath: /config
+          volumes:
+            - name: taskrun-template
+              configMap:
+                name: blog-klimlive-sync-taskrun-template
+          restartPolicy: OnFailure
