@@ -1,0 +1,106 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: vaultwarden
+  namespace: vaultwarden
+  labels:
+    app: vaultwarden
+spec:
+  replicas: 1
+  serviceName: vaultwarden
+  selector:
+    matchLabels:
+      app: vaultwarden
+  template:
+    metadata:
+      labels:
+        app: vaultwarden
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: vaultwarden
+        image: ghcr.io/dani-garcia/vaultwarden:1.36.0
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+        env:
+        - name: DOMAIN
+          value: "https://vault.klimlive.de"
+        - name: ROCKET_PORT
+          value: "8080"
+        - name: SIGNUPS_ALLOWED
+          value: "false"
+        - name: SSO_ENABLED
+          value: "true"
+        - name: SSO_ONLY
+          value: "true"
+        - name: SSO_AUTHORITY
+          value: "https://auth.klimlive.de/application/o/vaultwarden/"
+        - name: SSO_SIGNUPS_MATCH_EMAIL
+          value: "true"
+        - name: SSO_ALLOW_UNKNOWN_EMAIL_VERIFICATION
+          value: "true"
+        - name: SSO_SCOPES
+          value: "email profile offline_access"
+        - name: SSO_PKCE
+          value: "true"
+        - name: SSO_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: vaultwarden-sso
+              key: SSO_CLIENT_ID
+        - name: SSO_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: vaultwarden-sso
+              key: SSO_CLIENT_SECRET
+        ports:
+        - containerPort: 8080
+          name: http
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+        volumeMounts:
+        - name: data
+          mountPath: /data
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+      labels:
+        k8up.io/backup: "true"
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 5Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vaultwarden
+  namespace: vaultwarden
+  labels:
+    app: vaultwarden
+spec:
+  selector:
+    app: vaultwarden
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: ClusterIP
