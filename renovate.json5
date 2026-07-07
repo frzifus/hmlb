@@ -27,6 +27,16 @@
     },
     {
       customType: 'regex',
+      description: 'FlightCtl OS image references',
+      managerFilePatterns: ['/clusters/.+\\.yaml$/'],
+      matchStrings: [
+        'image: (?<depName>ghcr\\.io/frzifus/[^:]+):(?<currentValue>\\d{4}-\\d{2}-\\d{2})',
+      ],
+      datasourceTemplate: 'docker',
+      versioningTemplate: 'loose',
+    },
+    {
+      customType: 'regex',
       description: 'Talos version in talconfig',
       managerFilePatterns: ['/infra/talconfig\\.yaml$/'],
       matchStrings: [
