@@ -116,7 +116,7 @@ spec:
               cpu: "1"
               memory: 1Gi
         - name: cloudflared
-          image: cloudflare/cloudflared:2026.6.1
+          image: cloudflare/cloudflared:2026.7.0
           args:
             - tunnel
             - --no-autoupdate
