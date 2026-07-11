@@ -6,15 +6,18 @@ Single-user Mastodon instance exposed publicly via Cloudflare Tunnel for federat
 
 ```
 Internet ──► Cloudflare Tunnel ──┐
-                                 ├──► mastodon-web (Puma :3000)
-VPN/LAN  ──► Gateway HTTPRoute ──┘         │
-                                 ┌─────────┼─────────────────┐
-                                 ▼         ▼                 ▼
-                          mastodon-streaming  mastodon-sidekiq   database-rw
-                             (Node.js :4000)   (background jobs)  (CNPG PostgreSQL)
-                                 │                 │                 │
-                                 └────────► redis (Valkey :6379) ◄───┘
+                                 ├──► nginx (:3000) ──┬──► Puma (:3001)
+VPN/LAN  ──► Gateway HTTPRoute ──┘                    └──► mastodon-streaming (:4000)
+                                                            (WebSocket /api/v1/streaming)
+                                 ┌──────────────────────────────┐
+                                 ▼                              ▼
+                          mastodon-sidekiq                 database-rw
+                           (background jobs)               (CNPG PostgreSQL)
+                                 │                              │
+                                 └────────► redis (Valkey :6379) ◄┘
 ```
+
+The nginx sidecar in the web pod routes `/api/v1/streaming` (WebSocket) to the streaming service and all other traffic to Puma. This is necessary because the Cloudflare Tunnel delivers all traffic to a single origin (`localhost:3000`), but Mastodon requires WebSocket connections to reach the separate Node.js streaming server.
 
 ### Networking & Access
 
@@ -26,14 +29,18 @@ VPN/LAN  ──► Gateway HTTPRoute ──┘         │
 
 | Deployment | Image | Purpose |
 |---|---|---|
-| `mastodon-web` | `ghcr.io/mastodon/mastodon` | Rails app (Puma) serving API + web UI, with `cloudflared` sidecar |
+| `mastodon-web` | `ghcr.io/mastodon/mastodon` | Rails app (Puma :3001) serving API + web UI, with `nginx` reverse proxy (:3000) and `cloudflared` sidecar |
 | `mastodon-streaming` | `ghcr.io/mastodon/mastodon-streaming` | Node.js real-time streaming API |
 | `mastodon-sidekiq` | `ghcr.io/mastodon/mastodon` | Background job processor (all queues) |
 | `redis` | `valkey/valkey:9` | Cache and job queue backend |
 
 ### Database
 
-PostgreSQL via CloudNativePG operator — 1 instance, 10Gi on `openebs-crucial`. Service endpoint: `database-rw`.
+PostgreSQL via CloudNativePG operator — 1 instance, 10Gi on `openebs-crucial`. Service endpoint: `database-rw`. The CNPG instance manager requires egress to the Kubernetes API server; this is allowed via a port-based egress rule in the `database-egress` NetworkPolicy.
+
+### Shared Volume
+
+The `mastodon-data` PVC (`openebs-crucial`, RWO) is mounted by both `mastodon-web` and `mastodon-sidekiq`. Because it is RWO, both deployments use `strategy: Recreate` and sidekiq has a `podAffinity` rule to co-locate with the web pod on the same node.
 
 ### Observability
 
@@ -71,7 +78,7 @@ docker run --rm ghcr.io/mastodon/mastodon:v4.3.6 bundle exec rails db:encryption
 ### 3. Create Cloudflare Tunnel
 
 1. In the Cloudflare dashboard, create a tunnel for `mastodon.klimlive.de`.
-2. Route the hostname to `http://localhost:3000` (web container in the same pod).
+2. Route the hostname to `http://localhost:3000` (nginx reverse proxy in the same pod).
 3. Copy the tunnel token into `secret-tunnel.yaml`.
 
 ### 4. Encrypt secrets

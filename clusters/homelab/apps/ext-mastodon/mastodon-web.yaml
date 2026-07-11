@@ -32,9 +32,9 @@ spec:
             capabilities:
               drop:
                 - ALL
-          command: ["bundle", "exec", "puma", "-C", "config/puma.rb"]
+          command: ["bundle", "exec", "puma", "-C", "config/puma.rb", "-b", "tcp://0.0.0.0:3001"]
           ports:
-            - containerPort: 3000
+            - containerPort: 3001
           envFrom:
             - configMapRef:
                 name: mastodon-config
@@ -99,13 +99,13 @@ spec:
           readinessProbe:
             httpGet:
               path: /health
-              port: 3000
+              port: 3001
             initialDelaySeconds: 30
             periodSeconds: 10
           livenessProbe:
             httpGet:
               path: /health
-              port: 3000
+              port: 3001
             initialDelaySeconds: 60
             periodSeconds: 30
           resources:
@@ -113,8 +113,40 @@ spec:
               cpu: 250m
               memory: 512Mi
             limits:
-              cpu: "1"
-              memory: 1Gi
+              cpu: "2"
+              memory: 2Gi
+        - name: nginx
+          image: nginx:1-alpine
+          ports:
+            - containerPort: 3000
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+              readOnly: true
+            - name: nginx-tmp
+              mountPath: /tmp
+          securityContext:
+            runAsUser: 101
+            runAsGroup: 101
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
         - name: cloudflared
           image: cloudflare/cloudflared:2026.7.0
           args:
@@ -172,6 +204,12 @@ spec:
           emptyDir:
             medium: Memory
         - name: app-tmp
+          emptyDir:
+            medium: Memory
+        - name: nginx-config
+          configMap:
+            name: nginx-config
+        - name: nginx-tmp
           emptyDir:
             medium: Memory
 ---
