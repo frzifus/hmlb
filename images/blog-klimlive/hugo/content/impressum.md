@@ -2,6 +2,7 @@
 title: "Impressum"
 layout: "single"
 url: /impressum/
+hiddenInHomeList: true
 ---
 
 ## Impressum

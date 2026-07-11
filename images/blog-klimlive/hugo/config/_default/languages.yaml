@@ -1,13 +1,13 @@
 en:
   label: English
   weight: 1
-  title: klimlive.de
+  title: blog.klimlive.de
   params:
-    description: A tech blog by Benedikt Bongartz
+    description: A blog by frzifus
 
 de:
   label: Deutsch
   weight: 2
-  title: klimlive.de
+  title: blog.klimlive.de
   params:
-    description: Ein Tech-Blog von Benedikt Bongartz
+    description: Ein Blog von frzifus

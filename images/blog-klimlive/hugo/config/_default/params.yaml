@@ -1,8 +1,18 @@
 env: production
 
-homeInfoParams:
-  Title: klimlive.de
-  Content: Software, infrastructure, and open source.
+profileMode:
+  enabled: true
+  title: "Benedikt Bongartz"
+  subtitle: "Software, infrastructure, open source and other things."
+  imageUrl: "images/profile.webp"
+  imageTitle: "frzifus"
+  imageWidth: 150
+  imageHeight: 150
+  buttons:
+    - name: Posts
+      url: /posts/
+    - name: Tags
+      url: /tags/
 
 socialIcons:
   - name: github
@@ -14,8 +24,13 @@ socialIcons:
   - name: linkedin
     url: https://www.linkedin.com/in/benedikt-b-b11788192/
 
+comments: true
 ShowReadingTime: true
 ShowShareButtons: true
+ShareButtons:
+  - linkedin
+  - reddit
+  - ycombinator
 ShowPostNavLinks: true
 ShowBreadCrumbs: true
 ShowCodeCopyButtons: true
@@ -27,8 +42,11 @@ disableThemeToggle: false
 
 mastodonInstance: https://mastodon.klimlive.de
 
+footer:
+  text: "[Impressum](/impressum/)"
+
 label:
-  text: klimlive.de
+  text: frzifus
 
 assets:
   disableFingerprinting: false

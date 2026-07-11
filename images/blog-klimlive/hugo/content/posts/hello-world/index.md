@@ -1,13 +1,16 @@
 ---
 title: "Hello World"
-date: 2026-07-04
+date: 2026-02-14
 draft: false
 tags: ["intro"]
-summary: "Welcome to klimlive.de — a tech blog about software, infrastructure, and open source."
+summary: "Welcome to blog.klimlive.de — a blog about software, infrastructure, and open source cloud native tooling."
 mastodonPostId: ""
+cover:
+  image: hello-world.jpg
+  alt: "Earth from space"
 ---
 
-Welcome to klimlive.de! This is a tech blog where I write about software development, infrastructure, Kubernetes, observability, and open source.
+Welcome to blog.klimlive.de! This is a blog where I write about things I am personally interested in, mainly about software, infrastructure and open source cloud native tooling, but maybe also other things that pop to my mind.
 
 ## What to expect
 
@@ -18,4 +21,3 @@ Posts will cover topics like:
 - **Go development** — libraries, patterns, and tooling
 - **Self-hosting** — running your own services at home
 
-Stay tuned for more content.
