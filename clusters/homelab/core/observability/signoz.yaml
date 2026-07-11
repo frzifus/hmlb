@@ -29,6 +29,8 @@ spec:
     crds: CreateReplace
   values:
     clickhouse:
+      nodeSelector:
+        node-role.kubernetes.io/worker: ""
       persistence:
         size: 50Gi
     queryService:
