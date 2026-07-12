@@ -4,6 +4,13 @@ en:
   title: blog.klimlive.de
   params:
     description: A blog by frzifus
+    profileMode:
+      subtitle: "Software, infrastructure, open source and other things."
+      buttons:
+        - name: Posts
+          url: /posts/
+        - name: Tags
+          url: /tags/
 
 de:
   label: Deutsch
@@ -11,3 +18,10 @@ de:
   title: blog.klimlive.de
   params:
     description: Ein Blog von frzifus
+    profileMode:
+      subtitle: "Software, Infrastruktur, Open Source und andere Dinge."
+      buttons:
+        - name: Beiträge
+          url: /de/posts/
+        - name: Tags
+          url: /de/tags/
