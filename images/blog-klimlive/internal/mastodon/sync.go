@@ -30,18 +30,30 @@ func Sync(client *Client, contentDir, blogBaseURL string) error {
 	}
 
 	for _, entry := range entries {
-		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".md") {
+		var path string
+		var name string
+
+		if entry.IsDir() {
+			// Page bundle: look for index.md inside the directory
+			candidate := filepath.Join(postsDir, entry.Name(), "index.md")
+			if _, err := os.Stat(candidate); err != nil {
+				continue
+			}
+			path = candidate
+			name = entry.Name()
+		} else if strings.HasSuffix(entry.Name(), ".md") {
+			// Skip translated posts
+			if strings.Count(entry.Name(), ".") > 1 {
+				continue
+			}
+			path = filepath.Join(postsDir, entry.Name())
+			name = entry.Name()
+		} else {
 			continue
 		}
 
-		// Skip translated posts — they share the same Mastodon toot as the default language
-		if strings.Count(entry.Name(), ".") > 1 {
-			continue
-		}
-
-		path := filepath.Join(postsDir, entry.Name())
 		if err := syncPost(client, path, blogBaseURL); err != nil {
-			log.Printf("skip %s: %v", entry.Name(), err)
+			log.Printf("skip %s: %v", name, err)
 		}
 	}
 
@@ -71,7 +83,11 @@ func syncPost(client *Client, path, blogBaseURL string) error {
 		return nil
 	}
 
-	slug := strings.TrimSuffix(filepath.Base(path), ".md")
+	base := filepath.Base(path)
+	slug := strings.TrimSuffix(base, ".md")
+	if slug == "index" {
+		slug = filepath.Base(filepath.Dir(path))
+	}
 	postURL := fmt.Sprintf("%s/posts/%s/", strings.TrimRight(blogBaseURL, "/"), slug)
 
 	existingID, err := client.FindStatusByURL(postURL)
