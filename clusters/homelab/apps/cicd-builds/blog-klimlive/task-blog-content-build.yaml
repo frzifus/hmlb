@@ -96,7 +96,7 @@ spec:
         git rev-parse HEAD | tee $(results.COMMIT_SHA.path)
 
     - name: mastodon-sync
-      image: ghcr.io/frzifus/blog-klimlive-sync:2026-07-06
+      image: ghcr.io/frzifus/blog-klimlive-sync:2026-07-12
       command: ["/sync"]
       env:
         - name: MASTODON_INSTANCE_URL
