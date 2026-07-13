@@ -110,18 +110,40 @@ func syncPost(client *Client, path, blogBaseURL string) error {
 
 	log.Printf("posted %s → toot %s", fm.Title, tootID)
 
-	fm.MastodonPostID = tootID
-	updatedFM, err := yaml.Marshal(&fm)
-	if err != nil {
-		return fmt.Errorf("marshal frontmatter: %w", err)
+	if err := setMastodonPostID(path, tootID); err != nil {
+		return err
 	}
 
-	updated := fmt.Sprintf("---\n%s---\n%s", string(updatedFM), string(matches[2]))
-	if err := os.WriteFile(path, []byte(updated), 0644); err != nil {
-		return fmt.Errorf("write file: %w", err)
+	// Propagate to translations in the same directory
+	dir := filepath.Dir(path)
+	translations, _ := filepath.Glob(filepath.Join(dir, "index.*.md"))
+	for _, t := range translations {
+		if err := setMastodonPostID(t, tootID); err != nil {
+			log.Printf("warning: could not update translation %s: %v", filepath.Base(t), err)
+		} else {
+			log.Printf("updated translation %s with toot %s", filepath.Base(t), tootID)
+		}
 	}
 
 	return nil
+}
+
+func setMastodonPostID(path, tootID string) error {
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+
+	matches := frontmatterRe.FindSubmatch(raw)
+	if matches == nil {
+		return fmt.Errorf("no frontmatter found in %s", path)
+	}
+
+	fmStr := string(matches[1])
+	fmStr = strings.Replace(fmStr, `mastodonPostId: ""`, fmt.Sprintf("mastodonPostId: \"%s\"", tootID), 1)
+
+	updated := fmt.Sprintf("---\n%s\n---\n%s", fmStr, string(matches[2]))
+	return os.WriteFile(path, []byte(updated), 0644)
 }
 
 func composeToot(title, summary, url string) string {
