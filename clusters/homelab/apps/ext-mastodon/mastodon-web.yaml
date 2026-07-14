@@ -16,6 +16,13 @@ spec:
       labels:
         app: mastodon-web
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/control-plane
+                    operator: DoesNotExist
       securityContext:
         seccompProfile:
           type: RuntimeDefault
@@ -96,17 +103,22 @@ spec:
               mountPath: /tmp
             - name: app-tmp
               mountPath: /opt/mastodon/tmp
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 30
           readinessProbe:
             httpGet:
               path: /health
               port: 3001
-            initialDelaySeconds: 30
             periodSeconds: 10
           livenessProbe:
             httpGet:
               path: /health
               port: 3001
-            initialDelaySeconds: 60
             periodSeconds: 30
           resources:
             requests:

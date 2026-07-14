@@ -16,6 +16,13 @@ spec:
       labels:
         app: mastodon-sidekiq
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/control-plane
+                    operator: DoesNotExist
       securityContext:
         seccompProfile:
           type: RuntimeDefault

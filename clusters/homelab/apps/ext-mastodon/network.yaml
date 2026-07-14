@@ -384,3 +384,9 @@ spec:
           protocol: UDP
         - port: 53
           protocol: TCP
+    # Kubernetes API server (required by CNPG instance manager)
+    - ports:
+        - port: 443
+          protocol: TCP
+        - port: 6443
+          protocol: TCP
