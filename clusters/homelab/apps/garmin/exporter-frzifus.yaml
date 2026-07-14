@@ -28,10 +28,7 @@ spec:
         - name: garmin-exporter
           image: ghcr.io/barnes-c/garmin_exporter:1.1.1
           args:
-            - --garmin.username=$(GARMIN_USERNAME)
-            - --garmin.password=$(GARMIN_PASSWORD)
-            - --garmin.token-file=/data/garmin_token.json
-            - --no-web.disable-exporter-metrics
+            - --token-file=/data/garmin_token.json
           env:
             - name: GARMIN_USERNAME
               valueFrom:
@@ -45,6 +42,10 @@ spec:
                   key: password
             - name: OTEL_SERVICE_NAME
               value: garmin-exporter
+            - name: OTEL_METRICS_EXPORTER
+              value: otlp
+            - name: OTEL_TRACES_EXPORTER
+              value: otlp
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: http://backend.observability.svc.cluster.local:4318
             - name: OTEL_EXPORTER_OTLP_PROTOCOL
