@@ -1,0 +1,179 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: bersch
+  namespace: ext-bersch
+  labels:
+    app: bersch
+spec:
+  serviceName: bersch
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bersch
+  template:
+    metadata:
+      labels:
+        app: bersch
+    spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+        runAsNonRoot: true
+        fsGroup: 65532
+      imagePullSecrets:
+        - name: bersch-pull-secret
+      initContainers:
+      - name: render-nginx-conf
+        image: busybox:1.37
+        command: ["sh", "-c"]
+        args:
+          - |
+            SECRET_PATH=$(cat /secrets/secret-path)
+            sed "s/__SECRET_PATH__/${SECRET_PATH}/g" /template/default.conf.template > /nginx-conf/default.conf
+        volumeMounts:
+        - name: secret
+          mountPath: /secrets
+          readOnly: true
+        - name: nginx-conf-template
+          mountPath: /template
+          readOnly: true
+        - name: nginx-conf
+          mountPath: /nginx-conf
+        securityContext:
+          runAsUser: 65532
+          runAsGroup: 65532
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+      containers:
+      - name: bersch
+        image: ghcr.io/frzifus/bersch:2026-07-14
+        ports:
+        - containerPort: 8081
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8081
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "64Mi"
+          limits:
+            cpu: "250m"
+            memory: "128Mi"
+        securityContext:
+          runAsUser: 65532
+          runAsGroup: 65532
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+      - name: nginx
+        image: nginxinc/nginx-unprivileged:1.31.2-alpine-slim
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: nginx-conf
+          mountPath: /etc/nginx/conf.d/default.conf
+          subPath: default.conf
+          readOnly: true
+        - name: tmp
+          mountPath: /tmp
+        readinessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 30
+        resources:
+          requests:
+            cpu: "20m"
+            memory: "32Mi"
+          limits:
+            cpu: "100m"
+            memory: "64Mi"
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+      - name: cloudflared
+        image: cloudflare/cloudflared:2026.7.1
+        args:
+          - tunnel
+          - --no-autoupdate
+          - --metrics
+          - 0.0.0.0:2000
+          - --protocol
+          - http2
+          - run
+          - --token
+          - $(TUNNEL_TOKEN)
+        env:
+          - name: TUNNEL_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: bersch-secret
+                key: tunnel-token
+        resources:
+          requests:
+            cpu: "20m"
+            memory: "32Mi"
+          limits:
+            cpu: "100m"
+            memory: "64Mi"
+        ports:
+          - containerPort: 2000
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 2000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          failureThreshold: 10
+        livenessProbe:
+          httpGet:
+            path: /ready
+            port: 2000
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          failureThreshold: 5
+        securityContext:
+          runAsUser: 65532
+          runAsGroup: 65532
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+      volumes:
+      - name: secret
+        secret:
+          secretName: bersch-secret
+          items:
+          - key: secret-path
+            path: secret-path
+      - name: nginx-conf-template
+        configMap:
+          name: bersch-nginx-conf-template
+      - name: nginx-conf
+        emptyDir: {}
+      - name: tmp
+        emptyDir: {}

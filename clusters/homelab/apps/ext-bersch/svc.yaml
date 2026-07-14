@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bersch
+  namespace: ext-bersch
+spec:
+  type: ClusterIP
+  selector:
+    app: bersch
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 8080
