@@ -1,0 +1,6162 @@
+{
+  "title": "Garmin Exporter",
+  "description": "Health and fitness metrics from Garmin Connect via garmin_exporter (OTLP)",
+  "version": "v5",
+  "tags": [
+    "garmin",
+    "health",
+    "fitness"
+  ],
+  "image": "",
+  "dotMigrated": true,
+  "uploadedGrafana": false,
+  "panelMap": {},
+  "variables": {
+    "var-garmin-user": {
+      "id": "var-garmin-user",
+      "name": "garmin.user",
+      "description": "Filter by Garmin user (resource attribute)",
+      "type": "DYNAMIC",
+      "dynamicVariablesSource": "All telemetry",
+      "dynamicVariablesAttribute": "garmin.user",
+      "queryValue": "",
+      "multiSelect": false,
+      "showALLOption": true,
+      "allSelected": true,
+      "sort": "DISABLED",
+      "order": 1,
+      "defaultValue": "",
+      "customValue": "",
+      "textboxValue": "",
+      "modificationUUID": "var-garmin-user-mod"
+    }
+  },
+  "layout": [
+    {
+      "h": 1,
+      "w": 12,
+      "x": 0,
+      "y": 0,
+      "i": "row-overview",
+      "moved": false,
+      "static": false,
+      "minH": 1,
+      "maxH": 1,
+      "minW": 12
+    },
+    {
+      "h": 3,
+      "w": 2,
+      "x": 0,
+      "y": 1,
+      "i": "val-collector-up",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 3,
+      "w": 2,
+      "x": 2,
+      "y": 1,
+      "i": "val-device-count",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 3,
+      "w": 2,
+      "x": 4,
+      "y": 1,
+      "i": "val-steps",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 3,
+      "w": 2,
+      "x": 6,
+      "y": 1,
+      "i": "val-step-goal",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 3,
+      "w": 2,
+      "x": 8,
+      "y": 1,
+      "i": "val-calories",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 3,
+      "w": 2,
+      "x": 10,
+      "y": 1,
+      "i": "val-distance",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 1,
+      "w": 12,
+      "x": 0,
+      "y": 4,
+      "i": "row-wellness",
+      "moved": false,
+      "static": false,
+      "minH": 1,
+      "maxH": 1,
+      "minW": 12
+    },
+    {
+      "h": 3,
+      "w": 2,
+      "x": 0,
+      "y": 5,
+      "i": "val-body-battery",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 3,
+      "w": 2,
+      "x": 2,
+      "y": 5,
+      "i": "val-floors",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 3,
+      "w": 2,
+      "x": 4,
+      "y": 5,
+      "i": "val-active-minutes",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 3,
+      "w": 2,
+      "x": 6,
+      "y": 5,
+      "i": "val-resting-hr",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 3,
+      "w": 2,
+      "x": 8,
+      "y": 5,
+      "i": "val-stress",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 3,
+      "w": 2,
+      "x": 10,
+      "y": 5,
+      "i": "val-spo2",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 6,
+      "w": 6,
+      "x": 0,
+      "y": 8,
+      "i": "graph-steps",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 6,
+      "w": 6,
+      "x": 6,
+      "y": 8,
+      "i": "graph-body-battery",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 6,
+      "w": 6,
+      "x": 0,
+      "y": 14,
+      "i": "graph-calories",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 6,
+      "w": 6,
+      "x": 6,
+      "y": 14,
+      "i": "graph-stress",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 1,
+      "w": 12,
+      "x": 0,
+      "y": 20,
+      "i": "row-vitals",
+      "moved": false,
+      "static": false,
+      "minH": 1,
+      "maxH": 1,
+      "minW": 12
+    },
+    {
+      "h": 6,
+      "w": 6,
+      "x": 0,
+      "y": 21,
+      "i": "graph-heartrate",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 6,
+      "w": 6,
+      "x": 6,
+      "y": 21,
+      "i": "graph-spo2",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 6,
+      "w": 6,
+      "x": 0,
+      "y": 27,
+      "i": "graph-respiration",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 6,
+      "w": 6,
+      "x": 6,
+      "y": 27,
+      "i": "graph-hydration",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 1,
+      "w": 12,
+      "x": 0,
+      "y": 33,
+      "i": "row-sleep",
+      "moved": false,
+      "static": false,
+      "minH": 1,
+      "maxH": 1,
+      "minW": 12
+    },
+    {
+      "h": 3,
+      "w": 3,
+      "x": 0,
+      "y": 34,
+      "i": "val-sleep-total",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 3,
+      "w": 3,
+      "x": 3,
+      "y": 34,
+      "i": "val-hrv",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 3,
+      "w": 3,
+      "x": 6,
+      "y": 34,
+      "i": "val-sleep-score",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 3,
+      "w": 3,
+      "x": 9,
+      "y": 34,
+      "i": "val-sleep-stress",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 6,
+      "w": 6,
+      "x": 0,
+      "y": 37,
+      "i": "graph-sleep",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 6,
+      "w": 6,
+      "x": 6,
+      "y": 37,
+      "i": "graph-hrv",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 1,
+      "w": 12,
+      "x": 0,
+      "y": 43,
+      "i": "row-body",
+      "moved": false,
+      "static": false,
+      "minH": 1,
+      "maxH": 1,
+      "minW": 12
+    },
+    {
+      "h": 3,
+      "w": 3,
+      "x": 0,
+      "y": 44,
+      "i": "val-weight",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 3,
+      "w": 3,
+      "x": 3,
+      "y": 44,
+      "i": "val-bmi",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 3,
+      "w": 3,
+      "x": 6,
+      "y": 44,
+      "i": "val-body-fat",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 3,
+      "w": 3,
+      "x": 9,
+      "y": 44,
+      "i": "val-muscle-mass",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 6,
+      "w": 6,
+      "x": 0,
+      "y": 47,
+      "i": "graph-weight",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 6,
+      "w": 6,
+      "x": 6,
+      "y": 47,
+      "i": "graph-body-comp",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 1,
+      "w": 12,
+      "x": 0,
+      "y": 53,
+      "i": "row-training",
+      "moved": false,
+      "static": false,
+      "minH": 1,
+      "maxH": 1,
+      "minW": 12
+    },
+    {
+      "h": 3,
+      "w": 2,
+      "x": 0,
+      "y": 54,
+      "i": "val-readiness",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 3,
+      "w": 2,
+      "x": 2,
+      "y": 54,
+      "i": "val-vo2max",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 3,
+      "w": 2,
+      "x": 4,
+      "y": 54,
+      "i": "val-fitness-age",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 3,
+      "w": 2,
+      "x": 6,
+      "y": 54,
+      "i": "val-endurance",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 3,
+      "w": 2,
+      "x": 8,
+      "y": 54,
+      "i": "val-hill-score",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 3,
+      "w": 2,
+      "x": 10,
+      "y": 54,
+      "i": "val-ftp",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 6,
+      "w": 6,
+      "x": 0,
+      "y": 57,
+      "i": "graph-training",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 6,
+      "w": 6,
+      "x": 6,
+      "y": 57,
+      "i": "graph-training-load",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 1,
+      "w": 12,
+      "x": 0,
+      "y": 63,
+      "i": "row-activities",
+      "moved": false,
+      "static": false,
+      "minH": 1,
+      "maxH": 1,
+      "minW": 12
+    },
+    {
+      "h": 3,
+      "w": 4,
+      "x": 0,
+      "y": 64,
+      "i": "val-lifetime-activities",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 3,
+      "w": 4,
+      "x": 4,
+      "y": 64,
+      "i": "val-active-goals",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 3,
+      "w": 4,
+      "x": 8,
+      "y": 64,
+      "i": "val-badges",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 6,
+      "w": 6,
+      "x": 0,
+      "y": 67,
+      "i": "graph-activity-count",
+      "moved": false,
+      "static": false
+    },
+    {
+      "h": 6,
+      "w": 6,
+      "x": 6,
+      "y": 67,
+      "i": "graph-activity-duration",
+      "moved": false,
+      "static": false
+    }
+  ],
+  "widgets": [
+    {
+      "id": "row-overview",
+      "panelTypes": "row",
+      "title": "Overview",
+      "description": ""
+    },
+    {
+      "id": "val-collector-up",
+      "panelTypes": "value",
+      "title": "Collectors Up",
+      "description": "Number of active collectors",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-collector-up",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.collector.up",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum",
+                  "reduceTo": "last",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "val-device-count",
+      "panelTypes": "value",
+      "title": "Devices",
+      "description": "Connected Garmin devices",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-device-count",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.device.count",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum",
+                  "reduceTo": "last",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "val-steps",
+      "panelTypes": "value",
+      "title": "Steps",
+      "description": "Total steps today",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-steps",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.wellness.total_steps",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum",
+                  "reduceTo": "last",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "val-step-goal",
+      "panelTypes": "value",
+      "title": "Step Goal",
+      "description": "Daily step goal",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-step-goal",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.wellness.step_goal",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum",
+                  "reduceTo": "last",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "val-calories",
+      "panelTypes": "value",
+      "title": "Calories",
+      "description": "Total kilocalories today",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-calories",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.wellness.total_kilocalories",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum",
+                  "reduceTo": "last",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "val-distance",
+      "panelTypes": "value",
+      "title": "Distance (m)",
+      "description": "Total distance today in meters",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-distance",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.wellness.total_distance_meters",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum",
+                  "reduceTo": "last",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "row-wellness",
+      "panelTypes": "row",
+      "title": "Wellness",
+      "description": ""
+    },
+    {
+      "id": "val-body-battery",
+      "panelTypes": "value",
+      "title": "Body Battery",
+      "description": "Latest body battery level",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-body-battery",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.wellness.body_battery_latest",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum",
+                  "reduceTo": "last",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "val-floors",
+      "panelTypes": "value",
+      "title": "Floors Climbed",
+      "description": "Floors ascended today",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-floors",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.wellness.floors_ascended",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum",
+                  "reduceTo": "last",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "val-active-minutes",
+      "panelTypes": "value",
+      "title": "Active Minutes",
+      "description": "Moderate + vigorous intensity minutes",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-active-minutes",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": true,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.wellness.moderate_intensity_minutes",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum",
+                  "reduceTo": "last",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "disabled": true,
+              "expression": "B",
+              "aggregations": [
+                {
+                  "metricName": "garmin.wellness.vigorous_intensity_minutes",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum",
+                  "reduceTo": "last",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": [
+            {
+              "queryName": "F1",
+              "expression": "A + B",
+              "disabled": false,
+              "legend": ""
+            }
+          ]
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "val-resting-hr",
+      "panelTypes": "value",
+      "title": "Resting HR",
+      "description": "Resting heart rate (bpm)",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-resting-hr",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.heartrate.resting_bpm",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "last",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "val-stress",
+      "panelTypes": "value",
+      "title": "Avg Stress",
+      "description": "Average stress level",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-stress",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.stress.avg_level",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "last",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "val-spo2",
+      "panelTypes": "value",
+      "title": "SpO2 %",
+      "description": "Average blood oxygen saturation",
+      "yAxisUnit": "percent",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-spo2",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.spo2.avg_percent",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "last",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "graph-steps",
+      "panelTypes": "graph",
+      "title": "Steps Over Time",
+      "description": "Daily steps vs goal",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-graph-steps",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.wellness.total_steps",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Steps",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "B",
+              "aggregations": [
+                {
+                  "metricName": "garmin.wellness.step_goal",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Goal",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "graph-body-battery",
+      "panelTypes": "graph",
+      "title": "Body Battery Over Time",
+      "description": "Body battery levels throughout the day",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-graph-body-battery",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.wellness.body_battery_latest",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Latest",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "B",
+              "aggregations": [
+                {
+                  "metricName": "garmin.wellness.body_battery_highest",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Highest",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            },
+            {
+              "queryName": "C",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "C",
+              "aggregations": [
+                {
+                  "metricName": "garmin.wellness.body_battery_lowest",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Lowest",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "graph-calories",
+      "panelTypes": "graph",
+      "title": "Calories Over Time",
+      "description": "Total, active, and BMR calories",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-graph-calories",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.wellness.total_kilocalories",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Total",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "B",
+              "aggregations": [
+                {
+                  "metricName": "garmin.wellness.active_kilocalories",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Active",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            },
+            {
+              "queryName": "C",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "C",
+              "aggregations": [
+                {
+                  "metricName": "garmin.wellness.bmr_kilocalories",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "BMR",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "graph-stress",
+      "panelTypes": "graph",
+      "title": "Stress Over Time",
+      "description": "Average and max stress levels",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-graph-stress",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.stress.avg_level",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Avg Stress",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "B",
+              "aggregations": [
+                {
+                  "metricName": "garmin.stress.max_level",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Max Stress",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "row-vitals",
+      "panelTypes": "row",
+      "title": "Vitals",
+      "description": ""
+    },
+    {
+      "id": "graph-heartrate",
+      "panelTypes": "graph",
+      "title": "Heart Rate Over Time",
+      "description": "Resting, min, and max heart rate",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-graph-hr",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.heartrate.resting_bpm",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Resting",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "B",
+              "aggregations": [
+                {
+                  "metricName": "garmin.heartrate.min_bpm",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Min",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            },
+            {
+              "queryName": "C",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "C",
+              "aggregations": [
+                {
+                  "metricName": "garmin.heartrate.max_bpm",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Max",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "graph-spo2",
+      "panelTypes": "graph",
+      "title": "SpO2 Over Time",
+      "description": "Blood oxygen saturation",
+      "yAxisUnit": "percent",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-graph-spo2",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.spo2.avg_percent",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Average",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "B",
+              "aggregations": [
+                {
+                  "metricName": "garmin.spo2.lowest_percent",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Lowest",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            },
+            {
+              "queryName": "C",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "C",
+              "aggregations": [
+                {
+                  "metricName": "garmin.spo2.seven_day_avg_percent",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "7-Day Avg",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "graph-respiration",
+      "panelTypes": "graph",
+      "title": "Respiration Over Time",
+      "description": "Breathing rate metrics",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-graph-resp",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.respiration.avg_waking_bpm",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Avg Waking",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "B",
+              "aggregations": [
+                {
+                  "metricName": "garmin.respiration.highest_bpm",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Highest",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            },
+            {
+              "queryName": "C",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "C",
+              "aggregations": [
+                {
+                  "metricName": "garmin.respiration.lowest_bpm",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Lowest",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "graph-hydration",
+      "panelTypes": "graph",
+      "title": "Hydration Over Time",
+      "description": "Water intake vs goal",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-graph-hydration",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.hydration.intake_ml",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Intake (ml)",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "B",
+              "aggregations": [
+                {
+                  "metricName": "garmin.hydration.goal_ml",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Goal (ml)",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "row-sleep",
+      "panelTypes": "row",
+      "title": "Sleep",
+      "description": ""
+    },
+    {
+      "id": "val-sleep-total",
+      "panelTypes": "value",
+      "title": "Sleep (hours)",
+      "description": "Total sleep duration in hours",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-sleep-total",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": true,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.sleep.total_seconds",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum",
+                  "reduceTo": "last",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": [
+            {
+              "queryName": "F1",
+              "expression": "A / 3600",
+              "disabled": false,
+              "legend": ""
+            }
+          ]
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "val-hrv",
+      "panelTypes": "value",
+      "title": "HRV (ms)",
+      "description": "Last night HRV",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-hrv",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.sleep.hrv_last_night_ms",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "last",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "val-sleep-score",
+      "panelTypes": "value",
+      "title": "Sleep Respiration",
+      "description": "Average respiration during sleep",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-sleep-resp",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.sleep.avg_respiration_bpm",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "last",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "val-sleep-stress",
+      "panelTypes": "value",
+      "title": "Sleep Stress",
+      "description": "Average stress during sleep",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-sleep-stress",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.sleep.avg_stress",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "last",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "graph-sleep",
+      "panelTypes": "graph",
+      "title": "Sleep Stages Over Time",
+      "description": "Sleep stage breakdown in hours",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-graph-sleep",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": true,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.sleep.deep_seconds",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Deep",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "disabled": true,
+              "expression": "B",
+              "aggregations": [
+                {
+                  "metricName": "garmin.sleep.light_seconds",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Light",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            },
+            {
+              "queryName": "C",
+              "dataSource": "metrics",
+              "disabled": true,
+              "expression": "C",
+              "aggregations": [
+                {
+                  "metricName": "garmin.sleep.rem_seconds",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "REM",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            },
+            {
+              "queryName": "D",
+              "dataSource": "metrics",
+              "disabled": true,
+              "expression": "D",
+              "aggregations": [
+                {
+                  "metricName": "garmin.sleep.awake_seconds",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Awake",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": [
+            {
+              "queryName": "F1",
+              "expression": "A / 3600",
+              "disabled": false,
+              "legend": "Deep (h)"
+            },
+            {
+              "queryName": "F2",
+              "expression": "B / 3600",
+              "disabled": false,
+              "legend": "Light (h)"
+            },
+            {
+              "queryName": "F3",
+              "expression": "C / 3600",
+              "disabled": false,
+              "legend": "REM (h)"
+            },
+            {
+              "queryName": "F4",
+              "expression": "D / 3600",
+              "disabled": false,
+              "legend": "Awake (h)"
+            }
+          ]
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "graph-hrv",
+      "panelTypes": "graph",
+      "title": "HRV Over Time",
+      "description": "Heart rate variability trends",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-graph-hrv",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.sleep.hrv_last_night_ms",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Last Night",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "B",
+              "aggregations": [
+                {
+                  "metricName": "garmin.sleep.hrv_weekly_avg_ms",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Weekly Avg",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            },
+            {
+              "queryName": "C",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "C",
+              "aggregations": [
+                {
+                  "metricName": "garmin.sleep.hrv_baseline_balanced_low_ms",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Baseline Low",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            },
+            {
+              "queryName": "D",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "D",
+              "aggregations": [
+                {
+                  "metricName": "garmin.sleep.hrv_baseline_balanced_upper_ms",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Baseline Upper",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "row-body",
+      "panelTypes": "row",
+      "title": "Body Composition",
+      "description": ""
+    },
+    {
+      "id": "val-weight",
+      "panelTypes": "value",
+      "title": "Weight (kg)",
+      "description": "Body weight in kilograms",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-weight",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": true,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.body.weight_grams",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "last",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": [
+            {
+              "queryName": "F1",
+              "expression": "A / 1000",
+              "disabled": false,
+              "legend": ""
+            }
+          ]
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "val-bmi",
+      "panelTypes": "value",
+      "title": "BMI",
+      "description": "Body mass index",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-bmi",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.body.bmi",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "last",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "val-body-fat",
+      "panelTypes": "value",
+      "title": "Body Fat %",
+      "description": "Body fat percentage",
+      "yAxisUnit": "percent",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-body-fat",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.body.fat_percent",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "last",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "val-muscle-mass",
+      "panelTypes": "value",
+      "title": "Muscle Mass (kg)",
+      "description": "Muscle mass in kilograms",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-muscle-mass",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": true,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.body.muscle_mass_grams",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "last",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": [
+            {
+              "queryName": "F1",
+              "expression": "A / 1000",
+              "disabled": false,
+              "legend": ""
+            }
+          ]
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "graph-weight",
+      "panelTypes": "graph",
+      "title": "Weight Over Time",
+      "description": "Body weight trend in kg",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-graph-weight",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": true,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.body.weight_grams",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Weight (kg)",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": [
+            {
+              "queryName": "F1",
+              "expression": "A / 1000",
+              "disabled": false,
+              "legend": "Weight (kg)"
+            }
+          ]
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "graph-body-comp",
+      "panelTypes": "graph",
+      "title": "Body Composition Over Time",
+      "description": "Fat %, water %, muscle mass trends",
+      "yAxisUnit": "percent",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-graph-body-comp",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.body.fat_percent",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Body Fat %",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "B",
+              "aggregations": [
+                {
+                  "metricName": "garmin.body.water_percent",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Water %",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "row-training",
+      "panelTypes": "row",
+      "title": "Training & Fitness",
+      "description": ""
+    },
+    {
+      "id": "val-readiness",
+      "panelTypes": "value",
+      "title": "Readiness",
+      "description": "Training readiness score",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-readiness",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.training.readiness_score",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "last",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "val-vo2max",
+      "panelTypes": "value",
+      "title": "VO2 Max",
+      "description": "Generic VO2 max estimate",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-vo2max",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.training.vo2max_generic",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "last",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "val-fitness-age",
+      "panelTypes": "value",
+      "title": "Fitness Age",
+      "description": "Estimated fitness age in years",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-fitness-age",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.fitness_age.years",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "last",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "val-endurance",
+      "panelTypes": "value",
+      "title": "Endurance",
+      "description": "Endurance score",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-endurance",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.training.endurance_score",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "last",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "val-hill-score",
+      "panelTypes": "value",
+      "title": "Hill Score",
+      "description": "Hill running score",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-hill-score",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.training.hill_score",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "last",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "val-ftp",
+      "panelTypes": "value",
+      "title": "FTP (W)",
+      "description": "Functional threshold power",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-ftp",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.cycling.ftp_watts",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "last",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "graph-training",
+      "panelTypes": "graph",
+      "title": "Training Scores Over Time",
+      "description": "Readiness, VO2max, endurance trends",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-graph-training",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.training.readiness_score",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Readiness",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "B",
+              "aggregations": [
+                {
+                  "metricName": "garmin.training.vo2max_generic",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "VO2 Max",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            },
+            {
+              "queryName": "C",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "C",
+              "aggregations": [
+                {
+                  "metricName": "garmin.training.endurance_score",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Endurance",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "graph-training-load",
+      "panelTypes": "graph",
+      "title": "Training Load Over Time",
+      "description": "Weekly load and ACWR",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-graph-training-load",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.trainingstatus.weekly_training_load",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "Weekly Load",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "B",
+              "aggregations": [
+                {
+                  "metricName": "garmin.trainingstatus.acwr_ratio",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "avg",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "ACWR Ratio",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "row-activities",
+      "panelTypes": "row",
+      "title": "Activities & Goals",
+      "description": ""
+    },
+    {
+      "id": "val-lifetime-activities",
+      "panelTypes": "value",
+      "title": "Lifetime Activities",
+      "description": "Total lifetime activity count",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-lifetime",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.activity.lifetime_count",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum",
+                  "reduceTo": "last",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "val-active-goals",
+      "panelTypes": "value",
+      "title": "Active Goals",
+      "description": "Number of active goals",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-active-goals",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.goals.active_total",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum",
+                  "reduceTo": "last",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "val-badges",
+      "panelTypes": "value",
+      "title": "Badges Earned",
+      "description": "Total earned badges",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-badges",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.goals.earned_badges_total",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum",
+                  "reduceTo": "last",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "graph-activity-count",
+      "panelTypes": "graph",
+      "title": "Activities by Type",
+      "description": "Activity count grouped by type",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": true,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-graph-act-count",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.activity.count",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "type--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "type",
+                  "type": "tag"
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "{{type}}",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "graph-activity-duration",
+      "panelTypes": "graph",
+      "title": "Activity Duration by Type (hours)",
+      "description": "Total duration per activity type",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "fillSpans": false,
+      "isStacked": true,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "q-graph-act-duration",
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": true,
+              "expression": "A",
+              "aggregations": [
+                {
+                  "metricName": "garmin.activity.duration_seconds_total",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum",
+                  "reduceTo": "avg",
+                  "temporality": null
+                }
+              ],
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {
+                    "id": "filter-garmin-user",
+                    "key": {
+                      "key": "garmin.user",
+                      "dataType": "string",
+                      "id": "garmin.user--string--resource--false",
+                      "type": "resource",
+                      "isColumn": false,
+                      "isJSON": false
+                    },
+                    "op": "IN",
+                    "value": "$garmin.user"
+                  }
+                ]
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "type--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "type",
+                  "type": "tag"
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "{{type}}",
+              "limit": null,
+              "orderBy": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": [
+            {
+              "queryName": "F1",
+              "expression": "A / 3600",
+              "disabled": false,
+              "legend": "{{type}}"
+            }
+          ]
+        },
+        "promql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ],
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "",
+            "disabled": false,
+            "legend": ""
+          }
+        ]
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": []
+    }
+  ]
+}

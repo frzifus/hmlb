@@ -1,0 +1,71 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: miyunari-exporter
+  namespace: garmin
+  labels:
+    app: miyunari-exporter
+spec:
+  serviceName: miyunari-exporter
+  replicas: 1
+  selector:
+    matchLabels:
+      app: miyunari-exporter
+  template:
+    metadata:
+      labels:
+        app: miyunari-exporter
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: garmin-exporter
+          image: ghcr.io/barnes-c/garmin_exporter:1.1.1
+          args:
+            - --token-file=/data/garmin_token.json
+          env:
+            - name: GARMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: garmin-exporter-miyunari
+                  key: username
+            - name: GARMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: garmin-exporter-miyunari
+                  key: password
+            - name: OTEL_SERVICE_NAME
+              value: garmin-exporter
+            - name: OTEL_METRICS_EXPORTER
+              value: otlp
+            - name: OTEL_TRACES_EXPORTER
+              value: otlp
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://backend.observability.svc.cluster.local:4318
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: http/protobuf
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: garmin.user=miyunari
+          ports:
+            - name: metrics
+              containerPort: 10045
+              protocol: TCP
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: garmin-exporter-miyunari
