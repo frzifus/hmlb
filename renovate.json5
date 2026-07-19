@@ -51,5 +51,10 @@
       matchPackageNames: ['sigstore/cosign'],
       allowedVersions: '/^v2\\./',
     },
+    {
+      matchPackageNames: ['quay.io/fedora/fedora-silverblue'],
+      allowedVersions: '44',
+      automerge: true,
+    },
   ],
 }

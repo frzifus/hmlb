@@ -29,6 +29,9 @@ data:
         - name: dockerconfig
           secret:
             secretName: ghcr-credentials
+        - name: cosign-key
+          secret:
+            secretName: cosign-key
       podTemplate:
         securityContext:
           fsGroup: 65532
