@@ -13,4 +13,3 @@ resources:
   - postgres.yaml
   - paperless-server.yaml
   - httproute.yaml
-  - paperless-ai.yaml

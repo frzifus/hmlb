@@ -10,7 +10,7 @@ resources:
   # - llm
   # - mail
   # - openshift
-  # - paperless
+  - paperless
   # - steam
   # - workspace
 
