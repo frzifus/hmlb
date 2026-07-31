@@ -36,7 +36,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: mysql
-          image: mysql:9.7
+          image: mysql:26.7
           env:
             - name: MYSQL_ROOT_PASSWORD
               value: "password"
