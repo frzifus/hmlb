@@ -4,3 +4,6 @@ kind: Kustomization
 
 bases:
   - core
+
+resources:
+  - apps/flux-apps-kustomization.yaml

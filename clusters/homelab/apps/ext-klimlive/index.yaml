@@ -28,8 +28,5 @@ data:
     </html>
 kind: ConfigMap
 metadata:
-  creationTimestamp: "2025-05-27T11:39:00Z"
   name: klimlive-html
   namespace: ext-klimlive
-  resourceVersion: "46015502"
-  uid: c3f283f6-86d4-4915-b014-6c5503df378e
