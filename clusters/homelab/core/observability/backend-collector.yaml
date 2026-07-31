@@ -1,0 +1,117 @@
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: backend
+  namespace: observability
+spec:
+  config:
+    exporters:
+      otlp:
+        endpoint: backend-signoz-otel-collector.observability.svc.cluster.local:4317
+        tls:
+          insecure: true
+    processors:
+      batch: {}
+      memory_limiter:
+        check_interval: 1s
+        limit_percentage: 75
+        spike_limit_percentage: 15
+      resource/cluster:
+        attributes:
+        - action: upsert
+          key: k8s.cluster.name
+          value: homelab
+      transform/host_name:
+        log_statements:
+        - context: resource
+          statements:
+          - set(attributes["host.name"], attributes["k8s.node.name"]) where attributes["k8s.node.name"] != nil
+        metric_statements:
+        - context: resource
+          statements:
+          - set(attributes["host.name"], attributes["k8s.node.name"]) where attributes["k8s.node.name"] != nil
+        trace_statements:
+        - context: resource
+          statements:
+          - set(attributes["host.name"], attributes["k8s.node.name"]) where attributes["k8s.node.name"] != nil
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+    service:
+      pipelines:
+        logs:
+          exporters:
+          - otlp
+          processors:
+          - memory_limiter
+          - resource/cluster
+          - transform/host_name
+          - batch
+          receivers:
+          - otlp
+        metrics:
+          exporters:
+          - otlp
+          processors:
+          - memory_limiter
+          - resource/cluster
+          - transform/host_name
+          - batch
+          receivers:
+          - otlp
+        traces:
+          exporters:
+          - otlp
+          processors:
+          - memory_limiter
+          - resource/cluster
+          - transform/host_name
+          - batch
+          receivers:
+          - otlp
+      telemetry:
+        metrics:
+          readers:
+          - pull:
+              exporter:
+                prometheus:
+                  host: 0.0.0.0
+                  port: 8888
+  configVersions: 3
+  daemonSetUpdateStrategy: {}
+  deploymentUpdateStrategy: {}
+  httpRoute:
+    enabled: false
+    gateway: ''
+  ingress:
+    route: {}
+  ipFamilyPolicy: SingleStack
+  managementState: managed
+  mode: deployment
+  networkPolicy: {}
+  observability:
+    metrics: {}
+  podDnsConfig: {}
+  podManagementPolicy: Parallel
+  replicas: 2
+  resources: {}
+  targetAllocator:
+    allocationStrategy: consistent-hashing
+    collectorNotReadyGracePeriod: 30s
+    collectorTargetReloadInterval: 30s
+    filterStrategy: relabel-config
+    observability:
+      metrics: {}
+    prometheusCR:
+      evaluationInterval: 30s
+      podMonitorNamespaceSelector: {}
+      probeNamespaceSelector: {}
+      scrapeConfigNamespaceSelector: {}
+      scrapeInterval: 30s
+      serviceMonitorNamespaceSelector: {}
+    resources: {}
+  upgradeStrategy: automatic

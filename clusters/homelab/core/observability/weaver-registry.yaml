@@ -1,0 +1,515 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: weaver-registry
+  namespace: observability
+data:
+  homelab.yaml: "groups:\n    - id: registry.homelab\n      type: attribute_group\n      brief: All observed attributes in\
+    \ the homelab cluster\n      stability: development\n      attributes:\n        - id: cache_creation_tokens\n        \
+    \  type: int\n          stability: development\n          brief: 'Observed attribute: cache_creation_tokens'\n       \
+    \   examples:\n            - 0\n        - id: cache_read_tokens\n          type: int\n          stability: development\n\
+    \          brief: 'Observed attribute: cache_read_tokens'\n          examples:\n            - 0\n        - id: client.address\n\
+    \          type: string\n          stability: development\n          brief: 'Observed attribute: client.address'\n   \
+    \       examples:\n            - value\n        - id: code\n          type: string\n          stability: development\n\
+    \          brief: 'Observed attribute: code'\n          examples:\n            - value\n        - id: container\n    \
+    \      type: string\n          stability: development\n          brief: 'Observed attribute: container'\n          examples:\n\
+    \            - value\n        - id: cost_usd\n          type: double\n          stability: development\n          brief:\
+    \ 'Observed attribute: cost_usd'\n          examples:\n            - 0.1\n        - id: cost_usd_micros\n          type:\
+    \ int\n          stability: development\n          brief: 'Observed attribute: cost_usd_micros'\n          examples:\n\
+    \            - 0\n        - id: count\n          type: string\n          stability: development\n          brief: 'Observed\
+    \ attribute: count'\n          examples:\n            - value\n        - id: cpu\n          type: int\n          stability:\
+    \ development\n          brief: 'Observed attribute: cpu'\n          examples:\n            - 0\n        - id: cpython.gc.generation\n\
+    \          type: int\n          stability: development\n          brief: 'Observed attribute: cpython.gc.generation'\n\
+    \          examples:\n            - 0\n        - id: db.name\n          type: string\n          stability: development\n\
+    \          brief: 'Observed attribute: db.name'\n          examples:\n            - value\n        - id: db.statement\n\
+    \          type: string\n          stability: development\n          brief: 'Observed attribute: db.statement'\n     \
+    \     examples:\n            - value\n        - id: db.system\n          type: string\n          stability: development\n\
+    \          brief: 'Observed attribute: db.system'\n          examples:\n            - value\n        - id: device\n  \
+    \        type: string\n          stability: development\n          brief: 'Observed attribute: device'\n          examples:\n\
+    \            - value\n        - id: direction\n          type: string\n          stability: development\n          brief:\
+    \ 'Observed attribute: direction'\n          examples:\n            - value\n        - id: duration_ms\n          type:\
+    \ int\n          stability: development\n          brief: 'Observed attribute: duration_ms'\n          examples:\n   \
+    \         - 0\n        - id: effort\n          type: string\n          stability: development\n          brief: 'Observed\
+    \ attribute: effort'\n          examples:\n            - value\n        - id: endpoint\n          type: string\n     \
+    \     stability: development\n          brief: 'Observed attribute: endpoint'\n          examples:\n            - value\n\
+    \        - id: envoy_cluster_name\n          type: string\n          stability: development\n          brief: 'Observed\
+    \ attribute: envoy_cluster_name'\n          examples:\n            - value\n        - id: envoy_http_conn_manager_prefix\n\
+    \          type: string\n          stability: development\n          brief: 'Observed attribute: envoy_http_conn_manager_prefix'\n\
+    \          examples:\n            - value\n        - id: envoy_listener_address\n          type: string\n          stability:\
+    \ development\n          brief: 'Observed attribute: envoy_listener_address'\n          examples:\n            - value\n\
+    \        - id: envoy_response_code\n          type: string\n          stability: development\n          brief: 'Observed\
+    \ attribute: envoy_response_code'\n          examples:\n            - value\n        - id: envoy_response_code_class\n\
+    \          type: string\n          stability: development\n          brief: 'Observed attribute: envoy_response_code_class'\n\
+    \          examples:\n            - value\n        - id: envoy_worker_id\n          type: string\n          stability:\
+    \ development\n          brief: 'Observed attribute: envoy_worker_id'\n          examples:\n            - value\n    \
+    \    - id: event.name\n          type: string\n          stability: development\n          brief: 'Observed attribute:\
+    \ event.name'\n          examples:\n            - value\n        - id: event.sequence\n          type: int\n         \
+    \ stability: development\n          brief: 'Observed attribute: event.sequence'\n          examples:\n            - 0\n\
+    \        - id: event.timestamp\n          type: string\n          stability: development\n          brief: 'Observed attribute:\
+    \ event.timestamp'\n          examples:\n            - value\n        - id: family\n          type: string\n         \
+    \ stability: development\n          brief: 'Observed attribute: family'\n          examples:\n            - value\n  \
+    \      - id: flag\n          type: string\n          stability: development\n          brief: 'Observed attribute: flag'\n\
+    \          examples:\n            - value\n        - id: generation\n          type: string\n          stability: development\n\
+    \          brief: 'Observed attribute: generation'\n          examples:\n            - value\n        - id: grpc_code\n\
+    \          type: string\n          stability: development\n          brief: 'Observed attribute: grpc_code'\n        \
+    \  examples:\n            - value\n        - id: grpc_method\n          type: string\n          stability: development\n\
+    \          brief: 'Observed attribute: grpc_method'\n          examples:\n            - value\n        - id: grpc_service\n\
+    \          type: string\n          stability: development\n          brief: 'Observed attribute: grpc_service'\n     \
+    \     examples:\n            - value\n        - id: grpc_type\n          type: string\n          stability: development\n\
+    \          brief: 'Observed attribute: grpc_type'\n          examples:\n            - value\n        - id: host.arch\n\
+    \          type: string\n          stability: development\n          brief: 'Observed attribute: host.arch'\n        \
+    \  examples:\n            - value\n        - id: http.flavor\n          type: string\n          stability: development\n\
+    \          brief: 'Observed attribute: http.flavor'\n          examples:\n            - value\n        - id: http.host\n\
+    \          type: string\n          stability: development\n          brief: 'Observed attribute: http.host'\n        \
+    \  examples:\n            - value\n        - id: http.method\n          type: string\n          stability: development\n\
+    \          brief: 'Observed attribute: http.method'\n          examples:\n            - value\n        - id: http.request.method\n\
+    \          type: string\n          stability: development\n          brief: 'Observed attribute: http.request.method'\n\
+    \          examples:\n            - value\n        - id: http.response.status_code\n          type: int\n          stability:\
+    \ development\n          brief: 'Observed attribute: http.response.status_code'\n          examples:\n            - 0\n\
+    \        - id: http.route\n          type: string\n          stability: development\n          brief: 'Observed attribute:\
+    \ http.route'\n          examples:\n            - value\n        - id: http.scheme\n          type: string\n         \
+    \ stability: development\n          brief: 'Observed attribute: http.scheme'\n          examples:\n            - value\n\
+    \        - id: http.server_name\n          type: string\n          stability: development\n          brief: 'Observed\
+    \ attribute: http.server_name'\n          examples:\n            - value\n        - id: http.status_code\n          type:\
+    \ int\n          stability: development\n          brief: 'Observed attribute: http.status_code'\n          examples:\n\
+    \            - 0\n        - id: http.target\n          type: string\n          stability: development\n          brief:\
+    \ 'Observed attribute: http.target'\n          examples:\n            - value\n        - id: input_tokens\n          type:\
+    \ int\n          stability: development\n          brief: 'Observed attribute: input_tokens'\n          examples:\n  \
+    \          - 0\n        - id: k8s.container.name\n          type: string\n          stability: development\n         \
+    \ brief: 'Observed attribute: k8s.container.name'\n          examples:\n            - value\n        - id: k8s.daemonset.name\n\
+    \          type: string\n          stability: development\n          brief: 'Observed attribute: k8s.daemonset.name'\n\
+    \          examples:\n            - value\n        - id: k8s.deployment.name\n          type: string\n          stability:\
+    \ development\n          brief: 'Observed attribute: k8s.deployment.name'\n          examples:\n            - value\n\
+    \        - id: k8s.namespace.name\n          type: string\n          stability: development\n          brief: 'Observed\
+    \ attribute: k8s.namespace.name'\n          examples:\n            - value\n        - id: k8s.node.name\n          type:\
+    \ string\n          stability: development\n          brief: 'Observed attribute: k8s.node.name'\n          examples:\n\
+    \            - value\n        - id: k8s.pod.name\n          type: string\n          stability: development\n         \
+    \ brief: 'Observed attribute: k8s.pod.name'\n          examples:\n            - value\n        - id: k8s.pod.uid\n   \
+    \       type: string\n          stability: development\n          brief: 'Observed attribute: k8s.pod.uid'\n         \
+    \ examples:\n            - value\n        - id: k8s.replicaset.name\n          type: string\n          stability: development\n\
+    \          brief: 'Observed attribute: k8s.replicaset.name'\n          examples:\n            - value\n        - id: k8s_app\n\
+    \          type: string\n          stability: development\n          brief: 'Observed attribute: k8s_app'\n          examples:\n\
+    \            - value\n        - id: model\n          type: string\n          stability: development\n          brief:\
+    \ 'Observed attribute: model'\n          examples:\n            - value\n        - id: namespace\n          type: string\n\
+    \          stability: development\n          brief: 'Observed attribute: namespace'\n          examples:\n           \
+    \ - value\n        - id: net.host.port\n          type: int\n          stability: development\n          brief: 'Observed\
+    \ attribute: net.host.port'\n          examples:\n            - 0\n        - id: net.peer.name\n          type: string\n\
+    \          stability: development\n          brief: 'Observed attribute: net.peer.name'\n          examples:\n       \
+    \     - value\n        - id: net.peer.port\n          type: int\n          stability: development\n          brief: 'Observed\
+    \ attribute: net.peer.port'\n          examples:\n            - 0\n        - id: network.peer.address\n          type:\
+    \ string\n          stability: development\n          brief: 'Observed attribute: network.peer.address'\n          examples:\n\
+    \            - value\n        - id: network.peer.port\n          type: int\n          stability: development\n       \
+    \   brief: 'Observed attribute: network.peer.port'\n          examples:\n            - 0\n        - id: network.protocol.version\n\
+    \          type: string\n          stability: development\n          brief: 'Observed attribute: network.protocol.version'\n\
+    \          examples:\n            - value\n        - id: node\n          type: string\n          stability: development\n\
+    \          brief: 'Observed attribute: node'\n          examples:\n            - value\n        - id: os.type\n      \
+    \    type: string\n          stability: development\n          brief: 'Observed attribute: os.type'\n          examples:\n\
+    \            - value\n        - id: os.version\n          type: string\n          stability: development\n          brief:\
+    \ 'Observed attribute: os.version'\n          examples:\n            - value\n        - id: otel.span.parent.origin\n\
+    \          type: string\n          stability: development\n          brief: 'Observed attribute: otel.span.parent.origin'\n\
+    \          examples:\n            - value\n        - id: otel.span.sampling_result\n          type: string\n         \
+    \ stability: development\n          brief: 'Observed attribute: otel.span.sampling_result'\n          examples:\n    \
+    \        - value\n        - id: output_tokens\n          type: int\n          stability: development\n          brief:\
+    \ 'Observed attribute: output_tokens'\n          examples:\n            - 0\n        - id: pod\n          type: string\n\
+    \          stability: development\n          brief: 'Observed attribute: pod'\n          examples:\n            - value\n\
+    \        - id: pool.name\n          type: string\n          stability: development\n          brief: 'Observed attribute:\
+    \ pool.name'\n          examples:\n            - value\n        - id: port\n          type: string\n          stability:\
+    \ development\n          brief: 'Observed attribute: port'\n          examples:\n            - value\n        - id: prompt.id\n\
+    \          type: string\n          stability: development\n          brief: 'Observed attribute: prompt.id'\n        \
+    \  examples:\n            - value\n        - id: protocol\n          type: string\n          stability: development\n\
+    \          brief: 'Observed attribute: protocol'\n          examples:\n            - value\n        - id: query_source\n\
+    \          type: string\n          stability: development\n          brief: 'Observed attribute: query_source'\n     \
+    \     examples:\n            - value\n        - id: reason\n          type: string\n          stability: development\n\
+    \          brief: 'Observed attribute: reason'\n          examples:\n            - value\n        - id: request_id\n \
+    \         type: string\n          stability: development\n          brief: 'Observed attribute: request_id'\n        \
+    \  examples:\n            - value\n        - id: server.address\n          type: string\n          stability: development\n\
+    \          brief: 'Observed attribute: server.address'\n          examples:\n            - value\n        - id: server.port\n\
+    \          type: string\n          stability: development\n          brief: 'Observed attribute: server.port'\n      \
+    \    examples:\n            - value\n        - id: service\n          type: string\n          stability: development\n\
+    \          brief: 'Observed attribute: service'\n          examples:\n            - value\n        - id: service.instance.id\n\
+    \          type: string\n          stability: development\n          brief: 'Observed attribute: service.instance.id'\n\
+    \          examples:\n            - value\n        - id: service.name\n          type: string\n          stability: development\n\
+    \          brief: 'Observed attribute: service.name'\n          examples:\n            - value\n        - id: service.namespace\n\
+    \          type: string\n          stability: development\n          brief: 'Observed attribute: service.namespace'\n\
+    \          examples:\n            - value\n        - id: service.version\n          type: string\n          stability:\
+    \ development\n          brief: 'Observed attribute: service.version'\n          examples:\n            - value\n    \
+    \    - id: session.id\n          type: string\n          stability: development\n          brief: 'Observed attribute:\
+    \ session.id'\n          examples:\n            - value\n        - id: source\n          type: string\n          stability:\
+    \ development\n          brief: 'Observed attribute: source'\n          examples:\n            - value\n        - id:\
+    \ speed\n          type: string\n          stability: development\n          brief: 'Observed attribute: speed'\n    \
+    \      examples:\n            - value\n        - id: state\n          type: string\n          stability: development\n\
+    \          brief: 'Observed attribute: state'\n          examples:\n            - value\n        - id: subtype\n     \
+    \     type: string\n          stability: development\n          brief: 'Observed attribute: subtype'\n          examples:\n\
+    \            - value\n        - id: telemetry.auto.version\n          type: string\n          stability: development\n\
+    \          brief: 'Observed attribute: telemetry.auto.version'\n          examples:\n            - value\n        - id:\
+    \ telemetry.sdk.language\n          type: string\n          stability: development\n          brief: 'Observed attribute:\
+    \ telemetry.sdk.language'\n          examples:\n            - value\n        - id: telemetry.sdk.name\n          type:\
+    \ string\n          stability: development\n          brief: 'Observed attribute: telemetry.sdk.name'\n          examples:\n\
+    \            - value\n        - id: telemetry.sdk.version\n          type: string\n          stability: development\n\
+    \          brief: 'Observed attribute: telemetry.sdk.version'\n          examples:\n            - value\n        - id:\
+    \ terminal.type\n          type: string\n          stability: development\n          brief: 'Observed attribute: terminal.type'\n\
+    \          examples:\n            - value\n        - id: type\n          type: string\n          stability: development\n\
+    \          brief: 'Observed attribute: type'\n          examples:\n            - value\n        - id: url.path\n     \
+    \     type: string\n          stability: development\n          brief: 'Observed attribute: url.path'\n          examples:\n\
+    \            - value\n        - id: url.scheme\n          type: string\n          stability: development\n          brief:\
+    \ 'Observed attribute: url.scheme'\n          examples:\n            - value\n        - id: user.id\n          type: string\n\
+    \          stability: development\n          brief: 'Observed attribute: user.id'\n          examples:\n            -\
+    \ value\n        - id: user_agent.original\n          type: string\n          stability: development\n          brief:\
+    \ 'Observed attribute: user_agent.original'\n          examples:\n            - value\n        - id: verdict\n       \
+    \   type: string\n          stability: development\n          brief: 'Observed attribute: verdict'\n          examples:\n\
+    \            - value\n    - id: metric.cpython_gc_collected_objects\n      type: metric\n      brief: 'Observed metric:\
+    \ cpython.gc.collected_objects'\n      stability: development\n      metric_name: cpython.gc.collected_objects\n     \
+    \ instrument: counter\n      unit: '{object}'\n      attributes:\n        - ref: cpython.gc.generation\n        - ref:\
+    \ generation\n    - id: metric.cpython_gc_collections\n      type: metric\n      brief: 'Observed metric: cpython.gc.collections'\n\
+    \      stability: development\n      metric_name: cpython.gc.collections\n      instrument: counter\n      unit: '{collection}'\n\
+    \      attributes:\n        - ref: cpython.gc.generation\n        - ref: generation\n    - id: metric.cpython_gc_uncollectable_objects\n\
+    \      type: metric\n      brief: 'Observed metric: cpython.gc.uncollectable_objects'\n      stability: development\n\
+    \      metric_name: cpython.gc.uncollectable_objects\n      instrument: counter\n      unit: '{object}'\n      attributes:\n\
+    \        - ref: cpython.gc.generation\n        - ref: generation\n    - id: metric.db_client_connections_usage\n     \
+    \ type: metric\n      brief: 'Observed metric: db.client.connections.usage'\n      stability: development\n      metric_name:\
+    \ db.client.connections.usage\n      instrument: updowncounter\n      unit: connections\n      attributes:\n        -\
+    \ ref: pool.name\n        - ref: state\n    - id: metric.envoy_cluster_bind_errors\n      type: metric\n      brief: 'Observed\
+    \ metric: envoy_cluster_bind_errors'\n      stability: development\n      metric_name: envoy_cluster_bind_errors\n   \
+    \   instrument: counter\n      unit: '{1}'\n      attributes:\n        - ref: container\n        - ref: endpoint\n   \
+    \     - ref: envoy_cluster_name\n        - ref: k8s_app\n        - ref: namespace\n        - ref: node\n        - ref:\
+    \ pod\n        - ref: service\n    - id: metric.envoy_cluster_circuit_breakers_default_rq_open\n      type: metric\n \
+    \     brief: 'Observed metric: envoy_cluster_circuit_breakers_default_rq_open'\n      stability: development\n      metric_name:\
+    \ envoy_cluster_circuit_breakers_default_rq_open\n      instrument: gauge\n      unit: '{1}'\n      attributes:\n    \
+    \    - ref: container\n        - ref: endpoint\n        - ref: envoy_cluster_name\n        - ref: k8s_app\n        - ref:\
+    \ namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.envoy_cluster_external_upstream_rq_completed\n\
+    \      type: metric\n      brief: 'Observed metric: envoy_cluster_external_upstream_rq_completed'\n      stability: development\n\
+    \      metric_name: envoy_cluster_external_upstream_rq_completed\n      instrument: counter\n      unit: '{1}'\n     \
+    \ attributes:\n        - ref: container\n        - ref: endpoint\n        - ref: envoy_cluster_name\n        - ref: k8s_app\n\
+    \        - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.envoy_cluster_http2_requests_rejected_with_underscores_in_headers\n\
+    \      type: metric\n      brief: 'Observed metric: envoy_cluster_http2_requests_rejected_with_underscores_in_headers'\n\
+    \      stability: development\n      metric_name: envoy_cluster_http2_requests_rejected_with_underscores_in_headers\n\
+    \      instrument: counter\n      unit: '{1}'\n      attributes:\n        - ref: container\n        - ref: endpoint\n\
+    \        - ref: envoy_cluster_name\n        - ref: k8s_app\n        - ref: namespace\n        - ref: node\n        - ref:\
+    \ pod\n        - ref: service\n    - id: metric.envoy_cluster_http2_rx_reset\n      type: metric\n      brief: 'Observed\
+    \ metric: envoy_cluster_http2_rx_reset'\n      stability: development\n      metric_name: envoy_cluster_http2_rx_reset\n\
+    \      instrument: counter\n      unit: '{1}'\n      attributes:\n        - ref: container\n        - ref: endpoint\n\
+    \        - ref: envoy_cluster_name\n        - ref: k8s_app\n        - ref: namespace\n        - ref: node\n        - ref:\
+    \ pod\n        - ref: service\n    - id: metric.envoy_cluster_internal_upstream_rq\n      type: metric\n      brief: 'Observed\
+    \ metric: envoy_cluster_internal_upstream_rq'\n      stability: development\n      metric_name: envoy_cluster_internal_upstream_rq\n\
+    \      instrument: counter\n      unit: '{1}'\n      attributes:\n        - ref: container\n        - ref: endpoint\n\
+    \        - ref: envoy_cluster_name\n        - ref: envoy_response_code\n        - ref: k8s_app\n        - ref: namespace\n\
+    \        - ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.envoy_cluster_internal_upstream_rq_completed\n\
+    \      type: metric\n      brief: 'Observed metric: envoy_cluster_internal_upstream_rq_completed'\n      stability: development\n\
+    \      metric_name: envoy_cluster_internal_upstream_rq_completed\n      instrument: counter\n      unit: '{1}'\n     \
+    \ attributes:\n        - ref: container\n        - ref: endpoint\n        - ref: envoy_cluster_name\n        - ref: k8s_app\n\
+    \        - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.envoy_cluster_manager_cds_control_plane_pending_requests\n\
+    \      type: metric\n      brief: 'Observed metric: envoy_cluster_manager_cds_control_plane_pending_requests'\n      stability:\
+    \ development\n      metric_name: envoy_cluster_manager_cds_control_plane_pending_requests\n      instrument: gauge\n\
+    \      unit: '{1}'\n      attributes:\n        - ref: container\n        - ref: endpoint\n        - ref: k8s_app\n   \
+    \     - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.envoy_cluster_manager_cds_control_plane_rate_limit_enforced\n\
+    \      type: metric\n      brief: 'Observed metric: envoy_cluster_manager_cds_control_plane_rate_limit_enforced'\n   \
+    \   stability: development\n      metric_name: envoy_cluster_manager_cds_control_plane_rate_limit_enforced\n      instrument:\
+    \ counter\n      unit: '{1}'\n      attributes:\n        - ref: container\n        - ref: endpoint\n        - ref: k8s_app\n\
+    \        - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.envoy_cluster_manager_cds_update_rejected\n\
+    \      type: metric\n      brief: 'Observed metric: envoy_cluster_manager_cds_update_rejected'\n      stability: development\n\
+    \      metric_name: envoy_cluster_manager_cds_update_rejected\n      instrument: counter\n      unit: '{1}'\n      attributes:\n\
+    \        - ref: container\n        - ref: endpoint\n        - ref: k8s_app\n        - ref: namespace\n        - ref: node\n\
+    \        - ref: pod\n        - ref: service\n    - id: metric.envoy_cluster_manager_warming_clusters\n      type: metric\n\
+    \      brief: 'Observed metric: envoy_cluster_manager_warming_clusters'\n      stability: development\n      metric_name:\
+    \ envoy_cluster_manager_warming_clusters\n      instrument: gauge\n      unit: '{1}'\n      attributes:\n        - ref:\
+    \ container\n        - ref: endpoint\n        - ref: k8s_app\n        - ref: namespace\n        - ref: node\n        -\
+    \ ref: pod\n        - ref: service\n    - id: metric.envoy_cluster_membership_degraded\n      type: metric\n      brief:\
+    \ 'Observed metric: envoy_cluster_membership_degraded'\n      stability: development\n      metric_name: envoy_cluster_membership_degraded\n\
+    \      instrument: gauge\n      unit: '{1}'\n      attributes:\n        - ref: container\n        - ref: endpoint\n  \
+    \      - ref: envoy_cluster_name\n        - ref: k8s_app\n        - ref: namespace\n        - ref: node\n        - ref:\
+    \ pod\n        - ref: service\n    - id: metric.envoy_cluster_upstream_cx_destroy_local\n      type: metric\n      brief:\
+    \ 'Observed metric: envoy_cluster_upstream_cx_destroy_local'\n      stability: development\n      metric_name: envoy_cluster_upstream_cx_destroy_local\n\
+    \      instrument: counter\n      unit: '{1}'\n      attributes:\n        - ref: container\n        - ref: endpoint\n\
+    \        - ref: envoy_cluster_name\n        - ref: k8s_app\n        - ref: namespace\n        - ref: node\n        - ref:\
+    \ pod\n        - ref: service\n    - id: metric.envoy_cluster_upstream_cx_destroy_with_active_rq\n      type: metric\n\
+    \      brief: 'Observed metric: envoy_cluster_upstream_cx_destroy_with_active_rq'\n      stability: development\n    \
+    \  metric_name: envoy_cluster_upstream_cx_destroy_with_active_rq\n      instrument: counter\n      unit: '{1}'\n     \
+    \ attributes:\n        - ref: container\n        - ref: endpoint\n        - ref: envoy_cluster_name\n        - ref: k8s_app\n\
+    \        - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.envoy_cluster_upstream_rq_active\n\
+    \      type: metric\n      brief: 'Observed metric: envoy_cluster_upstream_rq_active'\n      stability: development\n\
+    \      metric_name: envoy_cluster_upstream_rq_active\n      instrument: gauge\n      unit: '{1}'\n      attributes:\n\
+    \        - ref: container\n        - ref: endpoint\n        - ref: envoy_cluster_name\n        - ref: k8s_app\n      \
+    \  - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.envoy_cluster_upstream_rq_cancelled\n\
+    \      type: metric\n      brief: 'Observed metric: envoy_cluster_upstream_rq_cancelled'\n      stability: development\n\
+    \      metric_name: envoy_cluster_upstream_rq_cancelled\n      instrument: counter\n      unit: '{1}'\n      attributes:\n\
+    \        - ref: container\n        - ref: endpoint\n        - ref: envoy_cluster_name\n        - ref: k8s_app\n      \
+    \  - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.envoy_cluster_upstream_rq_total\n\
+    \      type: metric\n      brief: 'Observed metric: envoy_cluster_upstream_rq_total'\n      stability: development\n \
+    \     metric_name: envoy_cluster_upstream_rq_total\n      instrument: counter\n      unit: '{1}'\n      attributes:\n\
+    \        - ref: container\n        - ref: endpoint\n        - ref: envoy_cluster_name\n        - ref: k8s_app\n      \
+    \  - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.envoy_cluster_version\n\
+    \      type: metric\n      brief: 'Observed metric: envoy_cluster_version'\n      stability: development\n      metric_name:\
+    \ envoy_cluster_version\n      instrument: gauge\n      unit: '{1}'\n      attributes:\n        - ref: container\n   \
+    \     - ref: endpoint\n        - ref: envoy_cluster_name\n        - ref: k8s_app\n        - ref: namespace\n        -\
+    \ ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.envoy_http_downstream_cx_destroy\n      type:\
+    \ metric\n      brief: 'Observed metric: envoy_http_downstream_cx_destroy'\n      stability: development\n      metric_name:\
+    \ envoy_http_downstream_cx_destroy\n      instrument: counter\n      unit: '{1}'\n      attributes:\n        - ref: container\n\
+    \        - ref: endpoint\n        - ref: envoy_http_conn_manager_prefix\n        - ref: k8s_app\n        - ref: namespace\n\
+    \        - ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.envoy_http_downstream_cx_destroy_remote_active_rq\n\
+    \      type: metric\n      brief: 'Observed metric: envoy_http_downstream_cx_destroy_remote_active_rq'\n      stability:\
+    \ development\n      metric_name: envoy_http_downstream_cx_destroy_remote_active_rq\n      instrument: counter\n     \
+    \ unit: '{1}'\n      attributes:\n        - ref: container\n        - ref: endpoint\n        - ref: envoy_http_conn_manager_prefix\n\
+    \        - ref: k8s_app\n        - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n \
+    \   - id: metric.envoy_http_downstream_cx_overload_disable_keepalive\n      type: metric\n      brief: 'Observed metric:\
+    \ envoy_http_downstream_cx_overload_disable_keepalive'\n      stability: development\n      metric_name: envoy_http_downstream_cx_overload_disable_keepalive\n\
+    \      instrument: counter\n      unit: '{1}'\n      attributes:\n        - ref: container\n        - ref: endpoint\n\
+    \        - ref: envoy_http_conn_manager_prefix\n        - ref: k8s_app\n        - ref: namespace\n        - ref: node\n\
+    \        - ref: pod\n        - ref: service\n    - id: metric.envoy_http_downstream_cx_protocol_error\n      type: metric\n\
+    \      brief: 'Observed metric: envoy_http_downstream_cx_protocol_error'\n      stability: development\n      metric_name:\
+    \ envoy_http_downstream_cx_protocol_error\n      instrument: counter\n      unit: '{1}'\n      attributes:\n        -\
+    \ ref: container\n        - ref: endpoint\n        - ref: envoy_http_conn_manager_prefix\n        - ref: k8s_app\n   \
+    \     - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.envoy_http_downstream_cx_rx_bytes_buffered\n\
+    \      type: metric\n      brief: 'Observed metric: envoy_http_downstream_cx_rx_bytes_buffered'\n      stability: development\n\
+    \      metric_name: envoy_http_downstream_cx_rx_bytes_buffered\n      instrument: gauge\n      unit: '{1}'\n      attributes:\n\
+    \        - ref: container\n        - ref: endpoint\n        - ref: envoy_http_conn_manager_prefix\n        - ref: k8s_app\n\
+    \        - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.envoy_http_downstream_cx_ssl_total\n\
+    \      type: metric\n      brief: 'Observed metric: envoy_http_downstream_cx_ssl_total'\n      stability: development\n\
+    \      metric_name: envoy_http_downstream_cx_ssl_total\n      instrument: counter\n      unit: '{1}'\n      attributes:\n\
+    \        - ref: container\n        - ref: endpoint\n        - ref: envoy_http_conn_manager_prefix\n        - ref: k8s_app\n\
+    \        - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.envoy_http_downstream_cx_upgrades_active\n\
+    \      type: metric\n      brief: 'Observed metric: envoy_http_downstream_cx_upgrades_active'\n      stability: development\n\
+    \      metric_name: envoy_http_downstream_cx_upgrades_active\n      instrument: gauge\n      unit: '{1}'\n      attributes:\n\
+    \        - ref: container\n        - ref: endpoint\n        - ref: envoy_http_conn_manager_prefix\n        - ref: k8s_app\n\
+    \        - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.envoy_http_downstream_flow_control_resumed_reading_total\n\
+    \      type: metric\n      brief: 'Observed metric: envoy_http_downstream_flow_control_resumed_reading_total'\n      stability:\
+    \ development\n      metric_name: envoy_http_downstream_flow_control_resumed_reading_total\n      instrument: counter\n\
+    \      unit: '{1}'\n      attributes:\n        - ref: container\n        - ref: endpoint\n        - ref: envoy_http_conn_manager_prefix\n\
+    \        - ref: k8s_app\n        - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n \
+    \   - id: metric.envoy_http_downstream_rq_non_relative_path\n      type: metric\n      brief: 'Observed metric: envoy_http_downstream_rq_non_relative_path'\n\
+    \      stability: development\n      metric_name: envoy_http_downstream_rq_non_relative_path\n      instrument: counter\n\
+    \      unit: '{1}'\n      attributes:\n        - ref: container\n        - ref: endpoint\n        - ref: envoy_http_conn_manager_prefix\n\
+    \        - ref: k8s_app\n        - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n \
+    \   - id: metric.envoy_http_downstream_rq_rejected_via_ip_detection\n      type: metric\n      brief: 'Observed metric:\
+    \ envoy_http_downstream_rq_rejected_via_ip_detection'\n      stability: development\n      metric_name: envoy_http_downstream_rq_rejected_via_ip_detection\n\
+    \      instrument: counter\n      unit: '{1}'\n      attributes:\n        - ref: container\n        - ref: endpoint\n\
+    \        - ref: envoy_http_conn_manager_prefix\n        - ref: k8s_app\n        - ref: namespace\n        - ref: node\n\
+    \        - ref: pod\n        - ref: service\n    - id: metric.envoy_http_passthrough_internal_redirect_bad_location\n\
+    \      type: metric\n      brief: 'Observed metric: envoy_http_passthrough_internal_redirect_bad_location'\n      stability:\
+    \ development\n      metric_name: envoy_http_passthrough_internal_redirect_bad_location\n      instrument: counter\n \
+    \     unit: '{1}'\n      attributes:\n        - ref: container\n        - ref: endpoint\n        - ref: envoy_http_conn_manager_prefix\n\
+    \        - ref: k8s_app\n        - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n \
+    \   - id: metric.envoy_http_rq_total\n      type: metric\n      brief: 'Observed metric: envoy_http_rq_total'\n      stability:\
+    \ development\n      metric_name: envoy_http_rq_total\n      instrument: counter\n      unit: '{1}'\n      attributes:\n\
+    \        - ref: container\n        - ref: endpoint\n        - ref: envoy_http_conn_manager_prefix\n        - ref: k8s_app\n\
+    \        - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.envoy_http_rs_too_large\n\
+    \      type: metric\n      brief: 'Observed metric: envoy_http_rs_too_large'\n      stability: development\n      metric_name:\
+    \ envoy_http_rs_too_large\n      instrument: counter\n      unit: '{1}'\n      attributes:\n        - ref: container\n\
+    \        - ref: endpoint\n        - ref: envoy_http_conn_manager_prefix\n        - ref: k8s_app\n        - ref: namespace\n\
+    \        - ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.envoy_listener_downstream_cx_destroy\n\
+    \      type: metric\n      brief: 'Observed metric: envoy_listener_downstream_cx_destroy'\n      stability: development\n\
+    \      metric_name: envoy_listener_downstream_cx_destroy\n      instrument: counter\n      unit: '{1}'\n      attributes:\n\
+    \        - ref: container\n        - ref: endpoint\n        - ref: envoy_listener_address\n        - ref: k8s_app\n  \
+    \      - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.envoy_listener_downstream_cx_length_ms\n\
+    \      type: metric\n      brief: 'Observed metric: envoy_listener_downstream_cx_length_ms'\n      stability: development\n\
+    \      metric_name: envoy_listener_downstream_cx_length_ms\n      instrument: histogram\n      unit: '{1}'\n      attributes:\n\
+    \        - ref: container\n        - ref: endpoint\n        - ref: envoy_listener_address\n        - ref: k8s_app\n  \
+    \      - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.envoy_listener_http_downstream_rq_completed\n\
+    \      type: metric\n      brief: 'Observed metric: envoy_listener_http_downstream_rq_completed'\n      stability: development\n\
+    \      metric_name: envoy_listener_http_downstream_rq_completed\n      instrument: counter\n      unit: '{1}'\n      attributes:\n\
+    \        - ref: container\n        - ref: endpoint\n        - ref: envoy_http_conn_manager_prefix\n        - ref: envoy_listener_address\n\
+    \        - ref: k8s_app\n        - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n \
+    \   - id: metric.envoy_listener_http_downstream_rq_xx\n      type: metric\n      brief: 'Observed metric: envoy_listener_http_downstream_rq_xx'\n\
+    \      stability: development\n      metric_name: envoy_listener_http_downstream_rq_xx\n      instrument: counter\n  \
+    \    unit: '{1}'\n      attributes:\n        - ref: container\n        - ref: endpoint\n        - ref: envoy_http_conn_manager_prefix\n\
+    \        - ref: envoy_listener_address\n        - ref: envoy_response_code_class\n        - ref: k8s_app\n        - ref:\
+    \ namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.envoy_listener_manager_listener_create_success\n\
+    \      type: metric\n      brief: 'Observed metric: envoy_listener_manager_listener_create_success'\n      stability:\
+    \ development\n      metric_name: envoy_listener_manager_listener_create_success\n      instrument: counter\n      unit:\
+    \ '{1}'\n      attributes:\n        - ref: container\n        - ref: endpoint\n        - ref: k8s_app\n        - ref:\
+    \ namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.envoy_runtime_override_dir_exists\n\
+    \      type: metric\n      brief: 'Observed metric: envoy_runtime_override_dir_exists'\n      stability: development\n\
+    \      metric_name: envoy_runtime_override_dir_exists\n      instrument: counter\n      unit: '{1}'\n      attributes:\n\
+    \        - ref: container\n        - ref: endpoint\n        - ref: k8s_app\n        - ref: namespace\n        - ref: node\n\
+    \        - ref: pod\n        - ref: service\n    - id: metric.envoy_server_live\n      type: metric\n      brief: 'Observed\
+    \ metric: envoy_server_live'\n      stability: development\n      metric_name: envoy_server_live\n      instrument: gauge\n\
+    \      unit: '{1}'\n      attributes:\n        - ref: container\n        - ref: endpoint\n        - ref: k8s_app\n   \
+    \     - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.envoy_server_stats_recent_lookups\n\
+    \      type: metric\n      brief: 'Observed metric: envoy_server_stats_recent_lookups'\n      stability: development\n\
+    \      metric_name: envoy_server_stats_recent_lookups\n      instrument: gauge\n      unit: '{1}'\n      attributes:\n\
+    \        - ref: container\n        - ref: endpoint\n        - ref: k8s_app\n        - ref: namespace\n        - ref: node\n\
+    \        - ref: pod\n        - ref: service\n    - id: metric.envoy_thread_local_cluster_manager_worker_clusters_inflated\n\
+    \      type: metric\n      brief: 'Observed metric: envoy_thread_local_cluster_manager_worker_clusters_inflated'\n   \
+    \   stability: development\n      metric_name: envoy_thread_local_cluster_manager_worker_clusters_inflated\n      instrument:\
+    \ gauge\n      unit: '{1}'\n      attributes:\n        - ref: container\n        - ref: endpoint\n        - ref: envoy_worker_id\n\
+    \        - ref: k8s_app\n        - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n \
+    \   - id: metric.grpc_server_handled_total\n      type: metric\n      brief: 'Observed metric: grpc_server_handled_total'\n\
+    \      stability: development\n      metric_name: grpc_server_handled_total\n      instrument: counter\n      unit: '{1}'\n\
+    \      attributes:\n        - ref: container\n        - ref: endpoint\n        - ref: grpc_code\n        - ref: grpc_method\n\
+    \        - ref: grpc_service\n        - ref: grpc_type\n        - ref: namespace\n        - ref: node\n        - ref:\
+    \ pod\n        - ref: service\n    - id: metric.grpc_server_msg_received_total\n      type: metric\n      brief: 'Observed\
+    \ metric: grpc_server_msg_received_total'\n      stability: development\n      metric_name: grpc_server_msg_received_total\n\
+    \      instrument: counter\n      unit: '{1}'\n      attributes:\n        - ref: container\n        - ref: endpoint\n\
+    \        - ref: grpc_method\n        - ref: grpc_service\n        - ref: grpc_type\n        - ref: namespace\n       \
+    \ - ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.grpc_server_msg_sent_total\n      type: metric\n\
+    \      brief: 'Observed metric: grpc_server_msg_sent_total'\n      stability: development\n      metric_name: grpc_server_msg_sent_total\n\
+    \      instrument: counter\n      unit: '{1}'\n      attributes:\n        - ref: container\n        - ref: endpoint\n\
+    \        - ref: grpc_method\n        - ref: grpc_service\n        - ref: grpc_type\n        - ref: namespace\n       \
+    \ - ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.grpc_server_started_total\n      type: metric\n\
+    \      brief: 'Observed metric: grpc_server_started_total'\n      stability: development\n      metric_name: grpc_server_started_total\n\
+    \      instrument: counter\n      unit: '{1}'\n      attributes:\n        - ref: container\n        - ref: endpoint\n\
+    \        - ref: grpc_method\n        - ref: grpc_service\n        - ref: grpc_type\n        - ref: namespace\n       \
+    \ - ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.http_client_duration\n      type: metric\n\
+    \      brief: 'Observed metric: http.client.duration'\n      stability: development\n      metric_name: http.client.duration\n\
+    \      instrument: histogram\n      unit: ms\n      attributes:\n        - ref: http.host\n        - ref: http.method\n\
+    \        - ref: http.scheme\n        - ref: http.status_code\n        - ref: net.peer.name\n        - ref: net.peer.port\n\
+    \    - id: metric.http_server_active_requests\n      type: metric\n      brief: 'Observed metric: http.server.active_requests'\n\
+    \      stability: development\n      metric_name: http.server.active_requests\n      instrument: updowncounter\n     \
+    \ unit: '{request}'\n      attributes:\n        - ref: http.flavor\n        - ref: http.host\n        - ref: http.method\n\
+    \        - ref: http.scheme\n        - ref: http.server_name\n    - id: metric.http_server_duration\n      type: metric\n\
+    \      brief: 'Observed metric: http.server.duration'\n      stability: development\n      metric_name: http.server.duration\n\
+    \      instrument: histogram\n      unit: ms\n      attributes:\n        - ref: http.method\n        - ref: http.route\n\
+    \        - ref: http.status_code\n    - id: metric.http_server_request_size\n      type: metric\n      brief: 'Observed\
+    \ metric: http.server.request.size'\n      stability: development\n      metric_name: http.server.request.size\n     \
+    \ instrument: histogram\n      unit: By\n      attributes:\n        - ref: http.flavor\n        - ref: http.host\n   \
+    \     - ref: http.method\n        - ref: http.scheme\n        - ref: http.server_name\n        - ref: http.status_code\n\
+    \        - ref: http.target\n        - ref: net.host.port\n    - id: metric.http_server_requests\n      type: metric\n\
+    \      brief: 'Observed metric: http.server.requests'\n      stability: development\n      metric_name: http.server.requests\n\
+    \      instrument: counter\n      unit: \"1\"\n      attributes:\n        - ref: http.method\n        - ref: http.route\n\
+    \        - ref: http.status_code\n    - id: metric.http_server_response_size\n      type: metric\n      brief: 'Observed\
+    \ metric: http.server.response.size'\n      stability: development\n      metric_name: http.server.response.size\n   \
+    \   instrument: histogram\n      unit: By\n      attributes:\n        - ref: http.flavor\n        - ref: http.host\n \
+    \       - ref: http.method\n        - ref: http.scheme\n        - ref: http.server_name\n        - ref: http.status_code\n\
+    \        - ref: http.target\n        - ref: net.host.port\n    - id: metric.hubble_drop_total\n      type: metric\n  \
+    \    brief: 'Observed metric: hubble_drop_total'\n      stability: development\n      metric_name: hubble_drop_total\n\
+    \      instrument: counter\n      unit: '{1}'\n      attributes:\n        - ref: container\n        - ref: endpoint\n\
+    \        - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: protocol\n        - ref: reason\n \
+    \       - ref: service\n    - id: metric.hubble_flows_processed_total\n      type: metric\n      brief: 'Observed metric:\
+    \ hubble_flows_processed_total'\n      stability: development\n      metric_name: hubble_flows_processed_total\n     \
+    \ instrument: counter\n      unit: '{1}'\n      attributes:\n        - ref: container\n        - ref: endpoint\n     \
+    \   - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: protocol\n        - ref: service\n     \
+    \   - ref: subtype\n        - ref: type\n        - ref: verdict\n    - id: metric.hubble_icmp_total\n      type: metric\n\
+    \      brief: 'Observed metric: hubble_icmp_total'\n      stability: development\n      metric_name: hubble_icmp_total\n\
+    \      instrument: counter\n      unit: '{1}'\n      attributes:\n        - ref: container\n        - ref: endpoint\n\
+    \        - ref: family\n        - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n  \
+    \      - ref: type\n    - id: metric.hubble_lost_events_total\n      type: metric\n      brief: 'Observed metric: hubble_lost_events_total'\n\
+    \      stability: development\n      metric_name: hubble_lost_events_total\n      instrument: counter\n      unit: '{1}'\n\
+    \      attributes:\n        - ref: container\n        - ref: endpoint\n        - ref: namespace\n        - ref: node\n\
+    \        - ref: pod\n        - ref: service\n        - ref: source\n    - id: metric.hubble_metrics_http_handler_request_duration_seconds\n\
+    \      type: metric\n      brief: 'Observed metric: hubble_metrics_http_handler_request_duration_seconds'\n      stability:\
+    \ development\n      metric_name: hubble_metrics_http_handler_request_duration_seconds\n      instrument: histogram\n\
+    \      unit: '{1}'\n      attributes:\n        - ref: code\n        - ref: container\n        - ref: endpoint\n      \
+    \  - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.hubble_metrics_http_handler_requests_total\n\
+    \      type: metric\n      brief: 'Observed metric: hubble_metrics_http_handler_requests_total'\n      stability: development\n\
+    \      metric_name: hubble_metrics_http_handler_requests_total\n      instrument: counter\n      unit: '{1}'\n      attributes:\n\
+    \        - ref: code\n        - ref: container\n        - ref: endpoint\n        - ref: namespace\n        - ref: node\n\
+    \        - ref: pod\n        - ref: service\n    - id: metric.hubble_port_distribution_total\n      type: metric\n   \
+    \   brief: 'Observed metric: hubble_port_distribution_total'\n      stability: development\n      metric_name: hubble_port_distribution_total\n\
+    \      instrument: counter\n      unit: '{1}'\n      attributes:\n        - ref: container\n        - ref: endpoint\n\
+    \        - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: port\n        - ref: protocol\n   \
+    \     - ref: service\n    - id: metric.hubble_tcp_flags_total\n      type: metric\n      brief: 'Observed metric: hubble_tcp_flags_total'\n\
+    \      stability: development\n      metric_name: hubble_tcp_flags_total\n      instrument: counter\n      unit: '{1}'\n\
+    \      attributes:\n        - ref: container\n        - ref: endpoint\n        - ref: family\n        - ref: flag\n  \
+    \      - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.otel_sdk_span_live\n\
+    \      type: metric\n      brief: 'Observed metric: otel.sdk.span.live'\n      stability: development\n      metric_name:\
+    \ otel.sdk.span.live\n      instrument: updowncounter\n      unit: '{span}'\n      attributes:\n        - ref: otel.span.sampling_result\n\
+    \    - id: metric.otel_sdk_span_started\n      type: metric\n      brief: 'Observed metric: otel.sdk.span.started'\n \
+    \     stability: development\n      metric_name: otel.sdk.span.started\n      instrument: counter\n      unit: '{span}'\n\
+    \      attributes:\n        - ref: otel.span.parent.origin\n        - ref: otel.span.sampling_result\n    - id: metric.process_context_switches\n\
+    \      type: metric\n      brief: 'Observed metric: process.context_switches'\n      stability: development\n      metric_name:\
+    \ process.context_switches\n      instrument: counter\n      unit: '{1}'\n      attributes:\n        - ref: type\n   \
+    \ - id: metric.process_cpu_time\n      type: metric\n      brief: 'Observed metric: process.cpu.time'\n      stability:\
+    \ development\n      metric_name: process.cpu.time\n      instrument: counter\n      unit: s\n      attributes:\n    \
+    \    - ref: type\n    - id: metric.process_cpu_utilization\n      type: metric\n      brief: 'Observed metric: process.cpu.utilization'\n\
+    \      stability: development\n      metric_name: process.cpu.utilization\n      instrument: gauge\n      unit: \"1\"\n\
+    \    - id: metric.process_memory_usage\n      type: metric\n      brief: 'Observed metric: process.memory.usage'\n   \
+    \   stability: development\n      metric_name: process.memory.usage\n      instrument: updowncounter\n      unit: By\n\
+    \    - id: metric.process_memory_virtual\n      type: metric\n      brief: 'Observed metric: process.memory.virtual'\n\
+    \      stability: development\n      metric_name: process.memory.virtual\n      instrument: updowncounter\n      unit:\
+    \ By\n    - id: metric.process_open_file_descriptor_count\n      type: metric\n      brief: 'Observed metric: process.open_file_descriptor.count'\n\
+    \      stability: development\n      metric_name: process.open_file_descriptor.count\n      instrument: updowncounter\n\
+    \      unit: '{1}'\n    - id: metric.process_runtime_cpython_context_switches\n      type: metric\n      brief: 'Observed\
+    \ metric: process.runtime.cpython.context_switches'\n      stability: development\n      metric_name: process.runtime.cpython.context_switches\n\
+    \      instrument: counter\n      unit: switches\n      attributes:\n        - ref: type\n    - id: metric.process_runtime_cpython_cpu_utilization\n\
+    \      type: metric\n      brief: 'Observed metric: process.runtime.cpython.cpu.utilization'\n      stability: development\n\
+    \      metric_name: process.runtime.cpython.cpu.utilization\n      instrument: gauge\n      unit: \"1\"\n    - id: metric.process_runtime_cpython_cpu_time\n\
+    \      type: metric\n      brief: 'Observed metric: process.runtime.cpython.cpu_time'\n      stability: development\n\
+    \      metric_name: process.runtime.cpython.cpu_time\n      instrument: counter\n      unit: s\n      attributes:\n  \
+    \      - ref: type\n    - id: metric.process_runtime_cpython_gc_count\n      type: metric\n      brief: 'Observed metric:\
+    \ process.runtime.cpython.gc_count'\n      stability: development\n      metric_name: process.runtime.cpython.gc_count\n\
+    \      instrument: counter\n      unit: By\n      attributes:\n        - ref: count\n    - id: metric.process_runtime_cpython_memory\n\
+    \      type: metric\n      brief: 'Observed metric: process.runtime.cpython.memory'\n      stability: development\n  \
+    \    metric_name: process.runtime.cpython.memory\n      instrument: updowncounter\n      unit: By\n      attributes:\n\
+    \        - ref: type\n    - id: metric.process_runtime_cpython_thread_count\n      type: metric\n      brief: 'Observed\
+    \ metric: process.runtime.cpython.thread_count'\n      stability: development\n      metric_name: process.runtime.cpython.thread_count\n\
+    \      instrument: updowncounter\n      unit: '{1}'\n    - id: metric.process_thread_count\n      type: metric\n     \
+    \ brief: 'Observed metric: process.thread.count'\n      stability: development\n      metric_name: process.thread.count\n\
+    \      instrument: updowncounter\n      unit: '{1}'\n    - id: metric.scrape_duration_seconds\n      type: metric\n  \
+    \    brief: 'Observed metric: scrape_duration_seconds'\n      stability: development\n      metric_name: scrape_duration_seconds\n\
+    \      instrument: gauge\n      unit: s\n      attributes:\n        - ref: container\n        - ref: endpoint\n      \
+    \  - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.scrape_samples_post_metric_relabeling\n\
+    \      type: metric\n      brief: 'Observed metric: scrape_samples_post_metric_relabeling'\n      stability: development\n\
+    \      metric_name: scrape_samples_post_metric_relabeling\n      instrument: gauge\n      unit: '{1}'\n      attributes:\n\
+    \        - ref: container\n        - ref: endpoint\n        - ref: namespace\n        - ref: node\n        - ref: pod\n\
+    \        - ref: service\n    - id: metric.scrape_samples_scraped\n      type: metric\n      brief: 'Observed metric: scrape_samples_scraped'\n\
+    \      stability: development\n      metric_name: scrape_samples_scraped\n      instrument: gauge\n      unit: '{1}'\n\
+    \      attributes:\n        - ref: container\n        - ref: endpoint\n        - ref: k8s_app\n        - ref: namespace\n\
+    \        - ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.scrape_series_added\n      type: metric\n\
+    \      brief: 'Observed metric: scrape_series_added'\n      stability: development\n      metric_name: scrape_series_added\n\
+    \      instrument: gauge\n      unit: '{1}'\n      attributes:\n        - ref: container\n        - ref: endpoint\n  \
+    \      - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n    - id: metric.system_cpu_time\n\
+    \      type: metric\n      brief: 'Observed metric: system.cpu.time'\n      stability: development\n      metric_name:\
+    \ system.cpu.time\n      instrument: counter\n      unit: s\n      attributes:\n        - ref: cpu\n        - ref: state\n\
+    \    - id: metric.system_cpu_utilization\n      type: metric\n      brief: 'Observed metric: system.cpu.utilization'\n\
+    \      stability: development\n      metric_name: system.cpu.utilization\n      instrument: gauge\n      unit: \"1\"\n\
+    \      attributes:\n        - ref: cpu\n        - ref: state\n    - id: metric.system_disk_io\n      type: metric\n  \
+    \    brief: 'Observed metric: system.disk.io'\n      stability: development\n      metric_name: system.disk.io\n     \
+    \ instrument: counter\n      unit: By\n      attributes:\n        - ref: device\n        - ref: direction\n    - id: metric.system_disk_operations\n\
+    \      type: metric\n      brief: 'Observed metric: system.disk.operations'\n      stability: development\n      metric_name:\
+    \ system.disk.operations\n      instrument: counter\n      unit: operations\n      attributes:\n        - ref: device\n\
+    \        - ref: direction\n    - id: metric.system_disk_time\n      type: metric\n      brief: 'Observed metric: system.disk.time'\n\
+    \      stability: development\n      metric_name: system.disk.time\n      instrument: counter\n      unit: s\n      attributes:\n\
+    \        - ref: device\n        - ref: direction\n    - id: metric.system_memory_usage\n      type: metric\n      brief:\
+    \ 'Observed metric: system.memory.usage'\n      stability: development\n      metric_name: system.memory.usage\n     \
+    \ instrument: gauge\n      unit: By\n      attributes:\n        - ref: state\n    - id: metric.system_memory_utilization\n\
+    \      type: metric\n      brief: 'Observed metric: system.memory.utilization'\n      stability: development\n      metric_name:\
+    \ system.memory.utilization\n      instrument: gauge\n      unit: \"1\"\n      attributes:\n        - ref: state\n   \
+    \ - id: metric.system_network_connections\n      type: metric\n      brief: 'Observed metric: system.network.connections'\n\
+    \      stability: development\n      metric_name: system.network.connections\n      instrument: updowncounter\n      unit:\
+    \ connections\n      attributes:\n        - ref: family\n        - ref: protocol\n        - ref: state\n        - ref:\
+    \ type\n    - id: metric.system_network_dropped_packets\n      type: metric\n      brief: 'Observed metric: system.network.dropped_packets'\n\
+    \      stability: development\n      metric_name: system.network.dropped_packets\n      instrument: counter\n      unit:\
+    \ packets\n      attributes:\n        - ref: device\n        - ref: direction\n    - id: metric.system_network_errors\n\
+    \      type: metric\n      brief: 'Observed metric: system.network.errors'\n      stability: development\n      metric_name:\
+    \ system.network.errors\n      instrument: counter\n      unit: errors\n      attributes:\n        - ref: device\n   \
+    \     - ref: direction\n    - id: metric.system_network_io\n      type: metric\n      brief: 'Observed metric: system.network.io'\n\
+    \      stability: development\n      metric_name: system.network.io\n      instrument: counter\n      unit: By\n     \
+    \ attributes:\n        - ref: device\n        - ref: direction\n    - id: metric.system_network_packets\n      type: metric\n\
+    \      brief: 'Observed metric: system.network.packets'\n      stability: development\n      metric_name: system.network.packets\n\
+    \      instrument: counter\n      unit: packets\n      attributes:\n        - ref: device\n        - ref: direction\n\
+    \    - id: metric.system_swap_usage\n      type: metric\n      brief: 'Observed metric: system.swap.usage'\n      stability:\
+    \ development\n      metric_name: system.swap.usage\n      instrument: gauge\n      unit: pages\n      attributes:\n \
+    \       - ref: state\n    - id: metric.system_swap_utilization\n      type: metric\n      brief: 'Observed metric: system.swap.utilization'\n\
+    \      stability: development\n      metric_name: system.swap.utilization\n      instrument: gauge\n      unit: \"1\"\n\
+    \      attributes:\n        - ref: state\n    - id: metric.system_thread_count\n      type: metric\n      brief: 'Observed\
+    \ metric: system.thread_count'\n      stability: development\n      metric_name: system.thread_count\n      instrument:\
+    \ gauge\n      unit: '{1}'\n    - id: metric.up\n      type: metric\n      brief: 'Observed metric: up'\n      stability:\
+    \ development\n      metric_name: up\n      instrument: gauge\n      unit: '{1}'\n      attributes:\n        - ref: container\n\
+    \        - ref: endpoint\n        - ref: namespace\n        - ref: node\n        - ref: pod\n        - ref: service\n\
+    \    - id: metric.webui_users_active\n      type: metric\n      brief: 'Observed metric: webui.users.active'\n      stability:\
+    \ development\n      metric_name: webui.users.active\n      instrument: gauge\n      unit: users\n    - id: metric.webui_users_active_today\n\
+    \      type: metric\n      brief: 'Observed metric: webui.users.active.today'\n      stability: development\n      metric_name:\
+    \ webui.users.active.today\n      instrument: gauge\n      unit: users\n    - id: metric.webui_users_total\n      type:\
+    \ metric\n      brief: 'Observed metric: webui.users.total'\n      stability: development\n      metric_name: webui.users.total\n\
+    \      instrument: gauge\n      unit: users\n    - id: span.SELECT__app_backend_data_webui_db.client\n      type: span\n\
+    \      brief: 'Observed span: SELECT /app/backend/data/webui.db'\n      stability: development\n      span_kind: client\n\
+    \      attributes:\n        - ref: db.name\n        - ref: db.statement\n        - ref: db.system\n    - id: span.alert_service.server\n\
+    \      type: span\n      brief: 'Observed span: alert-service'\n      stability: development\n      span_kind: server\n\
+    \      attributes:\n        - ref: client.address\n        - ref: http.request.method\n        - ref: http.response.status_code\n\
+    \        - ref: network.peer.address\n        - ref: network.peer.port\n        - ref: network.protocol.version\n    \
+    \    - ref: server.address\n        - ref: server.port\n        - ref: url.path\n        - ref: url.scheme\n        -\
+    \ ref: user_agent.original\n    - id: span.connect.client\n      type: span\n      brief: 'Observed span: connect'\n \
+    \     stability: development\n      span_kind: client\n      attributes:\n        - ref: db.name\n        - ref: db.system\n\
+    \    - id: event.StringValue(\"claude_code_api_request\")\n      type: event\n      brief: 'Observed event: StringValue(\"\
+    claude_code.api_request\")'\n      stability: development\n      name: StringValue(\"claude_code.api_request\")\n    \
+    \  attributes:\n        - ref: cache_creation_tokens\n        - ref: cache_read_tokens\n        - ref: cost_usd\n    \
+    \    - ref: cost_usd_micros\n        - ref: duration_ms\n        - ref: effort\n        - ref: event.name\n        - ref:\
+    \ event.sequence\n        - ref: event.timestamp\n        - ref: input_tokens\n        - ref: model\n        - ref: output_tokens\n\
+    \        - ref: prompt.id\n        - ref: query_source\n        - ref: request_id\n        - ref: session.id\n       \
+    \ - ref: speed\n        - ref: terminal.type\n        - ref: user.id\n"
+  manifest.yaml: 'name: homelab
+
+    description: Observed telemetry schema for the homelab cluster, generated from Weaver live-check output.
+
+    schema_url: https://homelab.klimlive.de/schemas/0.1.0
+
+    '

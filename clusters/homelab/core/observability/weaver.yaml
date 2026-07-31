@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weaver
+  namespace: observability
+  labels:
+    app.kubernetes.io/component: live-check
+    app.kubernetes.io/name: weaver
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: weaver
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: weaver
+    spec:
+      containers:
+      - args:
+        - registry
+        - live-check
+        - --registry=/registry
+        - --otlp-grpc-port=5317
+        - --inactivity-timeout=0
+        - --output=none
+        - --no-stats
+        image: otel/weaver:v0.23.0
+        imagePullPolicy: IfNotPresent
+        name: weaver
+        ports:
+        - containerPort: 5317
+          name: otlp-grpc
+          protocol: TCP
+        resources:
+          limits:
+            memory: 256Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /registry
+          name: registry
+          readOnly: true
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: weaver-registry
+        name: registry
