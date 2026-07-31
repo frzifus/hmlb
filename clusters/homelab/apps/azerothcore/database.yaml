@@ -27,18 +27,16 @@ spec:
       labels:
         app: azerothcore-mysql
     spec:
-      initContainers:
-        - name: init-mysql
-          image: busybox
-          command: ["sh", "-c", "chown -R 999:999 /var/lib/mysql"]
-          securityContext:
-            runAsUser: 0  # Run as root to change ownership
-          volumeMounts:
-            - name: mysql-data
-              mountPath: /var/lib/mysql
+      securityContext:
+        runAsUser: 999
+        runAsGroup: 999
+        runAsNonRoot: true
+        fsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: mysql
-          image: mysql:8.3
+          image: mysql:9.7
           env:
             - name: MYSQL_ROOT_PASSWORD
               value: "password"
@@ -50,12 +48,8 @@ spec:
             - containerPort: 3306
           securityContext:
             allowPrivilegeEscalation: false
-            runAsUser: 999
             capabilities:
               drop: ["ALL"]
-            runAsNonRoot: true
-            seccompProfile:
-              type: RuntimeDefault
           volumeMounts:
             - name: mysql-data
               mountPath: /var/lib/mysql
