@@ -4,5 +4,7 @@ kind: Kustomization
 
 resources:
   - task-desktop-image-build.yaml
-  # Uncomment to enable scheduled daily builds:
-  # - cronjob-desktop-build.yaml
+  - task-desktop-image-build-arm64.yaml
+  # Uncomment to enable scheduled builds:
+  - cronjob-desktop-build.yaml
+  # - cronjob-desktop-build-arm64.yaml

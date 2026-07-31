@@ -1,0 +1,68 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: desktop-build-arm64-taskrun-template
+  namespace: cicd-builds
+data:
+  taskrun.yaml: |
+    apiVersion: tekton.dev/v1
+    kind: TaskRun
+    metadata:
+      generateName: desktop-build-arm64-scheduled-
+      namespace: cicd-builds
+    spec:
+      taskRef:
+        name: desktop-image-build-arm64
+      params:
+        - name: GIT_URL
+          value: https://github.com/frzifus/hmlb.git
+        - name: GIT_REVISION
+          value: main
+        - name: IMAGE
+          value: ghcr.io/frzifus/desktop:latest-arm64
+        - name: DOCKERFILE
+          value: ./images/desktop/Containerfile
+        - name: CONTEXT
+          value: ./images/desktop
+      workspaces:
+        - name: dockerconfig
+          secret:
+            secretName: ghcr-credentials
+        - name: cosign-key
+          secret:
+            secretName: cosign-key
+      podTemplate:
+        securityContext:
+          fsGroup: 65532
+        nodeSelector:
+          kubernetes.io/hostname: worker1
+      serviceAccountName: build-bot
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: build-desktop-arm64-weekly
+  namespace: cicd-builds
+spec:
+  schedule: "0 9 * * 0"  # Weekly on Sunday at 09:00 UTC (offset from amd64 build at 07:00)
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: build-bot
+          containers:
+            - name: trigger-build
+              image: rancher/kubectl:v1.36.2
+              args:
+                - create
+                - -f
+                - /config/taskrun.yaml
+              volumeMounts:
+                - name: taskrun-template
+                  mountPath: /config
+          volumes:
+            - name: taskrun-template
+              configMap:
+                name: desktop-build-arm64-taskrun-template
+          restartPolicy: OnFailure

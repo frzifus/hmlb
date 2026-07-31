@@ -1,0 +1,67 @@
+---
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: build-and-push
+  namespace: cicd-builds
+spec:
+  description: |
+    Clone a Git repository, build a container image using Buildah, and push it to a registry.
+  params:
+    - name: repo-url
+      description: Git repository URL to clone.
+      type: string
+    - name: revision
+      description: Git revision to check out.
+      type: string
+      default: main
+    - name: image-reference
+      description: Fully-qualified image name.
+      type: string
+    - name: containerfile-path
+      description: Containerfile or Dockerfile path.
+      type: string
+      default: ./Containerfile
+    - name: context-dir
+      description: Build context directory.
+      type: string
+      default: .
+  tasks:
+    - name: fetch-source
+      taskRef:
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.repo-url)
+        - name: revision
+          value: $(params.revision)
+        - name: deleteExisting
+          value: "true"
+      workspaces:
+        - name: output
+          workspace: shared-data
+    - name: build-push
+      runAfter: [fetch-source]
+      taskRef:
+        name: buildah
+      params:
+        - name: IMAGE
+          value: $(params.image-reference)
+        - name: DOCKERFILE
+          value: $(params.containerfile-path)
+        - name: CONTEXT
+          value: $(params.context-dir)
+        - name: FORMAT
+          value: oci
+        - name: TLSVERIFY
+          value: "true"
+      workspaces:
+        - name: source
+          workspace: shared-data
+        - name: dockerconfig
+          workspace: docker-credentials
+  workspaces:
+    - name: shared-data
+      description: Workspace for source code and build artifacts.
+    - name: docker-credentials
+      description: Docker config.json for registry authentication.

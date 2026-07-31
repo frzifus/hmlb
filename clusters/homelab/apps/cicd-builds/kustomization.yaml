@@ -8,7 +8,9 @@ resources:
   - task-git-clone.yaml
   - task-buildah.yaml
   - pipeline-build-and-push.yaml
-  # secret-registry.yaml - DO NOT apply, manage manually with real credentials
+  - secret-cosign-key.yaml
+  - secret-ghcr-credentials.yaml
+  - blog-klimlive/secret-mastodon.yaml
   - servicemonitor.yaml
   - otel-config.yaml
   - acore
