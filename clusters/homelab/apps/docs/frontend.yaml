@@ -1,0 +1,74 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: docs
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: docs-frontend
+      app.kubernetes.io/instance: docs
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: docs-frontend
+        app.kubernetes.io/instance: docs
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: frontend
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          image: lasuite/impress-frontend:v5.4.1
+          ports:
+            - containerPort: 8080
+          env:
+            - name: NEXT_PUBLIC_API_ORIGIN
+              value: "https://docs.klimlive.de"
+            - name: NEXT_PUBLIC_API_URL
+              value: "https://docs.klimlive.de/api/v1.0"
+            - name: NEXT_PUBLIC_COLLABORATION_WS_URL
+              value: "wss://docs.klimlive.de/collaboration/ws/"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 300m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: docs
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: docs-frontend
+    app.kubernetes.io/instance: docs
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080

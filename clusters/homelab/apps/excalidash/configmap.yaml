@@ -1,0 +1,21 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: excalidash-config
+  namespace: excalidash
+data:
+  DATABASE_PROVIDER: "postgresql"
+  PORT: "8000"
+  NODE_ENV: "production"
+  AUTH_MODE: "oidc_enforced"
+  TRUST_PROXY: "1"
+  FRONTEND_URL: "https://draw.klimlive.de"
+  OIDC_PROVIDER_NAME: "Authentik"
+  OIDC_ISSUER_URL: "https://auth.klimlive.de/application/o/excalidash/"
+  OIDC_REDIRECT_URI: "https://draw.klimlive.de/api/auth/oidc/callback"
+  OIDC_TOKEN_ENDPOINT_AUTH_METHOD: "client_secret_post"
+  OIDC_SCOPES: "openid profile email"
+  OIDC_JIT_PROVISIONING: "true"
+  OIDC_FIRST_USER_ADMIN: "true"
+  OIDC_REQUIRE_EMAIL_VERIFIED: "false"

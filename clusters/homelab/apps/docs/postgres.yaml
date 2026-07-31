@@ -1,0 +1,21 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: database
+  namespace: docs
+spec:
+  instances: 1
+
+  storage:
+    size: 5Gi
+    storageClass: openebs-crucial
+
+  superuserSecret:
+    name: docs-secrets
+
+  bootstrap:
+    initdb:
+      database: docs
+      owner: docs
+      secret:
+        name: docs-secrets

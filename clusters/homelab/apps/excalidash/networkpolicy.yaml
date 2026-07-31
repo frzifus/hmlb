@@ -1,0 +1,108 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-egress
+  namespace: excalidash
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend-egress
+  namespace: excalidash
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: excalidash-backend
+  policyTypes:
+    - Egress
+  egress:
+    # DNS
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    # PostgreSQL (database-rw)
+    - to:
+        - podSelector:
+            matchLabels:
+              cnpg.io/cluster: database
+      ports:
+        - port: 5432
+          protocol: TCP
+    # OIDC (auth.klimlive.de via gateway) + Prisma binary download
+    - to:
+        - ipBlock:
+            cidr: 192.168.5.0/24
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - port: 443
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: frontend-egress
+  namespace: excalidash
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: excalidash-frontend
+  policyTypes:
+    - Egress
+  egress:
+    # DNS
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    # Backend API (proxied via nginx)
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: excalidash-backend
+      ports:
+        - port: 8000
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: database-egress
+  namespace: excalidash
+spec:
+  podSelector:
+    matchLabels:
+      cnpg.io/cluster: database
+  policyTypes:
+    - Egress
+  egress:
+    # DNS
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    # Kubernetes API server (required by CNPG instance manager)
+    - ports:
+        - port: 443
+          protocol: TCP
+        - port: 6443
+          protocol: TCP

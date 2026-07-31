@@ -1,0 +1,119 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: excalidash
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: excalidash-backend
+      app.kubernetes.io/instance: excalidash
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: excalidash-backend
+        app.kubernetes.io/instance: excalidash
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: worker1
+      hostUsers: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: excalidash-backend
+          image: zimengxiong/excalidash-backend:0.5.1
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+              add: ["CHOWN", "DAC_OVERRIDE", "FOWNER", "SETGID", "SETUID"]
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: excalidash-config
+          env:
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: excalidash-secrets
+                  key: password
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: excalidash-secrets
+                  key: username
+            - name: DB_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: excalidash-secrets
+                  key: dbname
+            - name: DATABASE_URL
+              value: "postgresql://$(DB_USERNAME):$(DB_PASSWORD)@database-rw:5432/$(DB_DATABASE)"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: excalidash-secrets
+                  key: JWT_SECRET
+            - name: CSRF_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: excalidash-secrets
+                  key: CSRF_SECRET
+            - name: OIDC_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: excalidash-secrets
+                  key: OIDC_CLIENT_ID
+            - name: OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: excalidash-secrets
+                  key: OIDC_CLIENT_SECRET
+            - name: PRISMA_QUERY_ENGINE_LIBRARY
+              value: "/app/node_modules/@prisma/engines/libquery_engine-linux-musl-openssl-3.0.x.so.node"
+            - name: PRISMA_SCHEMA_ENGINE_BINARY
+              value: "/app/node_modules/@prisma/engines/schema-engine-linux-musl-openssl-3.0.x"
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            failureThreshold: 30
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: excalidash
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: excalidash-backend
+    app.kubernetes.io/instance: excalidash
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000

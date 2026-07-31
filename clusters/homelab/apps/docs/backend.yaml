@@ -1,0 +1,227 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: docs
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: docs-backend
+      app.kubernetes.io/instance: docs
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: docs-backend
+        app.kubernetes.io/instance: docs
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: create-bucket
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            runAsUser: 1000
+          image: docker.io/curlimages/curl:8.14.1
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              until curl -sf http://seaweedfs:8888/ >/dev/null 2>&1; do
+                echo "Waiting for SeaweedFS..."
+                sleep 3
+              done
+              curl -s -X POST "http://seaweedfs:8888/buckets/docs-media/?op=create"
+              echo ""
+              echo "Bucket docs-media ready"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+        - name: migrate
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          image: lasuite/impress-backend:v5.4.1
+          command: ["python", "manage.py", "migrate", "--no-input"]
+          envFrom:
+            - configMapRef:
+                name: docs-config
+          env:
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: docs-secrets
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: docs-secrets
+                  key: password
+            - name: DJANGO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: docs-secrets
+                  key: DJANGO_SECRET_KEY
+            - name: AWS_S3_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: docs-secrets
+                  key: SEAWEEDFS_S3_ACCESS_KEY
+            - name: AWS_S3_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: docs-secrets
+                  key: SEAWEEDFS_S3_SECRET_KEY
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+      containers:
+        - name: backend
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          image: lasuite/impress-backend:v5.4.1
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: docs-config
+          env:
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: docs-secrets
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: docs-secrets
+                  key: password
+            - name: DJANGO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: docs-secrets
+                  key: DJANGO_SECRET_KEY
+            - name: OIDC_RP_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: docs-secrets
+                  key: OIDC_RP_CLIENT_ID
+            - name: OIDC_RP_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: docs-secrets
+                  key: OIDC_RP_CLIENT_SECRET
+            - name: Y_PROVIDER_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: docs-secrets
+                  key: Y_PROVIDER_API_KEY
+            - name: COLLABORATION_SERVER_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: docs-secrets
+                  key: COLLABORATION_SERVER_SECRET
+            - name: AWS_S3_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: docs-secrets
+                  key: SEAWEEDFS_S3_ACCESS_KEY
+            - name: AWS_S3_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: docs-secrets
+                  key: SEAWEEDFS_S3_SECRET_KEY
+          readinessProbe:
+            httpGet:
+              path: /__heartbeat__
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /__heartbeat__
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+        - name: celery
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          image: lasuite/impress-backend:v5.4.1
+          command: ["celery", "-A", "impress.celery_app", "worker", "-l", "info"]
+          envFrom:
+            - configMapRef:
+                name: docs-config
+          env:
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: docs-secrets
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: docs-secrets
+                  key: password
+            - name: DJANGO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: docs-secrets
+                  key: DJANGO_SECRET_KEY
+            - name: AWS_S3_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: docs-secrets
+                  key: SEAWEEDFS_S3_ACCESS_KEY
+            - name: AWS_S3_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: docs-secrets
+                  key: SEAWEEDFS_S3_SECRET_KEY
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: docs
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: docs-backend
+    app.kubernetes.io/instance: docs
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000

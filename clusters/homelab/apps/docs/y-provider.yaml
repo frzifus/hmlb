@@ -1,0 +1,78 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: y-provider
+  namespace: docs
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: docs-y-provider
+      app.kubernetes.io/instance: docs
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: docs-y-provider
+        app.kubernetes.io/instance: docs
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: y-provider
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          image: lasuite/impress-y-provider:v5.4.1
+          ports:
+            - containerPort: 4444
+          env:
+            - name: API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: docs-secrets
+                  key: Y_PROVIDER_API_KEY
+            - name: COLLABORATION_SERVER_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: docs-secrets
+                  key: COLLABORATION_SERVER_SECRET
+            - name: API_URL
+              value: "http://backend:8000"
+          readinessProbe:
+            tcpSocket:
+              port: 4444
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 4444
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: y-provider
+  namespace: docs
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: docs-y-provider
+    app.kubernetes.io/instance: docs
+  ports:
+    - protocol: TCP
+      port: 4444
+      targetPort: 4444
