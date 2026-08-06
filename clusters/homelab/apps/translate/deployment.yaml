@@ -1,0 +1,60 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: libretranslate
+  namespace: translate
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: libretranslate
+  template:
+    metadata:
+      labels:
+        app: libretranslate
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1032
+        runAsGroup: 1032
+        fsGroup: 1032
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: libretranslate
+          image: libretranslate/libretranslate:v1.6.4
+          ports:
+            - containerPort: 5000
+          env:
+            - name: LT_UPDATE_MODELS
+              value: "true"
+            - name: LT_DISABLE_WEB_UI
+              value: "false"
+            - name: LT_METRICS
+              value: "true"
+            - name: LT_LOAD_ONLY
+              value: "de,en,es,fr"
+            - name: PYTHONUNBUFFERED
+              value: "1"
+          resources:
+            requests:
+              cpu: 500m
+              memory: 2Gi
+            limits:
+              cpu: "2"
+              memory: 4Gi
+          volumeMounts:
+            - name: data
+              mountPath: /home/libretranslate/.local
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: libretranslate-data

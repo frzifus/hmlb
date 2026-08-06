@@ -35,4 +35,5 @@ resources:
   - quixsi
   - redirect
   - search
+  - translate
   - vaultwarden

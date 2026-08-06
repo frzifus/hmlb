@@ -1,0 +1,17 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: libretranslate
+  namespace: translate
+spec:
+  selector:
+    matchLabels:
+      app: libretranslate
+  namespaceSelector:
+    matchNames:
+      - translate
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s
