@@ -25,7 +25,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: libretranslate
-          image: libretranslate/libretranslate:v1.6.4
+          image: libretranslate/libretranslate:v1.9.6
           ports:
             - containerPort: 5000
           env:
