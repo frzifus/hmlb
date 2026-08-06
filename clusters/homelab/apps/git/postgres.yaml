@@ -4,6 +4,7 @@ metadata:
   name: database
   namespace: git
 spec:
+  imageName: ghcr.io/tensorchord/cloudnative-vectorchord:16.9-0.4.3
   instances: 1
 
   storage:
