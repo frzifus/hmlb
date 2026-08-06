@@ -13,6 +13,7 @@ resources:
   - blog-klimlive/secret-mastodon.yaml
   - servicemonitor.yaml
   - otel-config.yaml
+  - cronjob-prune-taskruns.yaml
   - acore
   - desktop-build
   - forgejo-mcp-build
