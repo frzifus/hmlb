@@ -10,13 +10,13 @@ metadata:
   name: quixsi-database
   namespace: lets-party
 spec:
-  storageClassName: simple-and-fast-block
+  storageClassName: openebs-crucial
   accessModes:
     - ReadWriteOnce
   volumeMode: Filesystem
   resources:
     requests:
-      storage: 1Gi
+      storage: 10Mi
 ---
 apiVersion: apps/v1
 kind: Deployment
