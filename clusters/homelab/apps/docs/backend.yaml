@@ -173,7 +173,7 @@ spec:
             capabilities:
               drop: ["ALL"]
           image: lasuite/impress-backend:v5.4.1
-          command: ["celery", "-A", "impress.celery_app", "worker", "-l", "info"]
+          command: ["celery", "-A", "impress.celery_app", "worker", "-l", "info", "--concurrency=2"]
           envFrom:
             - configMapRef:
                 name: docs-config
