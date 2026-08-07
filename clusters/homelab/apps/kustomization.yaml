@@ -23,6 +23,7 @@ resources:
   - atuin
   - auth
   - azerothcore
+  - bookmarks
   - cicd-builds
   - ext-bersch
   - ext-blog-klimlive
