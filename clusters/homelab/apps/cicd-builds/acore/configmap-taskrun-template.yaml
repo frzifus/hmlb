@@ -38,7 +38,7 @@ data:
           memory: "2Gi"
         limits:
           cpu: "3"
-          memory: "10Gi"
+          memory: "14Gi"
       podTemplate:
         hostUsers: false
         securityContext:

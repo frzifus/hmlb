@@ -161,16 +161,28 @@ spec:
           -t "${IMAGE_DATE}" \
           "${CONTEXT}"
 
+        push_with_retry() {
+          local attempt
+          for attempt in 1 2 3; do
+            if buildah "--storage-driver=${STORAGE_DRIVER}" push \
+              "--tls-verify=${TLSVERIFY}" "$@"; then
+              return 0
+            fi
+            echo "Push attempt $attempt failed, waiting 60s..."
+            sleep 60
+          done
+          echo "Push failed after 3 attempts"
+          return 1
+        }
+
         # Push latest tag
-        buildah "--storage-driver=${STORAGE_DRIVER}" push \
-          "--tls-verify=${TLSVERIFY}" \
+        push_with_retry \
           --digestfile /cosign-bin/image-digest \
           "${IMAGE}" \
           "docker://${IMAGE}"
 
         # Push date tag
-        buildah "--storage-driver=${STORAGE_DRIVER}" push \
-          "--tls-verify=${TLSVERIFY}" \
+        push_with_retry \
           "${IMAGE_DATE}" \
           "docker://${IMAGE_DATE}"
 
