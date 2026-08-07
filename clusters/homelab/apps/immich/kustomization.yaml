@@ -10,6 +10,9 @@ resources:
   - redis.yaml
   - otel-redis-sidecar.yaml
   - otel-postgres-sidecar.yaml
-  - database.yaml
+  - postgres.yaml
   - immich-server.yaml
   - immich-machine-learning.yaml
+  - httproute.yaml
+  - immich-public-proxy.yaml
+  - cloudflared-secret.yaml
