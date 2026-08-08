@@ -29,6 +29,9 @@ data:
       autocomplete: duckduckgo
       safe_search: 0
       doi_resolver: oadoi.org
+      formats:
+        - html
+        - json
 
     server:
       secret_key: "change-this-secret"
