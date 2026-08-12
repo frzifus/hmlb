@@ -1,0 +1,248 @@
+---
+# OpenHands LLM configuration, pinned in Git and mounted read-only into the
+# pod over the PVC paths (see server-statefulset.yaml). The api_key is plaintext
+# "ollama" because:
+#   - ollama does not enforce auth (any non-empty bearer works);
+#   - openhands' validate_secret() only decrypts gAAAAA-prefixed (Fernet) values,
+#     so a plain string passes through regardless of OH_SECRET_KEY.
+# If a real LLM API key is ever needed, move it to the openhands-secret-key
+# Secret instead of storing it plaintext here.
+#
+# Captured verbatim from the working in-cluster state; changes are a
+# `kubectl apply -k .` + pod restart (the UI cannot save over these read-only
+# mounts, which is the intended "config cannot drift" guarantee).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openhands-llm-config
+  namespace: llm
+  labels:
+    app: openhands
+data:
+  settings.json: |
+    {
+      "schema_version": 2,
+      "agent_settings": {
+        "schema_version": 5,
+        "agent_kind": "openhands",
+        "agent": "CodeActAgent",
+        "llm": {
+          "model": "openai/glm-5.2:cloud",
+          "api_key": "ollama",
+          "auth_type": "api_key",
+          "subscription_vendor": null,
+          "base_url": "http://ollama.llm.svc.cluster.local:11434/v1",
+          "api_version": null,
+          "aws_access_key_id": null,
+          "aws_secret_access_key": null,
+          "aws_session_token": null,
+          "aws_region_name": null,
+          "aws_profile_name": null,
+          "aws_role_name": null,
+          "aws_session_name": null,
+          "aws_bedrock_runtime_endpoint": null,
+          "openrouter_site_url": "https://docs.all-hands.dev/",
+          "openrouter_app_name": "OpenHands",
+          "num_retries": 5,
+          "retry_multiplier": 8.0,
+          "retry_min_wait": 8,
+          "retry_max_wait": 64,
+          "timeout": 300,
+          "max_message_chars": 30000,
+          "temperature": null,
+          "top_p": null,
+          "top_k": null,
+          "max_input_tokens": null,
+          "max_output_tokens": null,
+          "model_canonical_name": null,
+          "api_mode": "auto",
+          "capability_overrides": {},
+          "extra_headers": null,
+          "input_cost_per_token": null,
+          "output_cost_per_token": null,
+          "ollama_base_url": null,
+          "stream": false,
+          "drop_params": true,
+          "modify_params": true,
+          "disable_vision": false,
+          "disable_stop_word": false,
+          "caching_prompt": true,
+          "log_completions": false,
+          "log_completions_folder": "logs/completions",
+          "custom_tokenizer": null,
+          "native_tool_calling": true,
+          "force_string_serializer": false,
+          "inline_image_urls": false,
+          "reasoning_effort": "high",
+          "reasoning_summary": null,
+          "enable_encrypted_reasoning": true,
+          "prompt_cache_retention": "24h",
+          "extended_thinking_budget": 200000,
+          "seed": null,
+          "usage_id": "default",
+          "litellm_extra_body": {},
+          "is_subscription": false
+        },
+        "tools": null,
+        "enable_sub_agents": false,
+        "enable_switch_llm_tool": true,
+        "tool_concurrency_limit": 1,
+        "mcp_config": {},
+        "agent_context": {
+          "skills": [],
+          "system_message_suffix": null,
+          "user_message_suffix": null,
+          "load_user_skills": false,
+          "load_public_skills": false,
+          "marketplace_path": "marketplaces/default.json",
+          "registered_marketplaces": [],
+          "load_project_skills": false,
+          "load_memory": false,
+          "disabled_skills": [],
+          "secrets": null,
+          "current_datetime": "2026-08-12T14:49:20.825880Z"
+        },
+        "condenser": {
+          "enabled": true,
+          "max_size": 240,
+          "condenser_kind": "llm_summarizing",
+          "max_tokens": null,
+          "keep_first": 2,
+          "minimum_progress": 0.1,
+          "hard_context_reset_max_retries": 5,
+          "hard_context_reset_context_scaling": 0.8
+        },
+        "verification": {
+          "critic_enabled": false,
+          "critic_mode": "finish_and_message",
+          "enable_iterative_refinement": false,
+          "critic_threshold": 0.6,
+          "max_refinement_iterations": 3,
+          "critic_server_url": null,
+          "critic_model_name": null,
+          "critic_api_key": null
+        }
+      },
+      "conversation_settings": {
+        "schema_version": 1,
+        "max_iterations": 500,
+        "confirmation_mode": false,
+        "security_analyzer": "llm"
+      },
+      "active_profile": "glm-5.2",
+      "active_agent_profile_id": "058e9bed-b3ae-4e6b-8f63-60f13e1b0d7e",
+      "misc_settings": {
+        "app_preferences": {
+          "user_consents_to_analytics": true,
+          "disabled_skills": []
+        }
+      }
+    }
+  glm-5.2.json: |
+    {
+      "model": "openai/glm-5.2:cloud",
+      "api_key": "ollama",
+      "auth_type": "api_key",
+      "base_url": "http://ollama.llm.svc.cluster.local:11434/v1",
+      "openrouter_site_url": "https://docs.all-hands.dev/",
+      "openrouter_app_name": "OpenHands",
+      "num_retries": 5,
+      "retry_multiplier": 8.0,
+      "retry_min_wait": 8,
+      "retry_max_wait": 64,
+      "timeout": 300,
+      "max_message_chars": 30000,
+      "api_mode": "auto",
+      "capability_overrides": {},
+      "stream": false,
+      "drop_params": true,
+      "modify_params": true,
+      "disable_vision": false,
+      "disable_stop_word": false,
+      "caching_prompt": true,
+      "log_completions": false,
+      "log_completions_folder": "logs/completions",
+      "native_tool_calling": true,
+      "force_string_serializer": false,
+      "inline_image_urls": false,
+      "reasoning_effort": "high",
+      "enable_encrypted_reasoning": true,
+      "prompt_cache_retention": "24h",
+      "extended_thinking_budget": 200000,
+      "usage_id": "default",
+      "litellm_extra_body": {},
+      "is_subscription": false,
+      "schema_version": 1
+    }
+  deepseek-v4-flash.json: |
+    {
+      "model": "openai/deepseek-v4-flash:cloud",
+      "api_key": "ollama",
+      "auth_type": "api_key",
+      "base_url": "http://ollama.llm.svc.cluster.local:11434/v1",
+      "openrouter_site_url": "https://docs.all-hands.dev/",
+      "openrouter_app_name": "OpenHands",
+      "num_retries": 5,
+      "retry_multiplier": 8.0,
+      "retry_min_wait": 8,
+      "retry_max_wait": 64,
+      "timeout": 300,
+      "max_message_chars": 30000,
+      "api_mode": "auto",
+      "capability_overrides": {},
+      "stream": false,
+      "drop_params": true,
+      "modify_params": true,
+      "disable_vision": false,
+      "disable_stop_word": false,
+      "caching_prompt": true,
+      "log_completions": false,
+      "log_completions_folder": "logs/completions",
+      "native_tool_calling": true,
+      "force_string_serializer": false,
+      "inline_image_urls": false,
+      "reasoning_effort": "high",
+      "enable_encrypted_reasoning": true,
+      "prompt_cache_retention": "24h",
+      "extended_thinking_budget": 200000,
+      "usage_id": "default",
+      "litellm_extra_body": {},
+      "is_subscription": false,
+      "schema_version": 1
+    }
+  default.json: |
+    {
+      "schema_version": 2,
+      "id": "058e9bed-b3ae-4e6b-8f63-60f13e1b0d7e",
+      "name": "default",
+      "revision": 0,
+      "mcp_server_refs": null,
+      "agent_kind": "openhands",
+      "llm_profile_ref": "default",
+      "agent": "CodeActAgent",
+      "tools": null,
+      "system_message_suffix": null,
+      "disabled_skills": [],
+      "condenser": {
+        "enabled": true,
+        "max_size": 240,
+        "condenser_kind": "llm_summarizing",
+        "max_tokens": null,
+        "keep_first": 2,
+        "minimum_progress": 0.1,
+        "hard_context_reset_max_retries": 5,
+        "hard_context_reset_context_scaling": 0.8
+      },
+      "verification": {
+        "critic_enabled": false,
+        "critic_mode": "finish_and_message",
+        "enable_iterative_refinement": false,
+        "critic_threshold": 0.6,
+        "max_refinement_iterations": 3,
+        "critic_server_url": null,
+        "critic_model_name": null
+      },
+      "enable_sub_agents": false,
+      "enable_switch_llm_tool": true,
+      "tool_concurrency_limit": 1
+    }

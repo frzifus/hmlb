@@ -1,0 +1,101 @@
+---
+# openwebui-openhands-proxy — keeps OpenWebUI ↔ OpenHands multi-turn continuity
+# by persisting the X-OpenHands-ServerConversation-ID per chat thread.
+# See images/openwebui-openhands-proxy/README.md. Deployed alongside OpenHands
+# because it fronts the openhands-agent-server Service (port 18000).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: openwebui-openhands-proxy-data
+  namespace: llm
+spec:
+  storageClassName: openebs-cache
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 512Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openwebui-openhands-proxy
+  namespace: llm
+  labels:
+    app: openwebui-openhands-proxy
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: openwebui-openhands-proxy
+  template:
+    metadata:
+      labels:
+        app: openwebui-openhands-proxy
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+      containers:
+        - name: proxy
+          image: ghcr.io/frzifus/openwebui-openhands-proxy:2026-08-12
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: OPENHANDS_UPSTREAM_URL
+              value: "http://openhands-agent-server.llm.svc.cluster.local:18000"
+            - name: PORT
+              value: "8080"
+            - name: CONV_STORE_FILE
+              value: "/data/conversations.json"
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "64Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: openwebui-openhands-proxy-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openwebui-openhands-proxy
+  namespace: llm
+  labels:
+    app: openwebui-openhands-proxy
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+      protocol: TCP
+  selector:
+    app: openwebui-openhands-proxy

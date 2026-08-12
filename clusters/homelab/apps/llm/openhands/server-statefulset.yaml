@@ -1,0 +1,176 @@
+---
+# OpenHands Agent Canvas — main server (frontend + agent-server + automation).
+# Single-replica StatefulSet backed by a PVC. LLM config + OH_SECRET_KEY are
+# pinned via the openhands-llm-config ConfigMap and openhands-secret-key Secret,
+# mounted read-only over the PVC paths. Exposed on agents.klimlive.de (no SSO).
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: openhands
+  namespace: llm
+  labels:
+    app: openhands
+spec:
+  serviceName: openhands
+  replicas: 1
+  podManagementPolicy: OrderedReady
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: openhands
+  template:
+    metadata:
+      labels:
+        app: openhands
+    spec:
+      serviceAccountName: openhands
+      automountServiceAccountToken: false
+      securityContext:
+        fsGroup: 10001
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+      initContainers:
+        # Ensure the parent dirs for the read-only subPath file mounts below
+        # exist on the PVC. On a fresh (empty) PVC they are absent and the
+        # ConfigMap/Secret subPath mounts would otherwise fail to attach. On an
+        # existing PVC this is a no-op (mkdir -p is idempotent).
+        - name: init-dirs
+          image: ghcr.io/openhands/agent-canvas:1.12.0
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - >-
+              mkdir -p
+              /home/openhands/.openhands/profiles
+              /home/openhands/.openhands/agent-profiles
+              /home/openhands/.openhands/agent-canvas
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: data
+              mountPath: /home/openhands/.openhands
+              subPath: openhands
+      containers:
+        - name: agent-canvas
+          image: ghcr.io/openhands/agent-canvas:1.12.0
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          env:
+            - name: PORT
+              value: "8000"
+            - name: AGENT_SERVER_PORT
+              value: "18000"
+            - name: AUTOMATION_PORT
+              value: "18001"
+            # Pin the agent-server session API key so it is deterministic across
+            # pod/PVC recreation instead of auto-generated in api-key.txt. The
+            # entrypoint uses LOCAL_BACKEND_API_KEY directly (its documented
+            # override) and skips the file. OH_SESSION_API_KEYS_0 MUST also be set
+            # to the same value: the agent-server only binds 0.0.0.0 (reachable via
+            # the openhands-agent-server Service) when it sees this env var, else it
+            # falls back to 127.0.0.1 loopback and the Service can't reach it.
+            # OpenWebUI sends the same value as a bearer token.
+            - name: LOCAL_BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: openhands-secret-key
+                  key: LOCAL_BACKEND_API_KEY
+            - name: OH_SESSION_API_KEYS_0
+              valueFrom:
+                secretKeyRef:
+                  name: openhands-secret-key
+                  key: LOCAL_BACKEND_API_KEY
+            # LLM config is NOT read from env in this image version (only
+            # DEBUG_LLM is). It is pinned via the openhands-llm-config ConfigMap
+            # and openhands-secret-key Secret, mounted read-only below.
+          startupProbe:
+            httpGet:
+              path: /alive
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 60
+          livenessProbe:
+            httpGet:
+              path: /alive
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /alive
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+          volumeMounts:
+            - name: data
+              mountPath: /home/openhands/.openhands
+              subPath: openhands
+            - name: data
+              mountPath: /home/openhands/workspace
+              subPath: workspace
+            # Read-only LLM config + encryption key, overlaid on the PVC paths.
+            # The UI cannot save over these (Read-only file system), which pins
+            # the working config — change via GitOps + restart.
+            - name: config
+              mountPath: /home/openhands/.openhands/settings.json
+              subPath: settings.json
+              readOnly: true
+            - name: config
+              mountPath: /home/openhands/.openhands/profiles/glm-5.2.json
+              subPath: glm-5.2.json
+              readOnly: true
+            - name: config
+              mountPath: /home/openhands/.openhands/profiles/deepseek-v4-flash.json
+              subPath: deepseek-v4-flash.json
+              readOnly: true
+            - name: config
+              mountPath: /home/openhands/.openhands/agent-profiles/default.json
+              subPath: default.json
+              readOnly: true
+            - name: secret-key
+              mountPath: /home/openhands/.openhands/agent-canvas/secret-key.txt
+              subPath: secret-key.txt
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: openhands-llm-config
+            defaultMode: 0444
+        - name: secret-key
+          secret:
+            secretName: openhands-secret-key
+            defaultMode: 0444
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: openebs-cache
+        resources:
+          requests:
+            storage: 20Gi

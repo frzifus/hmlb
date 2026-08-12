@@ -36,9 +36,34 @@ spec:
             - containerPort: 8080
           env:
             - name: OPENAI_API_BASE_URL
-              value: "http://llamastack-proxy:8322/v1"
+              value: "http://openwebui-openhands-proxy.llm.svc.cluster.local:8080/v1"
+            # The OpenHands gateway validates this bearer token. Reused from
+            # the openhands-secret-key Secret (key LOCAL_BACKEND_API_KEY) so a
+            # rotation there is picked up here automatically.
             - name: OPENAI_API_KEY
-              value: "fake"
+              valueFrom:
+                secretKeyRef:
+                  name: openhands-secret-key
+                  key: LOCAL_BACKEND_API_KEY
+            # Pin the JWT signing key so API tokens survive restarts (see the
+            # openwebui-secret-key Secret above).
+            - name: WEBUI_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: openwebui-secret-key
+                  key: WEBUI_SECRET_KEY
+            - name: OLLAMA_BASE_URL
+              value: "http://ollama:11434"
+            # Background tasks (title/tags/follow-up/query generation) are routed
+            # to Ollama deepseek directly instead of the chat connection. When the
+            # chat model is external (OpenHands/OpenAI) OpenWebUI uses
+            # TASK_MODEL_EXTERNAL; when it's an Ollama model it uses TASK_MODEL.
+            # The task model is resolved by name across all connections, so an
+            # Ollama model name here routes the task call to Ollama.
+            - name: TASK_MODEL
+              value: "deepseek-v4-flash:cloud"
+            - name: TASK_MODEL_EXTERNAL
+              value: "deepseek-v4-flash:cloud"
             - name: ENABLE_OTEL
               value: "true"
             - name: ENABLE_OTEL_TRACES

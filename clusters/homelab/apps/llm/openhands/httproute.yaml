@@ -1,0 +1,23 @@
+---
+# Exposes the OpenHands server directly on agents.klimlive.de.
+# NOTE: no SSO in front — agent-canvas has no native OIDC, so for a test
+# deployment the route points straight at the backend. Re-add an auth
+# layer (oauth2-proxy or similar) before relying on this publicly.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: openhands
+  namespace: llm
+spec:
+  parentRefs:
+    - name: services
+      namespace: infra
+      sectionName: main
+  hostnames:
+    - "agents.klimlive.de"
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: openhands
+          port: 8000

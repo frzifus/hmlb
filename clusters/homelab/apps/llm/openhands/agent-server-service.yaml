@@ -1,0 +1,22 @@
+---
+# ClusterIP Service for the OpenHands agent-server's OpenAI-compatible
+# gateway (/v1/chat/completions, /v1/models). Used by in-cluster clients
+# like OpenWebUI. Intentionally NOT exposed by an HTTPRoute — the session
+# API key travels as a bearer token, so keep this internal and front it
+# with SSO'd OpenWebUI for external access.
+apiVersion: v1
+kind: Service
+metadata:
+  name: openhands-agent-server
+  namespace: llm
+  labels:
+    app: openhands
+spec:
+  type: ClusterIP
+  ports:
+    - name: agent-server
+      port: 18000
+      targetPort: 18000
+      protocol: TCP
+  selector:
+    app: openhands
