@@ -26,9 +26,11 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -36,10 +38,17 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
+
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const convHeader = "X-OpenHands-ServerConversation-ID"
@@ -191,10 +200,12 @@ func hashContent(c interface{}) string {
 
 // --- chat completions handler ----------------------------------------------
 
-func chatCompletionsHandler(s *store, upstream *url.URL, timeout time.Duration) http.HandlerFunc {
+func chatCompletionsHandler(s *store, upstream *url.URL, timeout time.Duration, transport http.RoundTripper) http.HandlerFunc {
 	// Agent task loops can run long (multiple LLM calls); keep a generous
 	// client-side ceiling so we don't cut off a working agent mid-task.
-	client := &http.Client{Timeout: timeout}
+	// The transport is otelhttp-wrapped so each upstream call becomes a
+	// CLIENT span and the incoming trace context propagates as traceparent.
+	client := &http.Client{Timeout: timeout, Transport: transport}
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -203,11 +214,21 @@ func chatCompletionsHandler(s *store, upstream *url.URL, timeout time.Duration) 
 		}
 		_ = r.Body.Close()
 
+		// The server span comes from otelhttp's handler wrapper around the
+		// mux; rename it to the concrete route and tag it with the thread key
+		// so a trace is grep-able by conversation in the backend.
+		span := trace.SpanFromContext(r.Context())
+		span.SetName("v1/chat/completions")
+
 		key := extractThreadKey(body)
 		convID, hadMapping := "", false
 		if key != "" {
 			convID, hadMapping = s.get(key)
 		}
+		span.SetAttributes(
+			attribute.String("openhands.thread_key", short(key)),
+			attribute.Bool("openhands.had_mapping", hadMapping),
+		)
 
 		// doForward sends the captured body upstream, optionally injecting the
 		// conversation-ID header. The caller's Authorization header is preserved.
@@ -245,10 +266,21 @@ func chatCompletionsHandler(s *store, upstream *url.URL, timeout time.Duration) 
 		// brand-new conversation that errors should surface as-is.
 		if hadMapping && resp.StatusCode >= 400 {
 			resp.Body.Close()
+			span.AddEvent("self-heal retry",
+				trace.WithAttributes(attribute.Int("upstream.status", resp.StatusCode)))
 			if resp2, err2 := doForward(""); err2 == nil {
 				resp = resp2
 				respConvID = resp2.Header.Get(convHeader)
 			}
+		}
+
+		// Record the outcome on the server span for queryability in the backend.
+		span.SetAttributes(
+			attribute.String("openhands.conversation_id", short(respConvID)),
+			attribute.Int("http.status_code", resp.StatusCode),
+		)
+		if resp.StatusCode >= 500 {
+			span.SetStatus(codes.Error, fmt.Sprintf("upstream %d", resp.StatusCode))
 		}
 
 		// Remember/refresh the mapping for this thread.
@@ -289,11 +321,24 @@ func short(s string) string {
 // --- main ------------------------------------------------------------------
 
 func main() {
+	ctx := context.Background()
+	shutdownTracer, err := setupTracing(ctx)
+	if err != nil {
+		// Non-fatal: the proxy still serves, just without exporting traces.
+		log.Printf("tracing: disabled: %v", err)
+	}
+
 	upstream, err := url.Parse(upstreamURL)
 	if err != nil {
 		log.Fatalf("bad OPENHANDS_UPSTREAM_URL %q: %v", upstreamURL, err)
 	}
 	s := newStore(storeFile)
+
+	// Shared OTel-wrapped transport: every outbound call (the chat-completions
+	// client below and the reverse proxy for everything else) becomes a CLIENT
+	// span and injects the incoming trace context as traceparent/baggage, so
+	// the OpenHands upstream continues the same distributed trace.
+	upstreamTransport := otelhttp.NewTransport(http.DefaultTransport)
 
 	// Transparent reverse proxy for everything except chat completions
 	// (GET /v1/models, /alive, /docs, ...). Preserves Authorization.
@@ -304,6 +349,7 @@ func main() {
 		req.Host = upstream.Host
 		req.Header.Del(convHeader) // never let a caller forge continuity
 	}
+	proxy.Transport = upstreamTransport
 
 	health := func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -311,16 +357,47 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/v1/chat/completions", chatCompletionsHandler(s, upstream, 30*time.Minute))
+	mux.HandleFunc("/v1/chat/completions", chatCompletionsHandler(s, upstream, 30*time.Minute, upstreamTransport))
 	mux.HandleFunc("/healthz", health)
 	mux.HandleFunc("/alive", health)
 	mux.HandleFunc("/", proxy.ServeHTTP)
 
+	// otelhttp wraps the mux so each inbound request becomes a SERVER span
+	// rooted in the caller's trace context (extracted from traceparent).
+	handler := otelhttp.NewHandler(mux, "openwebui-openhands-proxy",
+		otelhttp.WithSpanNameFormatter(func(_ string, r *http.Request) string {
+			return r.Method + " " + r.URL.Path
+		}))
+
 	srv := &http.Server{
 		Addr:              ":" + port,
-		Handler:           mux,
+		Handler:           handler,
 		ReadHeaderTimeout: 10 * time.Second,
 	}
+
+	// Graceful shutdown on SIGINT/SIGTERM so the OTLP batch exporter flushes
+	// pending spans instead of dropping them on a hard exit.
+	go func() {
+		sigCh := make(chan os.Signal, 1)
+		signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+		sig := <-sigCh
+		log.Printf("shutdown: received %s, draining", sig)
+		shutCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if err := srv.Shutdown(shutCtx); err != nil {
+			log.Printf("shutdown: server: %v", err)
+		}
+	}()
+
 	log.Printf("openwebui-openhands-proxy listening on :%s upstream=%s store=%s", port, upstreamURL, storeFile)
-	log.Fatal(srv.ListenAndServe())
+	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		log.Fatalf("server: %v", err)
+	}
+
+	// Flush any buffered spans before exiting.
+	flushCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := shutdownTracer(flushCtx); err != nil {
+		log.Printf("tracing: shutdown: %v", err)
+	}
 }

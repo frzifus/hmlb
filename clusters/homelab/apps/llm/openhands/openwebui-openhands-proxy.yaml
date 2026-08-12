@@ -43,7 +43,7 @@ spec:
         fsGroup: 65532
       containers:
         - name: proxy
-          image: ghcr.io/frzifus/openwebui-openhands-proxy:2026-08-12
+          image: ghcr.io/frzifus/openwebui-openhands-proxy:2026-08-13
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
@@ -56,6 +56,22 @@ spec:
               value: "8080"
             - name: CONV_STORE_FILE
               value: "/data/conversations.json"
+            # OpenTelemetry traces. autoexport selects the exporter from these
+            # env vars (see images/openwebui-openhands-proxy/tracing.go):
+            # OTEL_TRACES_EXPORTER=otlp enables, =none disables. The proxy also
+            # bridges OpenWebUI's trace context to the OpenHands upstream as
+            # traceparent, so the two stay on one distributed trace even when
+            # the proxy itself exports nothing.
+            - name: OTEL_TRACES_EXPORTER
+              value: "otlp"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://backend-collector.observability.svc.cluster.local:4318"
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: "http/protobuf"
+            - name: OTEL_EXPORTER_OTLP_INSECURE
+              value: "true"
+            - name: OTEL_SERVICE_NAME
+              value: "openwebui-openhands-proxy"
           readinessProbe:
             httpGet:
               path: /healthz

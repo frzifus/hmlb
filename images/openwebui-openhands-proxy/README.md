@@ -53,6 +53,46 @@ expanded by the backend — open-webui/open-webui#26989).
 | `OPENHANDS_UPSTREAM_URL` | `http://openhands-agent-server.llm.svc.cluster.local:18000` | OpenHands agent-server gateway |
 | `PORT` / `PROXY_PORT` | `8080` | Listen port |
 | `CONV_STORE_FILE` | `/data/conversations.json` | Persistent mapping file |
+| `OTEL_TRACES_EXPORTER` | `otlp` | `otlp` to export traces, `none` to disable (autoexport) |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://localhost:4317` | OTLP collector endpoint |
+| `OTEL_EXPORTER_OTLP_PROTOCOL` | `grpc` | `grpc` or `http/protobuf` |
+| `OTEL_EXPORTER_OTLP_INSECURE` | `false` | `true` for plaintext (in-cluster) collectors |
+| `OTEL_SERVICE_NAME` | `openwebui-openhands-proxy` | Resource `service.name` |
+
+## Tracing
+
+The proxy is instrumented with OpenTelemetry traces. The exporter is selected
+by the standard OTel environment via the
+[`autoexport`](https://pkg.go.dev/go.opentelemetry.io/contrib/exporters/autoexport)
+package — `OTEL_TRACES_EXPORTER=otlp` (default) exports; `none` disables export
+while keeping the proxy a transparent propagation bridge. Endpoint, protocol,
+insecure, and headers come from the usual `OTEL_EXPORTER_OTLP_*` vars.
+
+Each inbound request becomes a **server span**; each outbound call (the
+chat-completions client and the catch-all reverse proxy) becomes a **client
+span**. The `tracecontext` + `baggage` propagators are wired both ways, so the
+proxy bridges OpenWebUI's incoming trace context to the OpenHands upstream as a
+`traceparent` request header. The net effect is one distributed trace across
+**OpenWebUI → proxy → OpenHands → Ollama**, even when the proxy itself exports
+nothing (`OTEL_TRACES_EXPORTER=none`).
+
+The `chat_completions` server span is tagged with `openhands.thread_key`,
+`openhands.had_mapping`, `openhands.conversation_id`, and `http.status_code`,
+and records a `self-heal retry` event when a stored conversation ID is rejected
+upstream.
+
+The in-cluster deployment points the proxy at the observability collector over
+HTTP/protobuf (`:4318`, plaintext):
+
+```yaml
+OTEL_TRACES_EXPORTER: otlp
+OTEL_EXPORTER_OTLP_ENDPOINT: http://backend-collector.observability.svc.cluster.local:4318
+OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+OTEL_EXPORTER_OTLP_INSECURE: "true"
+OTEL_SERVICE_NAME: openwebui-openhands-proxy
+```
+
+For local dev without a collector, `make run-dev` sets `OTEL_TRACES_EXPORTER=none`.
 
 ## Build / push
 

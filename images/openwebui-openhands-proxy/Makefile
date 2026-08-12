@@ -13,7 +13,8 @@ run: build
 
 run-dev: build
 	OPENHANDS_UPSTREAM_URL=http://localhost:18000 PORT=8080 \
-	CONV_STORE_FILE=./conversations.json ./openwebui-openhands-proxy
+	CONV_STORE_FILE=./conversations.json \
+	OTEL_TRACES_EXPORTER=none ./openwebui-openhands-proxy
 
 vet:
 	go vet ./...

@@ -92,6 +92,19 @@ spec:
                 secretKeyRef:
                   name: openhands-secret-key
                   key: LOCAL_BACKEND_API_KEY
+            # OpenTelemetry traces. The OpenHands SDK auto-enables OTLP export
+            # when these env vars are present (presence-gated, no code change).
+            # HTTP/protobuf to the in-cluster collector on :4318 keeps it
+            # plaintext (no TLS/insecure-flag ambiguity). The agent-server sits
+            # behind the openwebui-openhands-proxy, which forwards OpenWebUI's
+            # traceparent so agent.step / tool / LLM spans attach to the same
+            # distributed trace as the proxy's spans.
+            - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+              value: "http://backend-collector.observability.svc.cluster.local:4318/v1/traces"
+            - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
+              value: "http/protobuf"
+            - name: OTEL_SERVICE_NAME
+              value: "openhands"
             # LLM config is NOT read from env in this image version (only
             # DEBUG_LLM is). It is pinned via the openhands-llm-config ConfigMap
             # and openhands-secret-key Secret, mounted read-only below.
