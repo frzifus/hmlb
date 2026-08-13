@@ -1,8 +1,11 @@
 ---
 # OpenHands Agent Canvas — main server (frontend + agent-server + automation).
-# Single-replica StatefulSet backed by a PVC. LLM config + OH_SECRET_KEY are
-# pinned via the openhands-llm-config ConfigMap and openhands-secret-key Secret,
-# mounted read-only over the PVC paths. Exposed on agents.klimlive.de (no SSO).
+# Single-replica StatefulSet backed by a PVC. LLM config is Git-pinned via the
+# openhands-llm-config ConfigMap: the init-dirs container copies it into writable
+# in-memory dirs (profiles/, agent-profiles/) and onto the PVC (settings.json)
+# so the UI can switch profiles / patch settings, while a pod restart resets all
+# config back to Git. OH_SECRET_KEY is mounted read-only. Exposed on
+# agents.klimlive.de (no SSO).
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -32,10 +35,15 @@ spec:
         runAsUser: 10001
         runAsGroup: 10001
       initContainers:
-        # Ensure the parent dirs for the read-only subPath file mounts below
-        # exist on the PVC. On a fresh (empty) PVC they are absent and the
-        # ConfigMap/Secret subPath mounts would otherwise fail to attach. On an
-        # existing PVC this is a no-op (mkdir -p is idempotent).
+        # Materialize the Git-pinned LLM config from the ConfigMap into
+        # writable volumes the main container uses. profiles/ and agent-profiles/
+        # are in-memory emptyDirs (fresh each pod start, so no stale profile files
+        # like an old default.json can resurface); settings.json is copied onto the
+        # PVC. This lets the UI switch agent profiles / patch settings during a
+        # session (those write active_agent_profile_id into settings.json), while
+        # Git stays the source of truth: a pod restart re-runs this container and
+        # resets all config to the ConfigMap. Runtime state (conversations, auth,
+        # cache) lives elsewhere on the PVC and is never overlaid here.
         - name: init-dirs
           image: ghcr.io/openhands/agent-canvas:1.13.0
           imagePullPolicy: IfNotPresent
@@ -43,10 +51,14 @@ spec:
             - sh
             - -c
             - >-
-              mkdir -p
-              /home/openhands/.openhands/profiles
-              /home/openhands/.openhands/agent-profiles
-              /home/openhands/.openhands/agent-canvas
+              set -e
+              && mkdir -p /home/openhands/.openhands/agent-canvas
+              && cp /config/settings.json          /home/openhands/.openhands/settings.json
+              && cp /config/glm-5.2.json           /home/openhands/.openhands/profiles/glm-5.2.json
+              && cp /config/deepseek-v4-flash.json /home/openhands/.openhands/profiles/deepseek-v4-flash.json
+              && cp /config/homelab.json           /home/openhands/.openhands/agent-profiles/homelab.json
+              && cp /config/house.json             /home/openhands/.openhands/agent-profiles/house.json
+              && chmod 0660 /home/openhands/.openhands/settings.json /home/openhands/.openhands/profiles/*.json /home/openhands/.openhands/agent-profiles/*.json
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -55,6 +67,15 @@ spec:
             - name: data
               mountPath: /home/openhands/.openhands
               subPath: openhands
+            # ConfigMap source of truth (read-only) — consumed only here.
+            - name: config
+              mountPath: /config
+              readOnly: true
+            # In-memory config dirs the main container also mounts (shared pod volume).
+            - name: profiles-mem
+              mountPath: /home/openhands/.openhands/profiles
+            - name: agent-profiles-mem
+              mountPath: /home/openhands/.openhands/agent-profiles
       containers:
         - name: agent-canvas
           image: ghcr.io/openhands/agent-canvas:1.13.0
@@ -145,25 +166,14 @@ spec:
             - name: data
               mountPath: /home/openhands/workspace
               subPath: workspace
-            # Read-only LLM config + encryption key, overlaid on the PVC paths.
-            # The UI cannot save over these (Read-only file system), which pins
-            # the working config — change via GitOps + restart.
-            - name: config
-              mountPath: /home/openhands/.openhands/settings.json
-              subPath: settings.json
-              readOnly: true
-            - name: config
-              mountPath: /home/openhands/.openhands/profiles/glm-5.2.json
-              subPath: glm-5.2.json
-              readOnly: true
-            - name: config
-              mountPath: /home/openhands/.openhands/profiles/deepseek-v4-flash.json
-              subPath: deepseek-v4-flash.json
-              readOnly: true
-            - name: config
-              mountPath: /home/openhands/.openhands/agent-profiles/default.json
-              subPath: default.json
-              readOnly: true
+            # LLM config materialized by the init-dirs container into writable
+            # in-memory dirs (Git stays source of truth — reset on pod restart).
+            # settings.json is copied onto the PVC by init-dirs.
+            - name: profiles-mem
+              mountPath: /home/openhands/.openhands/profiles
+            - name: agent-profiles-mem
+              mountPath: /home/openhands/.openhands/agent-profiles
+            # Encryption key — read-only (OpenHands reads, never writes it).
             - name: secret-key
               mountPath: /home/openhands/.openhands/agent-canvas/secret-key.txt
               subPath: secret-key.txt
@@ -177,6 +187,13 @@ spec:
           secret:
             secretName: openhands-secret-key
             defaultMode: 0444
+        # In-memory config dirs, populated from the ConfigMap by init-dirs.
+        - name: profiles-mem
+          emptyDir:
+            medium: Memory
+        - name: agent-profiles-mem
+          emptyDir:
+            medium: Memory
   volumeClaimTemplates:
     - metadata:
         name: data

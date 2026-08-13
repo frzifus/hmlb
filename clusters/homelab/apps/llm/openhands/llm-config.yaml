@@ -99,6 +99,12 @@ data:
             "transport": "streamable-http",
             "description": "SigNoz MCP server — query metrics, traces, logs, alerts, dashboards, services.",
             "enabled": true
+          },
+          "homeassistant": {
+            "url": "http://mcp-proxy-hass.llm.svc.cluster.local:8080/sse",
+            "transport": "sse",
+            "description": "Home Assistant MCP server — control/query HA entities (lights, sensors, switches, …).",
+            "enabled": true
           }
         },
         "agent_context": {
@@ -223,13 +229,49 @@ data:
       "is_subscription": false,
       "schema_version": 1
     }
-  default.json: |
+  homelab.json: |
     {
       "schema_version": 2,
       "id": "058e9bed-b3ae-4e6b-8f63-60f13e1b0d7e",
-      "name": "default",
+      "name": "homelab",
       "revision": 0,
-      "mcp_server_refs": null,
+      "mcp_server_refs": ["kubernetes", "signoz"],
+      "agent_kind": "openhands",
+      "llm_profile_ref": "default",
+      "agent": "CodeActAgent",
+      "tools": null,
+      "system_message_suffix": null,
+      "disabled_skills": [],
+      "condenser": {
+        "enabled": true,
+        "max_size": 240,
+        "condenser_kind": "llm_summarizing",
+        "max_tokens": null,
+        "keep_first": 2,
+        "minimum_progress": 0.1,
+        "hard_context_reset_max_retries": 5,
+        "hard_context_reset_context_scaling": 0.8
+      },
+      "verification": {
+        "critic_enabled": false,
+        "critic_mode": "finish_and_message",
+        "enable_iterative_refinement": false,
+        "critic_threshold": 0.6,
+        "max_refinement_iterations": 3,
+        "critic_server_url": null,
+        "critic_model_name": null
+      },
+      "enable_sub_agents": false,
+      "enable_switch_llm_tool": true,
+      "tool_concurrency_limit": 1
+    }
+  house.json: |
+    {
+      "schema_version": 2,
+      "id": "fcd64afc-1963-4ead-82fb-3b06ddfa59f9",
+      "name": "house",
+      "revision": 0,
+      "mcp_server_refs": ["homeassistant"],
       "agent_kind": "openhands",
       "llm_profile_ref": "default",
       "agent": "CodeActAgent",
