@@ -93,6 +93,12 @@ data:
             "transport": "streamable-http",
             "description": "Kubernetes MCP server — list/get pods, resources, events, logs, top.",
             "enabled": true
+          },
+          "signoz": {
+            "url": "http://mcp-signoz-server.llm.svc.cluster.local:8080/mcp",
+            "transport": "streamable-http",
+            "description": "SigNoz MCP server — query metrics, traces, logs, alerts, dashboards, services.",
+            "enabled": true
           }
         },
         "agent_context": {

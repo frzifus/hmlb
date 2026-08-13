@@ -1,0 +1,74 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-signoz-server
+  namespace: llm
+  labels:
+    app: mcp-signoz-server
+spec:
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: mcp-signoz-server
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-signoz-server
+  namespace: llm
+  labels:
+    app: mcp-signoz-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-signoz-server
+  template:
+    metadata:
+      labels:
+        app: mcp-signoz-server
+    spec:
+      containers:
+        - name: mcp-signoz-server
+          image: signoz/signoz-mcp-server:latest
+          env:
+            - name: TRANSPORT_MODE
+              value: "http"
+            - name: MCP_SERVER_PORT
+              value: "8080"
+            # SigNoz query-service API (StatefulSet backend-signoz-0).
+            # NOTE: the old `backend` service in observability is the OTel
+            # collector, not the SigNoz API — use `backend-signoz` here.
+            - name: SIGNOZ_URL
+              value: "http://backend-signoz.observability.svc.cluster.local:8080"
+            - name: SIGNOZ_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: signoz-mcp-secret
+                  key: SIGNOZ_API_KEY
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: 8080
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8080
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "50m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
