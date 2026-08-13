@@ -87,7 +87,14 @@ data:
         "enable_sub_agents": false,
         "enable_switch_llm_tool": true,
         "tool_concurrency_limit": 1,
-        "mcp_config": {},
+        "mcp_config": {
+          "kubernetes": {
+            "url": "http://mcp-k8s-server.llm.svc.cluster.local:8080/mcp",
+            "transport": "streamable-http",
+            "description": "Kubernetes MCP server — list/get pods, resources, events, logs, top.",
+            "enabled": true
+          }
+        },
         "agent_context": {
           "skills": [],
           "system_message_suffix": null,
