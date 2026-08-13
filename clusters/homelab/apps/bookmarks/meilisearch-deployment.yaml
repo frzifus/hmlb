@@ -23,7 +23,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: meilisearch
-          image: getmeili/meilisearch:v1.53.0
+          image: getmeili/meilisearch:v1.53.1
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
