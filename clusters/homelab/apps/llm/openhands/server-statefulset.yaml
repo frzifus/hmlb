@@ -37,7 +37,7 @@ spec:
         # ConfigMap/Secret subPath mounts would otherwise fail to attach. On an
         # existing PVC this is a no-op (mkdir -p is idempotent).
         - name: init-dirs
-          image: ghcr.io/openhands/agent-canvas:1.12.0
+          image: ghcr.io/openhands/agent-canvas:1.13.0
           imagePullPolicy: IfNotPresent
           command:
             - sh
@@ -57,7 +57,7 @@ spec:
               subPath: openhands
       containers:
         - name: agent-canvas
-          image: ghcr.io/openhands/agent-canvas:1.12.0
+          image: ghcr.io/openhands/agent-canvas:1.13.0
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
