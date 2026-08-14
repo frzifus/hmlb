@@ -162,7 +162,7 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 10
         - name: cloudflared
-          image: cloudflare/cloudflared:2026.8.0
+          image: cloudflare/cloudflared:2026.8.1
           args:
             - tunnel
             - --no-autoupdate
