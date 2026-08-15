@@ -17,6 +17,7 @@ spec:
         obi.instrument: "true"
       labels:
         app: radarr
+    spec:
       securityContext:
         fsGroup: 1000 # NOTE: set fsGroup for permission to /data/downloads
       affinity: # NOTE: follow nzbget due to lack of RWX
