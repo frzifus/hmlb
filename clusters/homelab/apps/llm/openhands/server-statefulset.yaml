@@ -45,7 +45,7 @@ spec:
         # resets all config to the ConfigMap. Runtime state (conversations, auth,
         # cache) lives elsewhere on the PVC and is never overlaid here.
         - name: init-dirs
-          image: ghcr.io/openhands/agent-canvas:1.13.0
+          image: ghcr.io/openhands/agent-canvas:1.14.0
           imagePullPolicy: IfNotPresent
           command:
             - sh
@@ -78,7 +78,7 @@ spec:
               mountPath: /home/openhands/.openhands/agent-profiles
       containers:
         - name: agent-canvas
-          image: ghcr.io/openhands/agent-canvas:1.13.0
+          image: ghcr.io/openhands/agent-canvas:1.14.0
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
