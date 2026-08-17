@@ -41,6 +41,9 @@ RUN dnf install -y \
     fd-find \
     pam_yubico \
     yubikey-personalization-gui \
+    yubikey-manager \
+    libfido2 \
+    pcsc-lite \
     strace \
     nmap \
     bat \
@@ -130,3 +133,28 @@ RUN dnf install -y \
     distrobox \
     atuin \
     sshuttle
+
+# age-plugin-yubikey is not packaged in Fedora, and upstream (str4d) ships no
+# Fedora package or COPR: https://github.com/str4d/age-plugin-yubikey
+# Build v0.5.1 from upstream crates.io source. The Fedora "rustup" package only
+# ships rustup-init (no rustup/cargo binary), so bootstrap a throwaway stable
+# toolchain into /tmp via rustup-init, build the plugin, then delete the
+# toolchain so no compiler is left in the image. The binary is installed to
+# /usr/bin, NOT /usr/local: on ostree /usr/local is a symlink to /var, which is
+# not part of the image (same reason Bitwarden is relocated to /usr/lib above).
+# Everything is in one RUN, so the toolchain + build artifacts are created and
+# deleted in the same layer (no image bloat). pcsc-lite-devel is build-only and
+# removed afterwards; runtime libpcsclite comes from the kept pcsc-lite package.
+# Runtime needs the pcscd daemon (pcsc-lite), socket-activated below. The FIDO2
+# SSH path (ssh-keygen -t ed25519-sk) uses libfido2/CTAP directly, not pcscd.
+RUN dnf install -y pcsc-lite-devel && \
+    export CARGO_HOME=/tmp/cargo-home RUSTUP_HOME=/tmp/rustup-home && \
+    /usr/bin/rustup-init -y --profile minimal --no-modify-path \
+        --default-toolchain stable --default-host x86_64-unknown-linux-gnu && \
+    export PATH="$CARGO_HOME/bin:$PATH" && \
+    cargo install --locked --version 0.5.1 --root /tmp/apy-install age-plugin-yubikey && \
+    install -m 0755 /tmp/apy-install/bin/age-plugin-yubikey /usr/bin/age-plugin-yubikey && \
+    rm -rf "$CARGO_HOME" "$RUSTUP_HOME" /tmp/apy-install && \
+    dnf remove -y pcsc-lite-devel
+
+RUN systemctl enable pcscd.socket
