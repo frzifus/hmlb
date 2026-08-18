@@ -1,4 +1,4 @@
-FROM quay.io/fedora/fedora-silverblue:44@sha256:7f4c9dbf0714b1c63b0cc2f0292ea14fad7738ac5e5c8d3e2fb06e0c622353f5
+FROM quay.io/fedora/fedora-silverblue:44@sha256:98ff1d2ce14c3703de3a988f96a84929d4d0df183274217afe15dfd760963acd
 
 # NOTE: Just to test RHEL9 version
 # FROM registry.redhat.io/rhel9/rhel-bootc:9.5
