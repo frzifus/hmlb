@@ -50,6 +50,7 @@ metadata:
   namespace: cicd-builds
 spec:
   schedule: "0 7 * * 0"  # Weekly on Sunday at 07:00 UTC
+  suspend: true  # TEMP: skip scheduled builds until 2026-09-02; remove to resume
   jobTemplate:
     spec:
       template:
