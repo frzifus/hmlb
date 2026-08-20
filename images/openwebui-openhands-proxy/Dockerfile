@@ -1,5 +1,5 @@
 # Build stage — fully static binary (CGO disabled).
-FROM golang:1.26-alpine AS builder
+FROM golang:1.27-alpine AS builder
 
 WORKDIR /app
 
