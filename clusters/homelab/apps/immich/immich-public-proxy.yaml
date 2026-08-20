@@ -86,7 +86,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: immich-public-proxy
-          image: alangrainger/immich-public-proxy:3.2.0
+          image: alangrainger/immich-public-proxy:3.2.1
           env:
             # The proxy talks to Immich only over the in-cluster Service; Immich itself
             # is never made a Cloudflare Tunnel origin.
