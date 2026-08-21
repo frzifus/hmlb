@@ -1,10 +1,10 @@
 ---
 name: Trivy Image Scan
 
-# Scans only the container image(s) bumped in a PR for HIGH/CRITICAL CVEs.
-# Failing this check blocks Renovate automerge (which waits for green CI),
-# so a new image version that ships a fixable HIGH/CRITICAL vuln won't be
-# auto-merged.
+# Scans only the container image(s) bumped in a PR for HIGH/CRITICAL CVEs
+# (fixable ones) and posts the findings as a PR comment. Failing this check
+# blocks Renovate automerge (which waits for green CI), so a new image
+# version that ships a fixable HIGH/CRITICAL vuln won't be auto-merged.
 
 on:
   pull_request:
@@ -47,11 +47,12 @@ jobs:
           if [ "${#imgs[@]}" -eq 0 ]; then
             echo "No container image bumps detected in this PR."
             echo "scan=false" >> "$GITHUB_OUTPUT"
-            echo 'matrix={"image":["__skip__"]}' >> "$GITHUB_OUTPUT"
+            echo 'matrix={"include":[{"image":"__skip__","idx":"0"}]}' >> "$GITHUB_OUTPUT"
           else
             echo "Detected bumped images:"
             printf '%s\n' "${imgs[@]}"
-            matrix=$(printf '%s\n' "${imgs[@]}" | jq -R . | jq -s -c '{image: .}')
+            matrix=$(printf '%s\n' "${imgs[@]}" | jq -R . | jq -s -c \
+              '{include: [to_entries[] | {image: .value, idx: (.key | tostring)}]}')
             echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
             echo "scan=true" >> "$GITHUB_OUTPUT"
           fi
@@ -76,4 +77,76 @@ jobs:
           severity: HIGH,CRITICAL
           ignore-unfixed: true
           exit-code: '1'
-          format: table
+          format: json
+          output: trivy-results-${{ matrix.idx }}.json
+
+      - name: Upload scan result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-${{ matrix.idx }}
+          path: trivy-results-${{ matrix.idx }}.json
+          retention-days: 1
+
+  report:
+    name: Post scan summary
+    needs: [detect, scan]
+    if: always() && needs.detect.outputs.scan == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      actions: read
+    steps:
+      - name: Download scan results
+        uses: actions/download-artifact@v4
+        with:
+          path: results
+          pattern: trivy-*
+          merge-multiple: true
+
+      - name: Build and post PR comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          {
+            echo "<!-- trivy-image-scan -->"
+            echo "## 🔍 Trivy Image Scan"
+            echo ""
+            echo "Scanned the container image(s) bumped in this PR for **HIGH/CRITICAL** CVEs (fixable only)."
+            echo ""
+            total=0
+            shopt -s nullglob
+            for f in results/trivy-results-*.json; do
+              img=$(jq -r '.ArtifactName // "unknown"' "$f")
+              vulns=$(jq -r '[.Results[]?.Vulnerabilities[]?] | length' "$f")
+              total=$((total + vulns))
+              echo "### \`$img\`"
+              if [ "$vulns" -eq 0 ]; then
+                echo "✅ No HIGH/CRITICAL fixable vulnerabilities found."
+              else
+                echo "❌ **$vulns** HIGH/CRITICAL vulnerabilities:"
+                echo ""
+                echo "| Package | CVE | Severity | Installed | Fixed |"
+                echo "|---|---|:---:|---|---|"
+                jq -r '.Results[]?.Vulnerabilities[]? | "| \(.PkgName) | \(.VulnerabilityID) | \(.Severity) | \(.InstalledVersion) | \(.FixedVersion // "—") |"' "$f"
+              fi
+              echo ""
+            done
+            if [ "$total" -eq 0 ]; then
+              echo "_All scanned images are clean._ ✅"
+            else
+              echo "⚠️ **$total** total findings — this check is failing, so Renovate automerge is blocked until the images are patched or the findings are reviewed."
+            fi
+          } > comment.md
+
+          # Edit the existing comment if present (idempotent), else create it.
+          existing=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
+            --jq '[.[] | select(.body | contains("<!-- trivy-image-scan -->"))] | .[0].id // empty')
+          if [ -n "$existing" ]; then
+            jq -n --rawfile body comment.md '{body: $body}' \
+              | gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$existing" --input -
+          else
+            jq -n --rawfile body comment.md '{body: $body}' \
+              | gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" --input -
+          fi
