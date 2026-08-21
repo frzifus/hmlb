@@ -82,7 +82,7 @@ jobs:
 
       - name: Upload scan result
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: trivy-${{ matrix.idx }}
           path: trivy-results-${{ matrix.idx }}.json
@@ -98,7 +98,7 @@ jobs:
       actions: read
     steps:
       - name: Download scan results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: results
           pattern: trivy-*
