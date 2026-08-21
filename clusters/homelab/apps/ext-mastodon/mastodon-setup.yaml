@@ -22,7 +22,7 @@ spec:
         fsGroup: 991
       containers:
         - name: migrate
-          image: ghcr.io/mastodon/mastodon:v4.6.6
+          image: ghcr.io/mastodon/mastodon:v4.7.0
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
