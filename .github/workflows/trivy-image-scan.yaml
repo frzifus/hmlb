@@ -1,0 +1,79 @@
+---
+name: Trivy Image Scan
+
+# Scans only the container image(s) bumped in a PR for HIGH/CRITICAL CVEs.
+# Failing this check blocks Renovate automerge (which waits for green CI),
+# so a new image version that ships a fixable HIGH/CRITICAL vuln won't be
+# auto-merged.
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  detect:
+    name: Detect bumped images
+    runs-on: ubuntu-latest
+    outputs:
+      scan: ${{ steps.detect.outputs.scan }}
+      matrix: ${{ steps.detect.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Detect bumped container images in this PR
+        id: detect
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git fetch origin "$BASE_REF" --depth=1
+          # Collect added `image:` lines from the PR diff, then normalise:
+          #  - strip the leading `+`/whitespace and the `image:` prefix
+          #  - strip a leading YAML list dash
+          #  - strip trailing comments (# ...)
+          #  - strip surrounding quotes
+          #  - drop templated/placeholder refs ({{ }}, $(...)) and blanks
+          mapfile -t imgs < <(git diff "origin/$BASE_REF"...HEAD --unified=0 \
+            | grep -E '^\+[[:space:]]*image:' \
+            | sed -E 's/^\+[[:space:]]*image:[[:space:]]*//' \
+            | sed -E 's/^[[:space:]]*-[[:space:]]*//' \
+            | sed -E 's/#.*$//' \
+            | tr -d "\"'" \
+            | sed -E 's/[[:space:]]+$//' \
+            | grep -vE '(\{\{|\$\(|^[[:space:]]*$)' || true)
+
+          if [ "${#imgs[@]}" -eq 0 ]; then
+            echo "No container image bumps detected in this PR."
+            echo "scan=false" >> "$GITHUB_OUTPUT"
+            echo 'matrix={"image":["__skip__"]}' >> "$GITHUB_OUTPUT"
+          else
+            echo "Detected bumped images:"
+            printf '%s\n' "${imgs[@]}"
+            matrix=$(printf '%s\n' "${imgs[@]}" | jq -R . | jq -s -c '{image: .}')
+            echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+            echo "scan=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  scan:
+    name: Trivy ${{ matrix.image }}
+    needs: detect
+    if: needs.detect.outputs.scan == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJSON(needs.detect.outputs.matrix) }}
+      fail-fast: false
+      max-parallel: 5
+    steps:
+      - name: Trivy scan
+        # Pinned to a `v`-prefixed tag (see trivy-action security advisory).
+        # Bump this version deliberately, not automatically.
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ matrix.image }}
+          scanners: vuln
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+          format: table
