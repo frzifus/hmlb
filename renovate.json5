@@ -56,5 +56,36 @@
       allowedVersions: '44',
       automerge: true,
     },
+    {
+      description: 'Apps: automerge minor/patch/digest updates (exceptions handled below)',
+      matchFileNames: ['clusters/homelab/apps/**'],
+      matchUpdateTypes: ['minor', 'patch', 'digest'],
+      excludePackageNames: [
+        'jellyfin/jellyfin',
+        'immich-app/immich-server',
+        'immich-app/immich-machine-learning',
+        'cloudnative-pg/postgresql',
+        'postgres',
+        'paperless-ngx/paperless-ngx',
+      ],
+      automerge: true,
+    },
+    {
+      description: 'Jellyfin: never automerge (manual review)',
+      matchPackageNames: ['jellyfin/jellyfin'],
+      automerge: false,
+    },
+    {
+      description: 'Patch-only automerge (z in x.y.z): immich, postgres, paperless',
+      matchPackageNames: [
+        'immich-app/immich-server',
+        'immich-app/immich-machine-learning',
+        'cloudnative-pg/postgresql',
+        'postgres',
+        'paperless-ngx/paperless-ngx',
+      ],
+      matchUpdateTypes: ['patch'],
+      automerge: true,
+    },
   ],
 }
