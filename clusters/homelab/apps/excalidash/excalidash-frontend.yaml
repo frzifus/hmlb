@@ -26,7 +26,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: excalidash-frontend
-          image: zimengxiong/excalidash-frontend:0.5.1
+          image: zimengxiong/excalidash-frontend:0.6.0
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
