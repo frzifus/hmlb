@@ -18,7 +18,7 @@ spec:
   chart:
     spec:
       chart: signoz
-      version: "0.136.1"
+      version: "0.139.0"
       sourceRef:
         kind: HelmRepository
         name: signoz
