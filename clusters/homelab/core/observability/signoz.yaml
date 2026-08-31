@@ -97,7 +97,7 @@ spec:
           memory: 256Mi
         limits:
           cpu: "2"
-          memory: 2Gi
+          memory: 4Gi
     telemetryStoreMigrator:
       # only general worker nodes - never control-plane or storage nodes
       affinity:
