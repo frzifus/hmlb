@@ -29,13 +29,84 @@ spec:
     crds: CreateReplace
   values:
     clickhouse:
-      nodeSelector:
-        node-role.kubernetes.io/worker: ""
       persistence:
         size: 50Gi
+      # only general worker nodes (worker1, gpu2) - never control-plane or storage nodes
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/worker
+                    operator: Exists
+                  - key: role
+                    operator: NotIn
+                    values: ["storage-node"]
+      resources:
+        requests:
+          cpu: "1"
+          memory: 2Gi
+        limits:
+          cpu: "4"
+          memory: 6Gi
+      zookeeper:
+        # only general worker nodes - never control-plane or storage nodes
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                    - key: node-role.kubernetes.io/worker
+                      operator: Exists
+                    - key: role
+                      operator: NotIn
+                      values: ["storage-node"]
     queryService:
       configVars:
         storage:
           metrics_ttl_duration_hrs: 720
           traces_ttl_duration_hrs: 24
           logs_ttl_duration_hrs: 24
+    signoz:
+      # only general worker nodes - never control-plane or storage nodes
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/worker
+                    operator: Exists
+                  - key: role
+                    operator: NotIn
+                    values: ["storage-node"]
+    otelCollector:
+      # only general worker nodes - never control-plane or storage nodes
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/worker
+                    operator: Exists
+                  - key: role
+                    operator: NotIn
+                    values: ["storage-node"]
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: "2"
+          memory: 2Gi
+    telemetryStoreMigrator:
+      # only general worker nodes - never control-plane or storage nodes
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/worker
+                    operator: Exists
+                  - key: role
+                    operator: NotIn
+                    values: ["storage-node"]
