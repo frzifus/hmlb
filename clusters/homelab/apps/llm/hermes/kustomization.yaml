@@ -1,0 +1,9 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - config.yaml
+  - homelab-agent.yaml
+  - hass-agent.yaml
+  - research-agent.yaml

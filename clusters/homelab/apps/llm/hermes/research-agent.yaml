@@ -1,0 +1,274 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hermes-research-config
+  namespace: llm
+data:
+  config.yaml: |
+    # Schema version of this config (current hermes schema: 39). Hermes
+    # treats a missing version as ~2 years old and refuses auto-migration;
+    # bump manually when hermes ships new migrations (config is read-only
+    # in the pod, so migrations must land here in git).
+    _config_version: 39
+    plugins:
+      enabled:
+        - hermes_otel
+        # Runs discover_mcp_tools() in-process on first session start — the
+        # api_server platform never bootstraps MCP on its own (upstream
+        # hermes-agent #69746), so without this the gateway registry stays
+        # empty and /v1/chat/completions turns see no MCP tools. No-op for
+        # this agent (no mcp_servers) but keeps the three agents identical.
+        - mcp_bootstrap
+    web:
+      backend: searxng
+    model:
+      provider: custom
+      model: glm-5.3-flash:cloud
+      base_url: http://ollama.llm.svc.cluster.local:11434/v1
+      api_key: "none"
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: hermes-research
+  namespace: llm
+  labels:
+    app: hermes-research
+spec:
+  replicas: 1
+  serviceName: hermes-research
+  selector:
+    matchLabels:
+      app: hermes-research
+  template:
+    metadata:
+      labels:
+        app: hermes-research
+    spec:
+      initContainers:
+      - name: install-hermes-otel
+        image: nousresearch/hermes-agent:v2026.8.31
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          set -e
+          mkdir -p /opt/data/plugins
+          if [ ! -d /opt/data/plugins/hermes_otel/.git ]; then
+            git clone --depth 1 https://github.com/briancaffey/hermes-otel.git /opt/data/plugins/hermes_otel
+          fi
+          mkdir -p /opt/data/.hermes/plugins/hermes_otel
+          cat > /opt/data/.hermes/plugins/hermes_otel/config.yaml <<'EOF'
+          project_name: hermes-agent
+          capture_previews: true
+          capture_logs: true
+          backends:
+            - type: signoz
+              endpoint: http://backend-collector.observability.svc.cluster.local:4318/v1/traces
+              traces: true
+              metrics: true
+              logs: true
+          EOF
+          # In-process MCP bootstrap plugin (upstream hermes-agent #69746:
+          # the api_server platform never runs MCP discovery). No-op for this
+          # agent (no mcp_servers) but keeps the three agents identical.
+          mkdir -p /opt/data/.hermes/plugins/mcp_bootstrap
+          cat > /opt/data/.hermes/plugins/mcp_bootstrap/plugin.yaml <<'EOF'
+          name: mcp_bootstrap
+          version: "1.0"
+          description: Runs MCP discovery in-process on first session start
+          provides_hooks:
+            - on_session_start
+          EOF
+          cat > /opt/data/.hermes/plugins/mcp_bootstrap/__init__.py <<'EOF'
+          import logging
+          import threading
+
+          logger = logging.getLogger("mcp_bootstrap")
+
+          _lock = threading.Lock()
+          _done = False
+
+
+          def register(ctx):
+              ctx.register_hook("on_session_start", _on_session_start)
+
+
+          def _on_session_start(session_id="", model="", platform="", **kwargs):
+              global _done
+              with _lock:
+                  if _done:
+                      return
+                  try:
+                      from tools.mcp_tool import discover_mcp_tools
+
+                      tools = discover_mcp_tools()
+                      logger.info("mcp-bootstrap: %d MCP tool(s) registered", len(tools or []))
+                      _done = True
+                  except Exception as exc:
+                      logger.warning("mcp-bootstrap: discovery failed: %s", exc)
+          EOF
+        volumeMounts:
+        - name: data
+          mountPath: /opt/data
+      containers:
+      - name: hermes
+        image: nousresearch/hermes-agent:v2026.8.31
+        args: ["gateway", "run"]
+        env:
+        - name: API_SERVER_ENABLED
+          value: "true"
+        - name: API_SERVER_HOST
+          value: "0.0.0.0"
+        - name: API_SERVER_PORT
+          value: "8642"
+        - name: API_SERVER_KEY
+          value: "hermes-internal-key"
+        - name: API_SERVER_MODEL_NAME
+          value: "research-agent"
+        - name: SEARXNG_URL
+          value: "http://searxng.search.svc.cluster.local:8080"
+        ports:
+        - containerPort: 8642
+          name: api
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "1Gi"
+          limits:
+            cpu: "2"
+            memory: "4Gi"
+        volumeMounts:
+        - name: data
+          mountPath: /opt/data
+        - name: config
+          mountPath: /opt/data/config.yaml
+          subPath: config.yaml
+        - name: logs
+          mountPath: /opt/data/logs
+      volumes:
+      - name: config
+        configMap:
+          name: hermes-research-config
+      - name: logs
+        emptyDir:
+          medium: Memory
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 2Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hermes-research
+  namespace: llm
+  labels:
+    app: hermes-research
+spec:
+  selector:
+    app: hermes-research
+  ports:
+  - name: api
+    protocol: TCP
+    port: 8642
+    targetPort: 8642
+  type: ClusterIP
+---
+# Only Open WebUI may call the gateway API (:8642). kubectl exec /
+# port-forward are not affected (kubelet path).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: hermes-research-ingress
+  namespace: llm
+spec:
+  podSelector:
+    matchLabels:
+      app: hermes-research
+  policyTypes: [Ingress]
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: llm
+      podSelector:
+        matchLabels:
+          app: open-webui
+    ports:
+    - port: 8642
+      protocol: TCP
+---
+# Allowlist egress: DNS, model API (ollama), SigNoz export and SearXNG (the
+# web_search backend — results themselves come from the WWW) plus the open
+# internet. Local networks, tailscale and the cluster are unreachable. Note:
+# if the data PVC is ever re-created from scratch, the otel init container's
+# git clone needs egress to github — it is already bootstrapped.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: hermes-research-egress
+  namespace: llm
+spec:
+  podSelector:
+    matchLabels:
+      app: hermes-research
+  policyTypes: [Egress]
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: llm
+      podSelector:
+        matchLabels:
+          app: ollama
+    ports:
+    - port: 11434
+      protocol: TCP
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: observability
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/name: backend-collector
+    ports:
+    - port: 4318
+      protocol: TCP
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: search
+      podSelector:
+        matchLabels:
+          app: searxng
+    ports:
+    - port: 8080
+      protocol: TCP
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+        except:
+        - 10.0.0.0/8
+        - 172.16.0.0/12
+        - 192.168.0.0/16
+        - 100.64.0.0/10
+        - 169.254.0.0/16
+        - 224.0.0.0/4

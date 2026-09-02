@@ -1,0 +1,257 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: hermes-homelab
+  namespace: llm
+  labels:
+    app: hermes-homelab
+spec:
+  replicas: 1
+  serviceName: hermes-homelab
+  selector:
+    matchLabels:
+      app: hermes-homelab
+  template:
+    metadata:
+      labels:
+        app: hermes-homelab
+    spec:
+      initContainers:
+      - name: install-hermes-otel
+        image: nousresearch/hermes-agent:v2026.8.31
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          set -e
+          mkdir -p /opt/data/plugins
+          if [ ! -d /opt/data/plugins/hermes_otel/.git ]; then
+            git clone --depth 1 https://github.com/briancaffey/hermes-otel.git /opt/data/plugins/hermes_otel
+          fi
+          mkdir -p /opt/data/.hermes/plugins/hermes_otel
+          cat > /opt/data/.hermes/plugins/hermes_otel/config.yaml <<'EOF'
+          project_name: hermes-agent
+          capture_previews: true
+          capture_logs: true
+          backends:
+            - type: signoz
+              endpoint: http://backend-collector.observability.svc.cluster.local:4318/v1/traces
+              traces: true
+              metrics: true
+              logs: true
+          EOF
+          # In-process MCP bootstrap plugin (upstream hermes-agent #69746:
+          # the api_server platform never runs MCP discovery).
+          mkdir -p /opt/data/.hermes/plugins/mcp_bootstrap
+          cat > /opt/data/.hermes/plugins/mcp_bootstrap/plugin.yaml <<'EOF'
+          name: mcp_bootstrap
+          version: "1.0"
+          description: Runs MCP discovery in-process on first session start
+          provides_hooks:
+            - on_session_start
+          EOF
+          cat > /opt/data/.hermes/plugins/mcp_bootstrap/__init__.py <<'EOF'
+          import logging
+          import threading
+
+          logger = logging.getLogger("mcp_bootstrap")
+
+          _lock = threading.Lock()
+          _done = False
+
+
+          def register(ctx):
+              ctx.register_hook("on_session_start", _on_session_start)
+
+
+          def _on_session_start(session_id="", model="", platform="", **kwargs):
+              global _done
+              with _lock:
+                  if _done:
+                      return
+                  try:
+                      from tools.mcp_tool import discover_mcp_tools
+
+                      tools = discover_mcp_tools()
+                      logger.info("mcp-bootstrap: %d MCP tool(s) registered", len(tools or []))
+                      _done = True
+                  except Exception as exc:
+                      logger.warning("mcp-bootstrap: discovery failed: %s", exc)
+          EOF
+        volumeMounts:
+        - name: data
+          mountPath: /opt/data
+      containers:
+      - name: hermes
+        image: nousresearch/hermes-agent:v2026.8.31
+        args: ["gateway", "run"]
+        env:
+        - name: API_SERVER_ENABLED
+          value: "true"
+        - name: API_SERVER_HOST
+          value: "0.0.0.0"
+        - name: API_SERVER_PORT
+          value: "8642"
+        - name: API_SERVER_KEY
+          value: "hermes-internal-key"
+        # Exposed as the model id on /v1/models (fallback is "hermes-agent").
+        - name: API_SERVER_MODEL_NAME
+          value: "cluster-homelab-agent"
+        - name: SEARXNG_URL
+          value: "http://searxng.search.svc.cluster.local:8080"
+        - name: MCP_GITHUB_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: github-mcp-token
+              key: GITHUB_PERSONAL_ACCESS_TOKEN
+        ports:
+        - containerPort: 8642
+          name: api
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "1Gi"
+          limits:
+            cpu: "2"
+            memory: "4Gi"
+        volumeMounts:
+        - name: data
+          mountPath: /opt/data
+        - name: config
+          mountPath: /opt/data/config.yaml
+          subPath: config.yaml
+        - name: logs
+          mountPath: /opt/data/logs
+      volumes:
+      - name: config
+        configMap:
+          name: hermes-config
+      - name: logs
+        emptyDir:
+          medium: Memory
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 2Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hermes-homelab
+  namespace: llm
+  labels:
+    app: hermes-homelab
+spec:
+  selector:
+    app: hermes-homelab
+  ports:
+  - name: api
+    protocol: TCP
+    port: 8642
+    targetPort: 8642
+  type: ClusterIP
+---
+# Only Open WebUI may call the gateway API (:8642). kubectl exec /
+# port-forward are not affected (kubelet path).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: hermes-homelab-ingress
+  namespace: llm
+spec:
+  podSelector:
+    matchLabels:
+      app: hermes-homelab
+  policyTypes: [Ingress]
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: llm
+      podSelector:
+        matchLabels:
+          app: open-webui
+    ports:
+    - port: 8642
+      protocol: TCP
+---
+# Egress: the open world except the home LAN. Cilium filters on the packet's
+# destination IP, so routing via a gateway that happens to live in
+# 192.168.1.0/24 still works. NOTE: Cilium never matches CIDR rules against
+# in-cluster endpoints, so the cluster dependencies are allowlisted by
+# selector below (DNS, ollama, SearXNG, the MCP servers, SigNoz export).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: hermes-homelab-egress
+  namespace: llm
+spec:
+  podSelector:
+    matchLabels:
+      app: hermes-homelab
+  policyTypes: [Egress]
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+        except:
+        - 192.168.1.0/24
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: llm
+      podSelector:
+        matchLabels:
+          app: ollama
+    ports:
+    - port: 11434
+      protocol: TCP
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: search
+      podSelector:
+        matchLabels:
+          app: searxng
+    ports:
+    - port: 8080
+      protocol: TCP
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: llm
+      podSelector:
+        matchExpressions:
+        - key: app
+          operator: In
+          values: [mcp-k8s-server, mcp-signoz-server, github-mcp]
+    ports:
+    - port: 8080
+      protocol: TCP
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: observability
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/name: backend-collector
+    ports:
+    - port: 4318
+      protocol: TCP
