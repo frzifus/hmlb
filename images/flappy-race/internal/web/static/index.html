@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Flappy Race</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0b1020; overflow: hidden; overscroll-behavior: none; }
+  body { position: fixed; inset: 0; } /* kills iOS rubber-band scrolling */
+  canvas { display: block; width: 100vw; height: 100vh; height: 100dvh; outline: none; touch-action: none; }
+
+  #start {
+    position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(1200px 600px at 50% 20%, #16305c 0%, #0b1020 70%);
+    font-family: system-ui, sans-serif; color: #e8eefc; z-index: 10;
+  }
+  .card {
+    background: #101a33; border: 1px solid #2a3a66; border-radius: 14px;
+    padding: 28px 32px; width: min(400px, 88vw); box-shadow: 0 12px 40px rgba(0,0,0,.45);
+  }
+  h1 { margin: 0 0 4px; font-size: 26px; }
+  h1 span { color: #ffd94e; }
+  p.sub { margin: 0 0 18px; color: #9fb0d8; font-size: 13px; }
+  label { display: block; font-size: 12px; color: #9fb0d8; margin-bottom: 6px; }
+  input {
+    width: 100%; box-sizing: border-box; padding: 11px 12px; font-size: 16px;
+    border-radius: 9px; border: 1px solid #2a3a66; background: #0b1226; color: #e8eefc; outline: none;
+  }
+  input:focus { border-color: #ffd94e; }
+  button {
+    margin-top: 14px; width: 100%; padding: 12px; font-size: 16px; font-weight: 600;
+    border: 0; border-radius: 9px; background: #ffd94e; color: #1a1a10; cursor: pointer;
+  }
+  button:disabled { background: #6a6a55; color: #333; cursor: wait; }
+  .err { color: #ff8f85; font-size: 13px; min-height: 18px; margin-top: 8px; }
+  .board { margin-top: 18px; font-size: 13px; }
+  .board h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: #9fb0d8; margin: 0 0 8px; }
+  .board ol { margin: 0; padding-left: 22px; }
+  .board li { padding: 2px 0; color: #dfe7ff; }
+  .board .score { color: #ffd94e; font-weight: 600; }
+  .board .empty { color: #6d7ca6; font-style: italic; }
+</style>
+</head>
+<body>
+
+<div id="start">
+  <div class="card">
+    <h1>Flappy <span>Race</span></h1>
+    <p class="sub">space, click or tap to flap — every pipe counts</p>
+
+    <label for="name">Your name (shown on the leaderboard)</label>
+    <input id="name" maxlength="16" autocomplete="off" spellcheck="false" placeholder="e.g. Swift Falcon">
+    <div class="err" id="err"></div>
+    <button id="join" disabled>Loading…</button>
+
+    <div class="board">
+      <h2>All-time top 10</h2>
+      <ol id="top"><li class="empty">loading…</li></ol>
+    </div>
+  </div>
+</div>
+
+<script src="/wasm_exec.js"></script>
+<script>
+(async () => {
+  "use strict";
+
+  // instantiateStreaming polyfill for older browsers.
+  if (!WebAssembly.instantiateStreaming) {
+    WebAssembly.instantiateStreaming = async (resp, importObject) => {
+      const source = await (await resp).arrayBuffer();
+      return await WebAssembly.instantiate(source, importObject);
+    };
+  }
+
+  const input = document.getElementById("name");
+  const join = document.getElementById("join");
+  const errBox = document.getElementById("err");
+  const overlay = document.getElementById("start");
+  const last = localStorage.getItem("flappy.name");
+  const params = new URLSearchParams(location.search);
+  if (last) input.value = last;
+  if (params.get("name")) input.value = params.get("name"); // testing hook
+
+  // The all-time leaderboard is visible before joining.
+  fetch("/api/leaderboard").then(r => r.json()).then(lb => {
+    const list = document.getElementById("top");
+    list.innerHTML = "";
+    if (!lb.top || lb.top.length === 0) {
+      list.innerHTML = '<li class="empty">no races yet — be the first!</li>';
+      return;
+    }
+    for (const row of lb.top.slice(0, 10)) {
+      const li = document.createElement("li");
+      li.textContent = `${row.name} — `;
+      const b = document.createElement("span");
+      b.className = "score";
+      b.textContent = row.score;
+      li.appendChild(b);
+      list.appendChild(li);
+    }
+  }).catch(() => {}); // the game works without the board
+
+  // Download + compile the game while the user types. CRITICAL: the SAME
+  // Go instance must own the importObject AND the run call — a second
+  // `new Go()` leaves the runtime wired to a dead instance and the game
+  // never starts (blank screen).
+  const go = new Go();
+  let compiled = null;
+  try {
+    compiled = await WebAssembly.instantiateStreaming(fetch("/game.wasm"), go.importObject);
+  } catch (e) {
+    errBox.textContent = "game assets failed to load — did the server run `make assets`?";
+    join.textContent = "Unavailable";
+    return;
+  }
+  join.disabled = false;
+  join.textContent = "Race!";
+
+  const start = () => {
+    const name = input.value.trim();
+    if (name.length < 1 || name.length > 16) {
+      errBox.textContent = "pick a name (1–16 characters)";
+      return;
+    }
+    window.__flappyName = name;
+    try { localStorage.setItem("flappy.name", name); } catch (e) {}
+    overlay.remove();
+
+    // Ebitengine appends its own canvas — focus it so keyboard input works.
+    const obs = new MutationObserver((_, o) => {
+      const c = document.querySelector("canvas");
+      if (c) {
+        o.disconnect();
+        c.tabIndex = 0;
+        setTimeout(() => c.focus(), 50);
+      }
+    });
+    obs.observe(document.body, { childList: true });
+
+    try {
+      go.run(compiled.instance);
+    } catch (e) {
+      console.error("wasm run failed:", e);
+      const box = document.createElement("div");
+      box.style.cssText = "position:fixed;inset:0;display:flex;align-items:center;justify-content:center;color:#ff8f85;font-family:system-ui;padding:20px;text-align:center";
+      box.textContent = "the game failed to start — see the browser console, then reload";
+      document.body.appendChild(box);
+    }
+  };
+
+  join.addEventListener("click", start);
+  input.addEventListener("keydown", e => { if (e.key === "Enter") start(); });
+  input.focus();
+
+  if (params.has("autostart") && params.get("name")) start();
+})();
+</script>
+</body>
+</html>

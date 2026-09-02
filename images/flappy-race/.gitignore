@@ -1,0 +1,4 @@
+bin/
+data/
+internal/web/static/game.wasm
+internal/web/static/wasm_exec.js
