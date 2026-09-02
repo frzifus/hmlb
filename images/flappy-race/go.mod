@@ -5,7 +5,7 @@ go 1.26
 require (
 	github.com/coder/websocket v1.8.15
 	github.com/gorilla/websocket v1.5.3
-	github.com/hajimehoshi/ebiten/v2 v2.9.10
+	github.com/hajimehoshi/ebiten/v2 v2.9.11
 	golang.org/x/image v0.45.0
 )
 

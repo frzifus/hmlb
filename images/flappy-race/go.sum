@@ -16,6 +16,8 @@ github.com/hajimehoshi/bitmapfont/v4 v4.1.0 h1:eE3qa5Do4qhowZVIHjsrX5pYyyPN6sAFW
 github.com/hajimehoshi/bitmapfont/v4 v4.1.0/go.mod h1:/PD+aLjAJ0F2UoQx6hkOfXqWN7BkroDUMr5W+IT1dpE=
 github.com/hajimehoshi/ebiten/v2 v2.9.10 h1:Z2z8hq8/RVS4tfUcjKGdwzhBhNTbxSkxv867MPiGCLM=
 github.com/hajimehoshi/ebiten/v2 v2.9.10/go.mod h1:UqZjna6ppO9dTZtO97LySdB5ustokqOcQKrAfWPrVro=
+github.com/hajimehoshi/ebiten/v2 v2.9.11 h1:VXnv8jHvTHEeLBoPKEvPdywwJdcemur+EoXE/0Gsj78=
+github.com/hajimehoshi/ebiten/v2 v2.9.11/go.mod h1:UqZjna6ppO9dTZtO97LySdB5ustokqOcQKrAfWPrVro=
 github.com/jezek/xgb v1.1.1 h1:bE/r8ZZtSv7l9gk6nU0mYx51aXrvnyb44892TwSaqS4=
 github.com/jezek/xgb v1.1.1/go.mod h1:nrhwO0FX/enq75I7Y7G8iN1ubpSGZEiA3v9e9GyRFlk=
 github.com/pierrec/lz4/v4 v4.1.22 h1:cKFw6uJDK+/gfw5BcDL0JL5aBsAFdsIT18eRtLj7VIU=
