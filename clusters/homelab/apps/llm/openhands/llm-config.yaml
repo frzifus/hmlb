@@ -27,7 +27,7 @@ data:
         "agent_kind": "openhands",
         "agent": "CodeActAgent",
         "llm": {
-          "model": "openai/glm-5.2:cloud",
+          "model": "openai/glm-5.3:cloud",
           "api_key": "ollama",
           "auth_type": "api_key",
           "subscription_vendor": null,
@@ -148,7 +148,7 @@ data:
         "confirmation_mode": false,
         "security_analyzer": "llm"
       },
-      "active_profile": "glm-5.2",
+      "active_profile": "glm-5.3",
       "active_agent_profile_id": "058e9bed-b3ae-4e6b-8f63-60f13e1b0d7e",
       "misc_settings": {
         "app_preferences": {
@@ -157,9 +157,9 @@ data:
         }
       }
     }
-  glm-5.2.json: |
+  glm-5.3.json: |
     {
-      "model": "openai/glm-5.2:cloud",
+      "model": "openai/glm-5.3:cloud",
       "api_key": "ollama",
       "auth_type": "api_key",
       "base_url": "http://ollama.llm.svc.cluster.local:11434/v1",
@@ -193,9 +193,9 @@ data:
       "is_subscription": false,
       "schema_version": 1
     }
-  deepseek-v4-flash.json: |
+  glm-5.3-flash.json: |
     {
-      "model": "openai/deepseek-v4-flash:cloud",
+      "model": "openai/glm-5.3-flash:cloud",
       "api_key": "ollama",
       "auth_type": "api_key",
       "base_url": "http://ollama.llm.svc.cluster.local:11434/v1",

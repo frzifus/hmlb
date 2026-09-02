@@ -23,6 +23,7 @@ resources:
   - atuin
   - auth
   - azerothcore
+  - birds
   - bookmarks
   - cicd-builds
   - ext-bersch

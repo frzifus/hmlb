@@ -54,8 +54,8 @@ spec:
               set -e
               && mkdir -p /home/openhands/.openhands/agent-canvas
               && cp /config/settings.json          /home/openhands/.openhands/settings.json
-              && cp /config/glm-5.2.json           /home/openhands/.openhands/profiles/glm-5.2.json
-              && cp /config/deepseek-v4-flash.json /home/openhands/.openhands/profiles/deepseek-v4-flash.json
+              && cp /config/glm-5.3.json           /home/openhands/.openhands/profiles/glm-5.3.json
+              && cp /config/glm-5.3-flash.json     /home/openhands/.openhands/profiles/glm-5.3-flash.json
               && cp /config/homelab.json           /home/openhands/.openhands/agent-profiles/homelab.json
               && cp /config/house.json             /home/openhands/.openhands/agent-profiles/house.json
               && chmod 0660 /home/openhands/.openhands/settings.json /home/openhands/.openhands/profiles/*.json /home/openhands/.openhands/agent-profiles/*.json
