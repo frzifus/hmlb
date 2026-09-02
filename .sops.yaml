@@ -1,3 +1,4 @@
 creation_rules:
-  - age: >-
-        age1nl4pnuny2pjg3ejfk9vrx0y4ssmna36xlw3wqmzv55ku38psdylsp2t2yw
+  - age:
+      - age1nl4pnuny2pjg3ejfk9vrx0y4ssmna36xlw3wqmzv55ku38psdylsp2t2yw # flux
+      - age1yubikey1qgn7ll64pzy4wd64h85xxq386cexa98676zw4raej9rvxl822p782xrjn5z # keyring
