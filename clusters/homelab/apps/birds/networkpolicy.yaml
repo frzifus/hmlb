@@ -1,0 +1,46 @@
+---
+# Default-deny egress with narrow exceptions for the cloudflared sidecar.
+# The game container serves HTTP/WebSocket and writes its state file with no
+# outbound needs of its own, but NetworkPolicy is pod-scoped: the egress
+# exceptions cloudflared requires (DNS + Cloudflare edge on 443) therefore
+# apply to the whole pod. Ingress stays open and kubelet probes are
+# unaffected by egress policy; sidecar -> game traffic is loopback and
+# bypasses policy entirely.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-egress
+  namespace: birds
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    # DNS resolution of tunnel endpoints (.v2.argotunnel.com et al.)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # Cloudflare edge (TCP 7844, also for the http2 protocol) and Cloudflare
+    # API on 443; private ranges excluded. QUIC would additionally need
+    # UDP 7844.
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 7844
+        - protocol: TCP
+          port: 443
