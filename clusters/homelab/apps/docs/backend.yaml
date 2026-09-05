@@ -52,7 +52,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
-          image: lasuite/impress-backend:v5.6.0
+          image: lasuite/impress-backend:v5.6.1
           command: ["python", "manage.py", "migrate", "--no-input"]
           envFrom:
             - configMapRef:
@@ -96,7 +96,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
-          image: lasuite/impress-backend:v5.6.0
+          image: lasuite/impress-backend:v5.6.1
           ports:
             - containerPort: 8000
           envFrom:
@@ -172,7 +172,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
-          image: lasuite/impress-backend:v5.6.0
+          image: lasuite/impress-backend:v5.6.1
           command: ["celery", "-A", "impress.celery_app", "worker", "-l", "info", "--concurrency=2"]
           envFrom:
             - configMapRef:
