@@ -23,7 +23,7 @@ spec:
       serviceAccountName: obi # required if you want kubernetes metadata decoration
       containers:
         - name: autoinstrument
-          image: otel/ebpf-instrument:v0.12.2
+          image: otel/ebpf-instrument:v0.13.0
           securityContext:
             runAsUser: 0
             readOnlyRootFilesystem: true
