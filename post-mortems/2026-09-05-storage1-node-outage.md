@@ -95,7 +95,7 @@ posting heartbeats. Contributing factors, in order of weight:
 | # | Action | Owner | Status |
 |---|---|---|---|
 | 1 | Reconcile `crucial.yaml` git manifest with live cluster state: `storage2-crucial` DiskPool already exists (Online, 1.8 TiB) but is commented out in the repo. Uncomment, fix `node: storage1` → `node: storage2`, and verify crucial volumes spread across both pools | frzifus | open |
-| 2 | Apply Talos hardening on storage1+storage2: `watchdogTimeout: 10m`, `kernel.panic: "10"`, `kernel.panic_on_oops: "1"`, kubeReserved cpu 500m / mem 512Mi / ephemeral 1Gi | frzifus | open |
+| 2 | Apply Talos hardening on storage1+storage2: `watchdogTimeout: 10m`, `kernel.panic: "10"`, `kernel.panic_on_oops: "1"`, kubeReserved cpu 500m / mem 512Mi / ephemeral 1Gi | frzifus | [frzifus/hmlb#833](https://github.com/frzifus/hmlb/pull/833) |
 | 3 | SigNoz alerts (created 2026-09-05, channel LocalWebhook, renotify 15m): storage-node CPU load % of allocatable cores (warn >80% 10m, crit >100%); storage-node TX rate (warn >30 MB/s 10m, crit >60 MB/s; baseline 0.9–3 MB/s) | frzifus | done (ruleIds 01a07072-9500-70e3-a4f5-68abf50fb9fe, 01a07072-…b254 — see SigNoz) |
 | 4 | Re-run the stalled mayastor HelmRelease reconciliation; get storage1 io-engine to v2.11.1 (OnDelete: delete pod after node returns) | frzifus | open |
 | 5 | Capture storage1 logs **before reboot** (see callout above); analyze after node returns | frzifus | open |

@@ -113,6 +113,18 @@ nodes:
         machine:
           sysctls:
             vm.nr_hugepages: "1024"
+      - |- # Storage node hardening (see post-mortems/2026-09-05-storage1-node-outage.md)
+        machine:
+          watchdogTimeout: 10m
+          sysctls:
+            kernel.panic: "10"
+            kernel.panic_on_oops: "1"
+          kubelet:
+            extraConfig:
+              kubeReserved:
+                cpu: "500m"
+                memory: "512Mi"
+                ephemeral-storage: "1Gi"
       - |- # https://www.talos.dev/v1.9/advanced/advanced-networking/#bonding
         machine:
           network:
@@ -145,6 +157,18 @@ nodes:
         machine:
           sysctls:
             vm.nr_hugepages: "1024"
+      - |- # Storage node hardening (see post-mortems/2026-09-05-storage1-node-outage.md)
+        machine:
+          watchdogTimeout: 10m
+          sysctls:
+            kernel.panic: "10"
+            kernel.panic_on_oops: "1"
+          kubelet:
+            extraConfig:
+              kubeReserved:
+                cpu: "500m"
+                memory: "512Mi"
+                ephemeral-storage: "1Gi"
       - |- # https://www.talos.dev/v1.9/advanced/advanced-networking/#bonding
         machine:
           network:
