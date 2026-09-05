@@ -32,7 +32,7 @@ spec:
         - --inactivity-timeout=0
         - --output=none
         - --no-stats
-        image: otel/weaver:v0.25.1
+        image: otel/weaver:v0.26.1
         imagePullPolicy: IfNotPresent
         name: weaver
         ports:
