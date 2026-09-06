@@ -62,18 +62,21 @@ spec:
           # currently necessary because the init container checks for nvmeof module but Talos compiles it in
           initContainers:
             enabled: false
-          # TODO(storage-protection): remove csi-node scheduling on storage nodes.
-          # tolerations: []
+          tolerations:
+            - key: role
+              operator: Equal
+              value: storage-node
+            - key: node-role.kubernetes.io/control-plane
+              operator: Exists
       etcd:
         replicaCount: 3
         tolerations: []
       eventing:
         enabled: false
-      # TODO(storage-protection): remove agent-ha-node scheduling on storage nodes.
-      # agents:
-      #   ha:
-      #     node:
-      #       tolerations: []
+      agents:
+        ha:
+          node:
+            tolerations: []
       io_engine:
         # It's the automatic mode, in the DPDK code IOVA_MODE_DC, that causes issues.
         # Confirmed by EAL debug log output that this really selects VA
@@ -85,6 +88,7 @@ spec:
           - key: role
             operator: Equal
             value: storage-node
+          # No effect set on purpose: this also tolerates the NoExecute taint.
       loki-stack:
         enabled: false
       obs:
