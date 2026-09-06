@@ -1,6 +1,7 @@
 ---
 clusterName: homelab
-talosVersion: v1.12.3
+talosVersion: v1.14.0
+kubernetesVersion: v1.37.0
 endpoint: https://192.168.5.3:6443
 allowSchedulingOnMasters: false
 additionalApiServerCertSans:
@@ -8,13 +9,6 @@ additionalApiServerCertSans:
 cniConfig:
   name: none
 patches:
-  - |-
-    cluster:
-      proxy:
-        disabled: true
-      apiServer:
-        extraArgs:
-          feature-gates: UserNamespacesSupport=true
   # https://spegel.dev/docs/getting-started/#talos
   - |-
     machine:
@@ -68,6 +62,16 @@ patches:
 controlPlane:
   patches:
     - |-
+      apiVersion: v1alpha1
+      kind: KubeAPIServerConfig
+      image: registry.k8s.io/kube-apiserver:v1.37.0
+      extraArgs:
+        feature-gates: UserNamespacesSupport=true
+    - |-
+      apiVersion: v1alpha1
+      kind: KubeProxyConfig
+      enabled: false
+    - |-
       machine:
         features:
           kubernetesTalosAPIAccess:
@@ -76,7 +80,7 @@ controlPlane:
               - os:etcd:backup
             allowedKubernetesNamespaces:
               - kube-system
-  talosImageURL: factory.talos.dev/metal-installer-secureboot/2ffbcbedc61ac5530fabbec9ec4e565e78014b4d20218d60616f863512a42f4e
+  talosImageURL: factory.talos.dev/metal-installer-secureboot/ec5a345a9a57a94b4271f600874fc8b9a0ea87e3148c50472fe806e1ab23b1d7
   extensionServices:
     - name: tailscale
       environment:
@@ -84,12 +88,24 @@ controlPlane:
         - TS_EXTRA_ARGS=--reset
 
 worker:
-  talosImageURL: factory.talos.dev/metal-installer-secureboot/2ffbcbedc61ac5530fabbec9ec4e565e78014b4d20218d60616f863512a42f4e
+  talosImageURL: factory.talos.dev/metal-installer-secureboot/ec5a345a9a57a94b4271f600874fc8b9a0ea87e3148c50472fe806e1ab23b1d7
   extensionServices:
     - name: tailscale
       environment:
         - TS_AUTHKEY=${tsAuth}
         - TS_EXTRA_ARGS=--reset
+  patches:
+    - |- # Worker node hardening (see post-mortems/2026-09-05-storage1-node-outage.md)
+      machine:
+        sysctls:
+          kernel.panic: "10"
+          kernel.panic_on_oops: "1"
+        kubelet:
+          extraConfig:
+            kubeReserved:
+              cpu: "500m"
+              memory: "512Mi"
+              ephemeral-storage: "1Gi"
 
 nodes:
   - hostname: master1
@@ -114,17 +130,10 @@ nodes:
           sysctls:
             vm.nr_hugepages: "1024"
       - |- # Storage node hardening (see post-mortems/2026-09-05-storage1-node-outage.md)
-        machine:
-          watchdogTimeout: 10m
-          sysctls:
-            kernel.panic: "10"
-            kernel.panic_on_oops: "1"
-          kubelet:
-            extraConfig:
-              kubeReserved:
-                cpu: "500m"
-                memory: "512Mi"
-                ephemeral-storage: "1Gi"
+        apiVersion: v1alpha1
+        kind: WatchdogTimerConfig
+        device: /dev/watchdog0
+        timeout: 10m
       - |- # https://www.talos.dev/v1.9/advanced/advanced-networking/#bonding
         machine:
           network:
@@ -158,17 +167,10 @@ nodes:
           sysctls:
             vm.nr_hugepages: "1024"
       - |- # Storage node hardening (see post-mortems/2026-09-05-storage1-node-outage.md)
-        machine:
-          watchdogTimeout: 10m
-          sysctls:
-            kernel.panic: "10"
-            kernel.panic_on_oops: "1"
-          kubelet:
-            extraConfig:
-              kubeReserved:
-                cpu: "500m"
-                memory: "512Mi"
-                ephemeral-storage: "1Gi"
+        apiVersion: v1alpha1
+        kind: WatchdogTimerConfig
+        device: /dev/watchdog0
+        timeout: 10m
       - |- # https://www.talos.dev/v1.9/advanced/advanced-networking/#bonding
         machine:
           network:
@@ -201,15 +203,35 @@ nodes:
         machine:
           sysctls:
             user.max_user_namespaces: "11255"
+  - hostname: worker2
+    ipAddress: 192.168.5.84
+    installDisk: /dev/nvme0n1
+    controlPlane: false
+    patches:
+      - |-
+        machine:
+          sysctls:
+            user.max_user_namespaces: "11255"
+    nodeLabels:
+      node-role.kubernetes.io/worker: ""
   - hostname: gpu1
-    ipAddress: 192.168.5.7 # TODO
+    ipAddress: 192.168.5.7
     installDisk: /dev/sda
     controlPlane: false
+    patches:
+      - |-
+        machine:
+          sysctls:
+            user.max_user_namespaces: "11255"
   - hostname: gpu2
     ipAddress: 192.168.5.11
     installDisk: /dev/nvme0n1
     controlPlane: false
     patches:
+      - |-
+        machine:
+          sysctls:
+            user.max_user_namespaces: "11255"
       - |- # https://www.talos.dev/v1.9/advanced/advanced-networking/#bonding
         machine:
           network:
