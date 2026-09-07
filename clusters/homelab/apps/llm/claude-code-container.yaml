@@ -31,7 +31,7 @@ metadata:
   name: claude-container
   namespace: llm
 spec:
-  replicas: 1
+  replicas: 0
   strategy:
     type: Recreate
   selector:

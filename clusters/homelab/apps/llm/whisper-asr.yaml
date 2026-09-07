@@ -36,7 +36,7 @@ spec:
               mountPath: /data/huggingface
           resources:
             requests:
-              cpu: "2"
+              cpu: "150m"
               memory: "4Gi"
             limits:
               cpu: "3"

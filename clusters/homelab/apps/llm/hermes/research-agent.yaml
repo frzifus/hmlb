@@ -133,8 +133,8 @@ spec:
           name: api
         resources:
           requests:
-            cpu: "500m"
-            memory: "1Gi"
+            cpu: "100m"
+            memory: "512Mi"
           limits:
             cpu: "2"
             memory: "4Gi"

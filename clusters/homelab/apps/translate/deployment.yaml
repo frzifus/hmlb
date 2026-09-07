@@ -41,11 +41,11 @@ spec:
               value: "1"
           resources:
             requests:
-              cpu: 500m
+              cpu: 125m
               memory: 2Gi
             limits:
-              cpu: "2"
-              memory: 4Gi
+              cpu: 1500m
+              memory: 3Gi
           volumeMounts:
             - name: data
               mountPath: /home/libretranslate/.local
