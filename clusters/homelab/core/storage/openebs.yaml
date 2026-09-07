@@ -70,7 +70,15 @@ spec:
               operator: Exists
       etcd:
         replicaCount: 3
-        tolerations: []
+        # The etcd chart gates preUpgradeJob.tolerations behind non-empty etcd.tolerations.
+        tolerations:
+          - key: openebs.io/enable-pre-upgrade-tolerations
+            operator: Exists
+        preUpgradeJob:
+          annotations:
+            "helm.sh/hook-delete-policy": "hook-succeeded,before-hook-creation"
+          tolerations:
+            - operator: Exists
       eventing:
         enabled: false
       agents:
