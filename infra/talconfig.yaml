@@ -199,6 +199,8 @@ nodes:
         machine:
           sysctls:
             user.max_user_namespaces: "11255"
+    nodeLabels:
+      talos.klimlive.de/user-namespaces: "true"
   - hostname: worker2
     ipAddress: 192.168.5.84
     installDisk: /dev/nvme0n1
@@ -209,6 +211,7 @@ nodes:
           sysctls:
             user.max_user_namespaces: "11255"
     nodeLabels:
+      talos.klimlive.de/user-namespaces: "true"
       node-role.kubernetes.io/worker: ""
   - hostname: gpu1
     ipAddress: 192.168.5.7
@@ -219,6 +222,8 @@ nodes:
         machine:
           sysctls:
             user.max_user_namespaces: "11255"
+    nodeLabels:
+      talos.klimlive.de/user-namespaces: "true"
   - hostname: gpu2
     ipAddress: 192.168.5.11
     installDisk: /dev/nvme0n1
@@ -244,3 +249,5 @@ nodes:
                   interfaces:
                     - eno1
                     - enp7s0
+    nodeLabels:
+      talos.klimlive.de/user-namespaces: "true"

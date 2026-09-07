@@ -42,5 +42,5 @@ data:
         securityContext:
           fsGroup: 65532
         nodeSelector:
-          kubernetes.io/hostname: worker1
+          talos.klimlive.de/user-namespaces: "true"
       serviceAccountName: build-bot
