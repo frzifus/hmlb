@@ -153,10 +153,8 @@ nodes:
     nodeLabels:
       openebs.io/engine: mayastor
       role: "storage-node"
-    taints:
-      - key: "role"
-        value: "storage-node"
-        effect: "NoSchedule"
+    nodeTaints:
+      role: "storage-node:NoExecute"
   - hostname: storage2
     ipAddress: 192.168.5.8
     installDisk: /dev/nvme0n1
@@ -190,10 +188,8 @@ nodes:
     nodeLabels:
       role: "storage-node"
       openebs.io/engine: mayastor
-    taints:
-      - key: "role"
-        value: "storage-node"
-        effect: "NoSchedule"
+    nodeTaints:
+      role: "storage-node:NoExecute"
   - hostname: worker1
     ipAddress: 192.168.5.9
     installDisk: /dev/nvme0n1
