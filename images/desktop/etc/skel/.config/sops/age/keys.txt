@@ -1,0 +1,4 @@
+# yubi5a-age: YubiKey 5 NFC S/N 14336390, plugin slot 1, PIN once + touch always
+AGE-PLUGIN-YUBIKEY-1SMQA5QYZG539RTCKKE9DP
+# yubi5b-age: YubiKey 5C NFC S/N 32085823, plugin slot 1, PIN once + touch always
+AGE-PLUGIN-YUBIKEY-187T7JQVZAW9CHLQJZMHXS

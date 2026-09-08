@@ -1,0 +1,24 @@
+{
+  "env": {
+    "ANTHROPIC_API_KEY": "",
+    "ANTHROPIC_BASE_URL": "https://llm.klimlive.de/ollama",
+    "ANTHROPIC_MODEL": "glm-5.3-flash:cloud",
+    "CLAUDE_CODE_MAX_CONTEXT_TOKENS": "1000000"
+  },
+  "model": "glm-5.3-flash:cloud",
+  "modelPicker": {
+    "replaceBuiltInOptions": true,
+    "options": [
+      {
+        "model": "glm-5.3:cloud",
+        "label": "glm 5.3 (klimlive)",
+        "description": "Custom deployment routed through the internal LLM gateway"
+      },
+      {
+        "model": "glm-5.3-flash:cloud",
+        "label": "glm 5.3 flash (klimlive)",
+        "description": "Fast deployment routed through the internal LLM gateway"
+      }
+    ]
+  }
+}

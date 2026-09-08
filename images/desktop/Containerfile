@@ -16,14 +16,15 @@ COPY ./etc/yum.repos.d/netbird.repo /etc/yum.repos.d/netbird.repo
 #     firefox \
 #     firefox-langpacks
 
-COPY ./etc/yum.repos.d/google-cloud-sdk.repo /etc/yum.repos.d/google-cloud-sdk.repo
+# COPY ./etc/yum.repos.d/google-cloud-sdk.repo /etc/yum.repos.d/google-cloud-sdk.repo
+# RUN dnf install -y libxcrypt-compat google-cloud-cli
 
-RUN dnf install -y libxcrypt-compat google-cloud-cli npm
+RUN dnf install -y nodejs npm
 
 # https://github.com/fedora-silverblue/issue-tracker/issues/430
 RUN mkdir -p /etc/alternatives && mkdir -p /var/lib/alternatives
 
-RUN dnf install -y azure-cli
+# RUN dnf install -y azure-cli
 
 RUN dnf install -y tailscale
 
@@ -62,7 +63,34 @@ RUN dnf install -y \
     krb5-workstation \
     keepassxc \
     gnome-shell-extension-forge \
-    gnome-shell-extension-appindicator
+    gnome-shell-extension-appindicator \
+    gnome-shell-extension-blur-my-shell \
+    gnome-shell-extension-caffeine \
+    gnome-shell-extension-gsconnect
+
+# npm's default global prefix (/usr/local) is a symlink to /var/usrlocal on
+# ostree, and /var is not part of the image (same reason Bitwarden and
+# age-plugin-yubikey above avoid /usr/local) — Node's recursive mkdir dies on
+# it with ENOTDIR (build exit 236). Install under /usr/lib instead, link the
+# CLI shims into /usr/bin, and relocate the npm cache: /root is a symlink
+# into /var too (hence "Log files were not written" in the failed build).
+# "dnf remove npm" is a silent no-op on F44 — npm ships as the
+# nodejs22-npm/-bin subpackages of nodejs. Removing them by glob keeps
+# nodejs itself: codex's shim is a node script, only claude's is a
+# self-contained native binary.
+RUN npm install --global --prefix /usr/lib/npm-global --cache /tmp/npm-cache \
+        @anthropic-ai/claude-code @openai/codex && \
+    ln -s /usr/lib/npm-global/bin/* /usr/bin/ && \
+    dnf remove -y 'nodejs*-npm*' && \
+    rm -rf /root/.npm /tmp/npm-cache
+
+COPY ./etc/codex/config.toml /etc/codex/config.toml
+COPY ./etc/codex/model-catalogs/klimlive.json /etc/codex/model-catalogs/klimlive.json
+COPY ./etc/claude-code/managed-settings.json /etc/claude-code/managed-settings.json
+COPY ./etc/profile.d/klimlive-clis.sh /etc/profile.d/klimlive-clis.sh
+# NOTE: the sway setup lives per-user now: /etc/skel/.config/sway (config +
+# scripts + wallpaper), copied to $HOME at account creation, where per-user
+# sway config takes precedence over the rpm-shipped /etc/sway/config.
 
 RUN touch /etc/containers/nodocker
 
@@ -111,14 +139,14 @@ RUN dnf install -y \
     android-tools \
     fastboot
 
-COPY ./etc/pki/rpm-gpg/RPM-GPG-KEY-bitwarden /etc/pki/rpm-gpg/RPM-GPG-KEY-bitwarden
-COPY ./etc/yum.repos.d/bitwarden.repo /etc/yum.repos.d/bitwarden.repo
-RUN rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-bitwarden
-# Bitwarden installs to /opt which is a symlink to /var/opt on ostree;
-# /var is not part of the immutable image, so relocate to /usr/lib/bitwarden.
-RUN mkdir -p /var/opt/Bitwarden && dnf install -y bitwarden && \
-    mv /var/opt/Bitwarden /usr/lib/bitwarden && \
-    sed -i 's|/opt/Bitwarden/bitwarden|/usr/lib/bitwarden/bitwarden|' /usr/share/applications/bitwarden.desktop
+# COPY ./etc/pki/rpm-gpg/RPM-GPG-KEY-bitwarden /etc/pki/rpm-gpg/RPM-GPG-KEY-bitwarden
+# COPY ./etc/yum.repos.d/bitwarden.repo /etc/yum.repos.d/bitwarden.repo
+# RUN rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-bitwarden
+# # Bitwarden installs to /opt which is a symlink to /var/opt on ostree;
+# # /var is not part of the immutable image, so relocate to /usr/lib/bitwarden.
+# RUN mkdir -p /var/opt/Bitwarden && dnf install -y bitwarden && \
+#     mv /var/opt/Bitwarden /usr/lib/bitwarden && \
+#     sed -i 's|/opt/Bitwarden/bitwarden|/usr/lib/bitwarden/bitwarden|' /usr/share/applications/bitwarden.desktop
 
 RUN dnf install -y \
     mesa-libGL-devel \
@@ -158,3 +186,45 @@ RUN dnf install -y pcsc-lite-devel && \
     dnf remove -y pcsc-lite-devel
 
 RUN systemctl enable pcscd.socket
+
+# --- doom emacs: bake pinned core + user config into /etc/skel ---------------
+# /usr is read-only at runtime on ostree, but doom must write to $EMACSDIR/.local
+# (straight packages, eln-cache, env snapshot). The tree therefore lives in
+# /etc/skel: useradd copies it into a writable $HOME at account creation.
+# The pin matches the commit deployed on the host (upstream master as of 2026-01).
+# reset --hard keeps master checked out, so a later `doom upgrade` (git pull)
+# still fast-forwards instead of dying on a detached HEAD.
+RUN git clone https://github.com/doomemacs/doomemacs /etc/skel/.config/emacs && \
+    git -C /etc/skel/.config/emacs reset --hard 57818a6da90fbef39ff80d62fab2cd319496c3b9
+
+COPY ./etc/skel/ /etc/skel/
+
+# Bootstrap straight, install the pinned packages and native-compile.
+# HOME points at the skel tree so doom writes .local there instead of /root.
+# `--force` bypasses the interactive sync/compile prompts (required as root).
+RUN HOME=/etc/skel /etc/skel/.config/emacs/bin/doom install --force
+
+# Smoke test: doctor exits non-zero on warnings (running as root is one), so
+# only hard breakage would be worth failing the build over — hence || true.
+RUN HOME=/etc/skel /etc/skel/.config/emacs/bin/doom doctor || true
+
+# --- zsh: bake zplug + declared plugins into skel ------------------------------
+# /etc/skel/.zshrc sources $ZPLUG_HOME/init.zsh unconditionally, so zplug must
+# exist for every shell start. The plugins declared in .zshrc are installed at
+# build time so the first login gets the themed prompt with no network
+# round-trip. zplug has no non-interactive flag; </dev/null turns any prompt
+# into a hard failure instead of a build hang.
+RUN git clone https://github.com/zplug/zplug /etc/skel/.zplug
+RUN HOME=/etc/skel zsh -c 'source $HOME/.zshrc && zplug install' </dev/null
+# atuin's uuid call during the .zshrc source may leave state under skel; keep
+# the tree pristine (per-user state is recreated at runtime in $HOME).
+RUN rm -rf /etc/skel/.local/share/atuin /etc/skel/.config/atuin
+
+# --- sshd: root bootstrap access via FIDO2 (sk) keys only ----------------------
+# openssh-server ships in the base image; this adds hardening + keys. Root is
+# the only guaranteed account on a fresh machine (usernames are unknown at
+# image time), so the system key store targets /root via AuthorizedKeysFile.
+COPY ./etc/ssh/sshd_config.d/10-sk-only.conf /etc/ssh/sshd_config.d/10-sk-only.conf
+COPY ./etc/ssh/authorized_keys.d/root /etc/ssh/authorized_keys.d/root
+
+RUN systemctl enable sshd.service

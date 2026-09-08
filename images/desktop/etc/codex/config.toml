@@ -1,0 +1,12 @@
+# GLM via the internal klimlive LLM gateway.
+model = "glm-5.3-flash:cloud"
+model_provider = "klimlive"
+model_catalog_json = "/etc/codex/model-catalogs/klimlive.json"
+model_context_window = 1000000
+model_reasoning_effort = "medium"
+
+[model_providers.klimlive]
+name = "Ollama (klimlive gateway)"
+base_url = "https://llm.klimlive.de/ollama/v1/"
+env_key = "OLLAMA_API_KEY"
+wire_api = "responses"

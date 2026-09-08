@@ -52,6 +52,17 @@ with the matching cosign key.
 > ([bootc#528](https://github.com/bootc-dev/bootc/issues/528)).
 > Use `rpm-ostree upgrade` for verified upgrades.
 
+## AI CLIs
+
+Visit [llm.klimlive.de](https://llm.klimlive.de), log in with your SSO
+account, and generate an API key. Set that key as `OPENWEBUI_API_KEY`:
+
+```sh
+export OPENWEBUI_API_KEY="<your-api-key>"
+```
+
+Once the key is exported, Codex and Claude Code automatically use it.
+
 ## Verifying Manually
 
 ```sh

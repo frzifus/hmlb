@@ -1,0 +1,108 @@
+{
+  "models": [
+    {
+      "slug": "glm-5.3-flash:cloud",
+      "display_name": "glm 5.3 flash (klimlive)",
+      "description": "Fast GLM 5.3 flash via the internal klimlive gateway",
+      "default_reasoning_level": "medium",
+      "supported_reasoning_levels": [
+        {
+          "effort": "low",
+          "description": "Fast responses with lighter reasoning"
+        },
+        {
+          "effort": "medium",
+          "description": "Balances speed and reasoning depth for everyday tasks"
+        },
+        {
+          "effort": "high",
+          "description": "Greater reasoning depth for complex problems"
+        }
+      ],
+      "shell_type": "shell_command",
+      "visibility": "list",
+      "supported_in_api": true,
+      "priority": 1,
+      "additional_speed_tiers": [],
+      "service_tiers": [],
+      "availability_nux": null,
+      "upgrade": null,
+      "include_skills_usage_instructions": false,
+      "include_plugin_usage_instructions": false,
+      "include_apps_usage_instructions": true,
+      "supports_reasoning_summary_parameter": true,
+      "default_reasoning_summary": "auto",
+      "support_verbosity": false,
+      "default_verbosity": null,
+      "web_search_tool_type": "text",
+      "truncation_policy": {
+        "mode": "tokens",
+        "limit": 10000
+      },
+      "supports_parallel_tool_calls": true,
+      "supports_image_detail_original": false,
+      "context_window": 1000000,
+      "max_context_window": 1000000,
+      "effective_context_window_percent": 95,
+      "experimental_supported_tools": [],
+      "input_modalities": [
+        "text"
+      ],
+      "supports_search_tool": false,
+      "use_responses_lite": false,
+      "base_instructions": ""
+    },
+    {
+      "slug": "glm-5.3:cloud",
+      "display_name": "glm 5.3 (klimlive)",
+      "description": "GLM 5.3 (753B) via the internal klimlive gateway",
+      "default_reasoning_level": "medium",
+      "supported_reasoning_levels": [
+        {
+          "effort": "low",
+          "description": "Fast responses with lighter reasoning"
+        },
+        {
+          "effort": "medium",
+          "description": "Balances speed and reasoning depth for everyday tasks"
+        },
+        {
+          "effort": "high",
+          "description": "Greater reasoning depth for complex problems"
+        }
+      ],
+      "shell_type": "shell_command",
+      "visibility": "list",
+      "supported_in_api": true,
+      "priority": 2,
+      "additional_speed_tiers": [],
+      "service_tiers": [],
+      "availability_nux": null,
+      "upgrade": null,
+      "include_skills_usage_instructions": false,
+      "include_plugin_usage_instructions": false,
+      "include_apps_usage_instructions": true,
+      "supports_reasoning_summary_parameter": true,
+      "default_reasoning_summary": "auto",
+      "support_verbosity": false,
+      "default_verbosity": null,
+      "web_search_tool_type": "text",
+      "truncation_policy": {
+        "mode": "tokens",
+        "limit": 10000
+      },
+      "supports_parallel_tool_calls": true,
+      "supports_image_detail_original": false,
+      "context_window": 1000000,
+      "max_context_window": 1000000,
+      "effective_context_window_percent": 95,
+      "experimental_supported_tools": [],
+      "input_modalities": [
+        "text"
+      ],
+      "supports_search_tool": false,
+      "use_responses_lite": false,
+      "base_instructions": ""
+    }
+  ]
+}
