@@ -17,7 +17,11 @@ export SAVEHIST=$HISTSIZE
 export LC_ALL=de_DE.UTF-8
 export LANG=de_DE.UTF-8
 
-export TERM=xterm-color
+# xterm-color no longer exists in Fedora terminfo (gone by F44); tput/infocmp
+# fail *silently* with it (broke the zplug install build step). Only default
+# TERM when unset: buildah RUN steps have none, desktop terminal emulators
+# (foot, xterm-256color, ...) set their own and must not be overridden.
+[[ -n "$TERM" ]] || export TERM=xterm-256color
 source "$HOME/.cargo/env"
 . "$HOME/.cargo/env"
 

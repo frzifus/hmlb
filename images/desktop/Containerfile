@@ -228,3 +228,29 @@ COPY ./etc/ssh/sshd_config.d/10-sk-only.conf /etc/ssh/sshd_config.d/10-sk-only.c
 COPY ./etc/ssh/authorized_keys.d/root /etc/ssh/authorized_keys.d/root
 
 RUN systemctl enable sshd.service
+
+# --- fold /etc into /usr/etc ---------------------------------------------------
+# The silverblue base commit keeps its config directly in /etc (transient /
+# overlayfs-root style) and has NO /usr/etc. rpm-ostree's container import
+# however remaps every /etc entry of Dockerfile-derived layers into /usr/etc
+# (ostree-rs-ext, lib/src/tar/write.rs: "Move /etc to /usr/etc"). Rebasing to
+# an image built that way therefore assembles a commit holding the base's
+# populated /etc next to the layers' /usr/etc, and staging the deployment
+# dies with: "Preparing /etc: tree contains both /etc and /usr/etc".
+#
+# Folding the finished /etc state into /usr/etc and emptying /etc out makes
+# the imported commit /usr/etc-only; libostree then drops the empty /etc and
+# generates the deployment's writable /etc from /usr/etc (the standard
+# ostree path). resolv.conf/hosts/hostname are podman build-time bind
+# mounts, not image content, so they must stay out of the merge.
+RUN set -eux -o pipefail; \
+    mkdir -p /usr/etc; \
+    tar -C /etc -cf - \
+      --exclude=./resolv.conf --exclude=./hosts \
+      --exclude=./hostname --exclude=./machine-id . \
+      | tar -C /usr/etc -xpf -; \
+    find /etc -mindepth 1 -depth \
+      ! -path /etc/resolv.conf ! -path /etc/hosts \
+      ! -path /etc/hostname ! -path /etc/machine-id \
+      -exec rm -rf {} +; \
+    ls -la /etc
