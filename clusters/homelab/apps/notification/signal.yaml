@@ -34,8 +34,8 @@ spec:
         # register: http://localhost:8080/v1/qrcodelink?device_name=signal-api
         # docs: https://bbernhard.github.io/signal-cli-rest-api/
         - name: signal-api
-          # image: bbernhard/signal-cli-rest-api:0.92
-          image: ghcr.io/frzifus/signal-cli-rest-api:0.97
+          image: bbernhard/signal-cli-rest-api:0.100
+          # image: ghcr.io/frzifus/signal-cli-rest-api:0.97
           ports:
             - containerPort: 8080
           env:
