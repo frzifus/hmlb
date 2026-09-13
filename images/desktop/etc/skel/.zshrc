@@ -6,8 +6,9 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
 fi
 
 # zsh plugins
-ZPLUG_HOME=${HOME}/.zplug
-source $ZPLUG_HOME/init.zsh
+# ZPLUG_ROOT contains the read-only zplug code; ZPLUG_HOME contains mutable
+# per-user state (repos, cache, logs, bin). .zshenv provides both values.
+source "$ZPLUG_ROOT/init.zsh"
 #zplug 'zplug/zplug', hook-build:'zplug --self-manage'
 #zplug "tobjaw/fd6ff79d37678e5b66c7455c75b710f7", from:gist, as:theme
 zplug romkatv/powerlevel10k, as:theme, depth:1

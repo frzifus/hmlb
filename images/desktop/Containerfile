@@ -209,12 +209,15 @@ RUN HOME=/etc/skel /etc/skel/.config/emacs/bin/doom install --force
 RUN HOME=/etc/skel /etc/skel/.config/emacs/bin/doom doctor || true
 
 # --- zsh: bake zplug + declared plugins into skel ------------------------------
-# /etc/skel/.zshrc sources $ZPLUG_HOME/init.zsh unconditionally, so zplug must
+# /etc/skel/.zshrc sources $ZPLUG_ROOT/init.zsh unconditionally, so zplug must
 # exist for every shell start. The plugins declared in .zshrc are installed at
 # build time so the first login gets the themed prompt with no network
 # round-trip. zplug has no non-interactive flag; </dev/null turns any prompt
 # into a hard failure instead of a build hang.
-RUN git clone https://github.com/zplug/zplug /etc/skel/.zplug
+# zplug code is image-owned and read-only at runtime. Per-user state is kept
+# under $HOME/.config/zsh-zplug via ZPLUG_HOME in .zshenv, so /etc/skel only
+# needs the pre-installed plugin repositories and shell configuration.
+RUN git clone https://github.com/zplug/zplug /usr/lib/zplug
 RUN HOME=/etc/skel zsh -c 'source $HOME/.zshrc && zplug install' </dev/null
 # atuin's uuid call during the .zshrc source may leave state under skel; keep
 # the tree pristine (per-user state is recreated at runtime in $HOME).

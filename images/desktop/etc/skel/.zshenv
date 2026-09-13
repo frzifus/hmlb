@@ -1,4 +1,12 @@
-export PATH="${HOME}/bin:${HOME}/.local/bin:${PATH}:${HOME}/.zplug/bin:${PATH}"
+# Keep zplug's read-only code separate from per-user writable state.
+export ZPLUG_ROOT="/usr/lib/zplug"
+export ZPLUG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}/zsh-zplug"
+export ZPLUG_BIN="${ZPLUG_HOME}/bin"
+export ZPLUG_CACHE_DIR="${ZPLUG_HOME}/cache"
+export ZPLUG_REPOS="${ZPLUG_HOME}/repos"
+export ZPLUG_LOADFILE="${ZPLUG_HOME}/packages.zsh"
+
+export PATH="${HOME}/bin:${HOME}/.local/bin:${PATH}:${ZPLUG_ROOT}/bin:${ZPLUG_HOME}/bin:${PATH}"
 
 export GOROOT=/usr/lib/golang
 export GOPATH=${HOME}/git/golang_workspace
