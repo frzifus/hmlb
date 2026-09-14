@@ -229,6 +229,13 @@ COPY ./etc/ssh/authorized_keys.d/root /etc/ssh/authorized_keys.d/root
 
 RUN systemctl enable sshd.service
 
+# Helper for users who don't want to maintain their own dotfiles: links
+# $HOME entries against /etc/skel (missing -> linked, identical copy ->
+# link, locally modified -> kept), so config updates ship with the image.
+# Doom emacs is copied instead of linked because it writes .local state
+# into its config dir. Rules and flags (--dry-run, --force) in the header.
+COPY ./usr/bin/skel-link /usr/bin/skel-link
+
 # --- fold /etc into /usr/etc ---------------------------------------------------
 # The silverblue base commit keeps its config directly in /etc (transient /
 # overlayfs-root style) and has NO /usr/etc. rpm-ostree's container import

@@ -1,0 +1,207 @@
+#!/usr/bin/bash
+#
+# skel-link — link $HOME configs against the image's /etc/skel tree.
+#
+# For people who don't want to maintain their own dotfiles: the configs the
+# image ships in /etc/skel (zsh, doom emacs, sway, ...) become symlinks into
+# /etc/skel, so they keep updating with the OS image instead of drifting as
+# account-creation copies.
+#
+# Per entry:
+#   missing in $HOME            -> linked (COPY_PATHS entries are copied)
+#   identical to the skel copy  -> converted to a link (no changes lost)
+#   modified locally            -> kept untouched — you maintain this
+#
+# COPY_PATHS lists trees whose owning app writes into them at runtime (doom
+# emacs keeps .local state inside its config dir). Those are copied instead
+# of linked so they stay writable; the price is they don't follow image
+# updates.
+#
+# usage: skel-link [--dry-run] [--force]
+#   --dry-run  print what would happen, change nothing
+#   --force    replace even locally-modified entries with the image version
+#              (local modifications are DELETED)
+
+set -euo pipefail
+
+SKEL="${SKEL:-/etc/skel}"
+
+# Entries (relative to $HOME) whose owning app writes into them at runtime.
+COPY_PATHS=(.config/emacs)
+
+force=0
+dry=0
+linked=0
+copied=0
+kept=0
+unchanged=0
+
+die() { echo "skel-link: $*" >&2; exit 1; }
+note() { printf '%-13s %s\n' "$1" "$2"; }
+
+usage() {
+    sed -n '3,23p' "$0" | sed 's/^# \{0,1\}//'
+    exit 0
+}
+
+is_copy_path() {  # exact COPY_PATHS entry?
+    local rel=$1 e
+    for e in "${COPY_PATHS[@]}"; do [[ $rel == "$e" ]] && return 0; done
+    return 1
+}
+
+contains_copy_path() {  # any COPY_PATHS entry strictly below rel/?
+    local rel=$1 e
+    for e in "${COPY_PATHS[@]}"; do [[ $e == "$rel"/* ]] && return 0; done
+    return 1
+}
+
+identical() {  # identical <home-path> <skel-path>
+    if [[ -d $1 && -d $2 ]]; then
+        diff -rq "$1" "$2" >/dev/null 2>&1
+    else
+        cmp -s "$1" "$2"
+    fi
+}
+
+link_entry() {  # link_entry <rel> <src> <dst>  (dst does not exist)
+    ((++linked))
+    if (( dry )); then note "would link" "$1"; return; fi
+    ln -s -- "$2" "$3"
+    note linked "$1"
+}
+
+relink() {  # relink <rel> <src> <dst> [why]  (dst exists, is replaced)
+    ((++linked))
+    if (( dry )); then note "would link" "$1${4:+ ($4)}"; return; fi
+    rm -rf -- "$3"
+    ln -s -- "$2" "$3"
+    note linked "$1${4:+ ($4)}"
+}
+
+copy_entry() {  # copy_entry <rel> <src> <dst>  (dst does not exist)
+    ((++copied))
+    if (( dry )); then note "would copy" "$1"; return; fi
+    # --preserve=links keeps symlinked straight repos intact, while NOT
+    # preserving the source SELinux context: files created here get the
+    # normal $HOME label, so the owning app can write to its copy.
+    cp -r --preserve=links,mode,timestamps -- "$2" "$3"
+    note copied "$1"
+}
+
+recopy_entry() {  # recopy_entry <rel> <src> <dst>  (--force on a COPY_PATH)
+    ((++copied))
+    if (( dry )); then note "would copy" "$1 (--force)"; return; fi
+    rm -rf -- "$3"
+    cp -r --preserve=links,mode,timestamps -- "$2" "$3"
+    note copied "$1 (--force)"
+}
+
+keep_entry() {  # keep_entry <rel> [why]
+    ((++kept))
+    note kept "$1${2:+ ($2)}"
+}
+
+already() { ((++unchanged)); note already "$1"; }
+
+handle() {  # handle <rel>
+    local rel=$1
+    local src="$SKEL/$rel" dst="$HOME/$rel"
+
+    # Existing symlinks: ours -> done, broken -> retarget, else -> user's.
+    if [[ -L $dst ]]; then
+        local target
+        target=$(readlink "$dst")
+        if [[ $target == "$src" ]]; then
+            already "$rel"
+            return
+        elif [[ ! -e $dst ]]; then
+            relink "$rel" "$src" "$dst" "was broken"
+            return
+        else
+            keep_entry "$rel" "symlink to $target"
+            return
+        fi
+    fi
+
+    # Runtime-writable app trees: copy semantics, never linked.
+    if is_copy_path "$rel"; then
+        if [[ -e $dst ]]; then
+            if identical "$dst" "$src"; then
+                already "$rel (copy)"
+            elif (( force )); then
+                recopy_entry "$rel" "$src" "$dst"
+            else
+                keep_entry "$rel" "modified"
+            fi
+        else
+            copy_entry "$rel" "$src" "$dst"
+        fi
+        return
+    fi
+
+    if [[ -e $dst ]]; then
+        if [[ -d $dst && -d $src ]]; then
+            if ! contains_copy_path "$rel" && identical "$dst" "$src"; then
+                # Whole tree is an untouched copy: collapse it into one link.
+                relink "$rel" "$src" "$dst" "was identical copy"
+            else
+                # Partially owned dir (e.g. your .config): merge inside.
+                local child
+                for child in "$src"/*; do
+                    handle "$rel/${child##*/}"
+                done
+            fi
+        elif identical "$dst" "$src"; then
+            relink "$rel" "$src" "$dst" "was identical copy"
+        elif (( force )); then
+            relink "$rel" "$src" "$dst" "--force"
+        else
+            keep_entry "$rel" "modified"
+        fi
+    else
+        if [[ -d $src ]] && contains_copy_path "$rel"; then
+            # Can't link the whole dir: a copy-path entry lives below it.
+            if (( dry )); then note "would create" "$rel"; else mkdir -p -- "$dst"; fi
+            local child
+            for child in "$src"/*; do
+                handle "$rel/${child##*/}"
+            done
+        else
+            link_entry "$rel" "$src" "$dst"
+        fi
+    fi
+}
+
+main() {
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --dry-run) dry=1 ;;
+            --force) force=1 ;;
+            -h|--help) usage ;;
+            *) die "unknown option: $1 (see --help)" ;;
+        esac
+        shift
+    done
+
+    [[ -n ${HOME:-} ]] || die "HOME is not set"
+    [[ -d $SKEL ]] || die "$SKEL does not exist on this system"
+
+    shopt -s nullglob dotglob
+
+    local e entries=0
+    for e in "$SKEL"/*; do ((++entries)); done
+    (( entries > 0 )) || die "$SKEL is empty — nothing to link"
+
+    for e in "$SKEL"/*; do
+        handle "${e#"$SKEL"/}"
+    done
+
+    if (( dry )); then
+        echo "dry run: $linked to link, $copied to copy, $kept kept, $unchanged already ok"
+    else
+        echo "done: $linked linked, $copied copied, $kept kept, $unchanged already ok"
+    fi
+}
+
+main "$@"
