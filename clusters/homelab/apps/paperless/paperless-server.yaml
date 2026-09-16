@@ -62,18 +62,23 @@ spec:
                 secretKeyRef:
                   name: paperless-secrets
                   key: PAPERLESS_SOCIALACCOUNT_PROVIDERS
+          startupProbe:
+            httpGet:
+              path: /
+              port: 8000
+            periodSeconds: 10
+            failureThreshold: 18
           readinessProbe:
             httpGet:
               path: /
               port: 8000
-            initialDelaySeconds: 30
             periodSeconds: 10
           livenessProbe:
             httpGet:
               path: /
               port: 8000
-            initialDelaySeconds: 60
             periodSeconds: 10
+            failureThreshold: 3
           resources:
             requests:
               cpu: 100m

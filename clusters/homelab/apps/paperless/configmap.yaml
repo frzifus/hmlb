@@ -5,6 +5,7 @@ metadata:
   name: paperless-config
   namespace: paperless
 data:
+  PAPERLESS_BIND_ADDR: "0.0.0.0"
   PAPERLESS_DBHOST: database-rw
   PAPERLESS_DBPORT: "5432"
   PAPERLESS_REDIS: "redis://redis:6379"
