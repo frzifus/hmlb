@@ -2,11 +2,14 @@
 apiVersion: "openebs.io/v1beta3"
 kind: DiskPool
 metadata:
-  name: storage1-cache-ssd
+  # Replacement for the failed SanDisk SSD PLUS (old pool storage1-cache-ssd is
+  # stuck Terminating with no disk; new name avoids the collision). New disk:
+  # Intenso 500GB. See runbooks/openebs-cache-disk-replacement.md.
+  name: storage1-cache-ssd-2026-09-16
   namespace: openebs
 spec:
   node: storage1
-  disks: ["/dev/disk/by-id/ata-SanDisk_SSD_PLUS_480GB_24036A805360"]
+  disks: ["/dev/disk/by-id/ata-INTENSO_SSD_1642509006000529"]
   topology:
     labelled:
       type: cache
