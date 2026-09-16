@@ -5,7 +5,6 @@ metadata:
   name: homelab-disks
   namespace: openebs
 spec:
-  suspend: true # TEMP: storage1 cache disk swap - see runbooks/openebs-cache-disk-replacement.md
   path: ./clusters/homelab/core/storage
   sourceRef:
     kind: GitRepository
