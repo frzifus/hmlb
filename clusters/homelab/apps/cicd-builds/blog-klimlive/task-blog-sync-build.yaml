@@ -61,7 +61,7 @@ spec:
       description: Git commit SHA that was built
   steps:
     - name: git-clone
-      image: ghcr.io/tektoncd-catalog/git-clone:v1.7.0
+      image: ghcr.io/tektoncd-catalog/git-clone:v1.7.1
       workingDir: /workspace
       volumeMounts:
         - name: git-home
