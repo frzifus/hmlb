@@ -71,23 +71,7 @@ spec:
     bandwidthManager:
       enabled: true
     hubble:
-      enabled: true
-      relay:
-        enabled: true
-      ui:
-        enabled: true
-      metrics:
-        serviceMonitor:
-          enabled: true
-        enableOpenMetrics: true
-        enabled:
-          - dns
-          - drop
-          - tcp
-          - flow
-          - port-distribution
-          - icmp
-          - http
+      enabled: false
     prometheus:
       enabled: true
       serviceMonitor:
