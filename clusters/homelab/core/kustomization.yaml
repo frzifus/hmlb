@@ -20,3 +20,4 @@ resources:
   - cnpg-system.yaml
   - spegel.yaml
   - tekton-pipeline
+  - gpu

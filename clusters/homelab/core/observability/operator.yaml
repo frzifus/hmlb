@@ -38,37 +38,16 @@ spec:
       namespace: cert-manager
   install:
     createNamespace: false
-  postRenderers:
-    - kustomize:
-        patches:
-          - target:
-              kind: ClusterRole
-              name: opentelemetry-operator-manager
-            patch: |
-              - op: add
-                path: /rules/-
-                value:
-                  apiGroups: ["opentelemetry.io"]
-                  resources: ["clusterobservabilities"]
-                  verbs: ["get","list","watch","create","update","patch","delete"]
-              - op: add
-                path: /rules/-
-                value:
-                  apiGroups: ["opentelemetry.io"]
-                  resources: ["clusterobservabilities/status"]
-                  verbs: ["get","update","patch"]
-              - op: add
-                path: /rules/-
-                value:
-                  apiGroups: ["opentelemetry.io"]
-                  resources: ["clusterobservabilities/finalizers"]
-                  verbs: ["update"]
   values:
     manager:
       image:
         repository: ghcr.io/frzifus/opentelemetry-operator
         tag: v0.152.0-rev-2
-      featureGates: "operator.clusterobservability"
+      # chart >= 0.123.0 replaced manager.featureGates (string) with
+      # featureGatesMap; the map also enables the ClusterObservability RBAC
+      # (and CRD) that previously required the postRenderers patch
+      featureGatesMap:
+        operator.clusterobservability: true
       createRbacPermissions: true
       collectorImage:
         repository: otel/opentelemetry-collector-k8s

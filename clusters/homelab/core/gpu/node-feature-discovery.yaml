@@ -32,3 +32,20 @@ spec:
   path: /deployment/overlays/default
   prune: true
   timeout: 10m
+  # the upstream overlay ships its own unlabeled Namespace which, applied
+  # under the same kustomize-controller field manager, strips the PSA labels
+  # set by the namespace manifest here — the cluster-wide admission default is
+  # baseline, and nfd-worker needs hostPath volumes, so re-assert privileged
+  patches:
+    - patch: |
+        apiVersion: v1
+        kind: Namespace
+        metadata:
+          name: node-feature-discovery
+          labels:
+            pod-security.kubernetes.io/audit: privileged
+            pod-security.kubernetes.io/enforce: privileged
+            pod-security.kubernetes.io/warn: privileged
+      target:
+        kind: Namespace
+        name: node-feature-discovery
