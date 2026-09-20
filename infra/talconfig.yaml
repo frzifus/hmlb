@@ -1,6 +1,6 @@
 ---
 clusterName: homelab
-talosVersion: v1.14.0
+talosVersion: v1.14.1
 kubernetesVersion: v1.37.0
 endpoint: https://192.168.5.3:6443
 allowSchedulingOnMasters: false
