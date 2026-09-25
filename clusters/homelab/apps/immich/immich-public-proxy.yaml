@@ -134,7 +134,7 @@ spec:
               subPath: config.json
               readOnly: true
         - name: cloudflared
-          image: cloudflare/cloudflared:2026.9.1
+          image: cloudflare/cloudflared:2026.9.3
           args:
             - tunnel
             - --no-autoupdate
