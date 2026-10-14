@@ -88,15 +88,23 @@ spec:
             - name: AUDIO_TTS_ENGINE
               value: "openai"
             - name: AUDIO_TTS_MODEL
-              value: "hexgrad/Kokoro-82M"
+              value: "chatterbox-nano"
             - name: AUDIO_TTS_VOICE
-              value: "af_sarah"
+              value: "default"
             - name: AUDIO_TTS_SPLIT_ON
               value: "punctuation"
             - name: AUDIO_TTS_API_KEY
               value: "fake"
             - name: AUDIO_TTS_OPENAI_API_BASE_URL
+              value: "http://chatterbox-nano:8000/v1"
+            - name: AUDIO_STT_ENGINE
+              value: "openai"
+            - name: AUDIO_STT_OPENAI_API_BASE_URL
               value: "http://whisper-open-ai:8000/v1"
+            - name: AUDIO_STT_API_KEY
+              value: "fake"
+            - name: AUDIO_STT_MODEL
+              value: "whisper-1"
             - name: ENABLE_PERSISTENT_CONFIG
               value: "false"
             - name: ENABLE_OAUTH_PERSISTENT_CONFIG
@@ -137,9 +145,12 @@ spec:
             - mountPath: /app/backend/data
               name: open-webui-data
           resources:
+            requests:
+              cpu: "250m"
+              memory: "1Gi"
             limits:
-              cpu: "1"
-              memory: "3Gi"
+              cpu: "1000m"
+              memory: "2Gi"
       volumes:
         - name: open-webui-data
           persistentVolumeClaim:

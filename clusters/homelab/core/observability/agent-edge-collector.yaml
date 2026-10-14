@@ -1,0 +1,232 @@
+---
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: gateway-agent-edge
+  namespace: observability
+spec:
+  config:
+    receivers:
+      hostmetrics:
+        root_path: /hostfs
+        collection_interval: 30s
+        scrapers:
+          cpu: {}
+          memory: {}
+          disk: {}
+          filesystem: {}
+          load: {}
+          network: {}
+          paging: {}
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+      kubeletstats:
+        collection_interval: 30s
+        auth_type: serviceAccount
+        endpoint: https://${env:K8S_NODE_NAME}:10250
+        insecure_skip_verify: true
+        metric_groups:
+          - container
+          - pod
+          - node
+          - volume
+      filelog:
+        include:
+          - /var/log/pods/*/*/*.log
+        exclude:
+          - /var/log/pods/*/otc-container/*.log
+        start_at: end
+        include_file_path: true
+        include_file_name: false
+        operators:
+          - type: container
+            id: container-parser
+    processors:
+      batch: {}
+      resourcedetection:
+        detectors: [env, system, k8snode]
+        timeout: 2s
+      k8sattributes:
+        auth_type: serviceAccount
+        passthrough: false
+        filter:
+          node_from_env_var: K8S_NODE_NAME
+        extract:
+          metadata:
+            - k8s.namespace.name
+            - k8s.deployment.name
+            - k8s.statefulset.name
+            - k8s.daemonset.name
+            - k8s.cronjob.name
+            - k8s.job.name
+            - k8s.node.name
+            - k8s.pod.name
+            - k8s.pod.uid
+            - k8s.pod.start_time
+        pod_association:
+          - sources:
+              - from: resource_attribute
+                name: k8s.pod.ip
+          - sources:
+              - from: resource_attribute
+                name: k8s.pod.uid
+          - sources:
+              - from: connection
+    exporters:
+      otlphttp:
+        endpoint: http://backend.observability.svc.cluster.local:4318
+    service:
+      pipelines:
+        metrics:
+          receivers: [otlp, hostmetrics, kubeletstats]
+          processors: [resourcedetection, k8sattributes, batch]
+          exporters: [otlphttp]
+        logs:
+          receivers: [filelog]
+          processors: [resourcedetection, k8sattributes, batch]
+          exporters: [otlphttp]
+        traces:
+          receivers: [otlp]
+          processors: [resourcedetection, k8sattributes, batch]
+          exporters: [otlphttp]
+      telemetry:
+        metrics:
+          readers:
+            - pull:
+                exporter:
+                  prometheus:
+                    host: 0.0.0.0
+                    port: 8888
+                    without_scope_info: false
+                    without_type_suffix: false
+                    without_units: false
+  configVersions: 3
+  mode: daemonset
+  managementState: managed
+  hostNetwork: true
+  env:
+    - name: K8S_NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ALL]
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  podSecurityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  image: otel/opentelemetry-collector-k8s:0.153.0
+  ipFamilyPolicy: SingleStack
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+          - matchExpressions:
+              - key: role
+                operator: In
+                values: [storage-node]
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+    - key: role
+      operator: Equal
+      value: storage-node
+      effect: NoExecute
+  daemonSetUpdateStrategy: {}
+  deploymentUpdateStrategy: {}
+  httpRoute:
+    enabled: false
+    gateway: ""
+  ingress:
+    route: {}
+  networkPolicy: {}
+  observability:
+    metrics: {}
+  podDnsConfig: {}
+  replicas: 1
+  resources: {}
+  targetAllocator:
+    allocationStrategy: consistent-hashing
+    collectorNotReadyGracePeriod: 30s
+    collectorTargetReloadInterval: 30s
+    filterStrategy: relabel-config
+    observability:
+      metrics: {}
+    prometheusCR:
+      evaluationInterval: 30s
+      podMonitorNamespaceSelector: {}
+      probeNamespaceSelector: {}
+      scrapeConfigNamespaceSelector: {}
+      scrapeInterval: 30s
+      serviceMonitorNamespaceSelector: {}
+    resources: {}
+  upgradeStrategy: automatic
+  volumeMounts:
+    - name: host-dev
+      mountPath: /hostfs/dev
+      readOnly: true
+    - name: host-etc
+      mountPath: /hostfs/etc
+      readOnly: true
+    - name: host-proc
+      mountPath: /hostfs/proc
+      readOnly: true
+    - name: host-run-udev-data
+      mountPath: /hostfs/run/udev/data
+      readOnly: true
+    - name: host-sys
+      mountPath: /hostfs/sys
+      readOnly: true
+    - name: host-var-run-utmp
+      mountPath: /hostfs/var/run/utmp
+      readOnly: true
+    - name: host-etc-osrelease
+      mountPath: /hostfs/etc/os-release
+      readOnly: true
+    - name: var-log-pods
+      mountPath: /var/log/pods
+      readOnly: true
+    - name: var-lib-docker-containers
+      mountPath: /var/lib/docker/containers
+      readOnly: true
+  volumes:
+    - name: host-dev
+      hostPath:
+        path: /dev
+    - name: host-etc
+      hostPath:
+        path: /etc
+    - name: host-proc
+      hostPath:
+        path: /proc
+    - name: host-run-udev-data
+      hostPath:
+        path: /run/udev/data
+    - name: host-sys
+      hostPath:
+        path: /sys
+    - name: host-var-run-utmp
+      hostPath:
+        path: /var/run/utmp
+    - name: host-etc-osrelease
+      hostPath:
+        path: /etc/os-release
+    - name: var-log-pods
+      hostPath:
+        path: /var/log/pods
+    - name: var-lib-docker-containers
+      hostPath:
+        path: /var/lib/docker/containers

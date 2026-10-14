@@ -31,6 +31,18 @@ spec:
     clickhouse:
       persistence:
         size: 50Gi
+      # keep ClickHouse internal system logs on a short leash - they ballooned to
+      # ~40GiB of the 50GiB PVC (mostly trace_log, ~6GiB/day since 2026-10-05),
+      # leaving <10GiB for actual SigNoz telemetry. see 2026-10-09 disk incident.
+      clickhouseOperator:
+        traceLog:
+          ttl: 1
+        processorsProfileLog:
+          ttl: 1
+        queryLog:
+          ttl: 1
+        partLog:
+          ttl: 1
       # only general worker nodes (worker1, gpu2) - never control-plane or storage nodes
       affinity:
         nodeAffinity:
@@ -48,7 +60,10 @@ spec:
           memory: 2Gi
         limits:
           cpu: "4"
-          memory: 6Gi
+          # bumped 6Gi -> 8Gi on 2026-10-13: ch was at its 5.4GiB internal cap,
+          # overcommit tracker killed every trace/log insert (code 241) and the
+          # otel collectors crashlooped/OOMKilled retrying. gpu2 has headroom.
+          memory: 8Gi
       zookeeper:
         # only general worker nodes - never control-plane or storage nodes
         affinity:
@@ -98,6 +113,43 @@ spec:
         limits:
           cpu: "2"
           memory: 4Gi
+      config:
+        # safety valve - see 2026-10-13 incident: clickhouse hit its memory cap,
+        # rejected inserts (code 241), and the collector retried inline with
+        # unbounded buffering until the pod was OOMKilled 26x, pinning worker2
+        # at ~98% cpu. memory_limiter refuses/drops new batches before the pod
+        # limit; the bounded non-blocking queues drop failed exports beyond 100
+        # requests instead of buffering forever.
+        processors:
+          memory_limiter:
+            check_interval: 1s
+            limit_mib: 3072
+            spike_limit_mib: 512
+        exporters:
+          clickhousetraces:
+            retry_on_failure:
+              enabled: true
+            sending_queue:
+              enabled: true
+              num_consumers: 4
+              queue_size: 100
+          clickhouselogsexporter:
+            retry_on_failure:
+              enabled: true
+            sending_queue:
+              enabled: true
+              num_consumers: 4
+              queue_size: 100
+        service:
+          pipelines:
+            logs:
+              processors: [memory_limiter, batch]
+            metrics:
+              processors: [memory_limiter, batch]
+            metrics/meter:
+              processors: [memory_limiter, batch/meter]
+            traces:
+              processors: [memory_limiter, signozspanmetrics/delta, signozspanmapper, signozllmpricing, batch]
     telemetryStoreMigrator:
       # only general worker nodes - never control-plane or storage nodes
       affinity:

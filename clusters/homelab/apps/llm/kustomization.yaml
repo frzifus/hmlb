@@ -8,8 +8,9 @@ resources:
   - otel-sdk-config.yaml
   - openwebui-secret.yaml
   - openwebui.yaml
+  - whisper-asr.yaml
+  - chatterbox-nano.yaml
   - vllm
-  - claude-container
+  - claude-code-container.yaml
   - mcp
   - cronjobs
-  - openhands
