@@ -46,12 +46,18 @@ patches:
               - bind
               - rshared
               - rw
+  - |-
+    machine:
+      nodeLabels:
+        topology.kubernetes.io/region: eu-frzifus
+        topology.kubernetes.io/zone: eu-frzifus-1
 
 # NOTE: Contains
 # schematic:
 #   customization:
 #     systemExtensions:
 #         officialExtensions:
+#             - siderolabs/amd-ucode
 #             - siderolabs/amdgpu
 #             - siderolabs/gvisor
 #             - siderolabs/i915
@@ -80,7 +86,7 @@ controlPlane:
               - os:etcd:backup
             allowedKubernetesNamespaces:
               - kube-system
-  talosImageURL: factory.talos.dev/metal-installer-secureboot/ec5a345a9a57a94b4271f600874fc8b9a0ea87e3148c50472fe806e1ab23b1d7
+  talosImageURL: factory.talos.dev/metal-installer-secureboot/e20911bd8f5414781fee83a30393f949168856927965c2fc498b6aaf6f3145ac
   extensionServices:
     - name: tailscale
       environment:
@@ -88,7 +94,7 @@ controlPlane:
         - TS_EXTRA_ARGS=--reset
 
 worker:
-  talosImageURL: factory.talos.dev/metal-installer-secureboot/ec5a345a9a57a94b4271f600874fc8b9a0ea87e3148c50472fe806e1ab23b1d7
+  talosImageURL: factory.talos.dev/metal-installer-secureboot/e20911bd8f5414781fee83a30393f949168856927965c2fc498b6aaf6f3145ac
   extensionServices:
     - name: tailscale
       environment:
@@ -212,7 +218,17 @@ nodes:
             user.max_user_namespaces: "11255"
     nodeLabels:
       talos.klimlive.de/user-namespaces: "true"
-      node-role.kubernetes.io/worker: ""
+  - hostname: worker3
+    ipAddress: 192.168.5.225
+    installDisk: /dev/nvme0n1
+    controlPlane: false
+    patches:
+      - |-
+        machine:
+          sysctls:
+            user.max_user_namespaces: "11255"
+    nodeLabels:
+      talos.klimlive.de/user-namespaces: "true"
   - hostname: gpu1
     ipAddress: 192.168.5.7
     installDisk: /dev/sda
@@ -251,3 +267,19 @@ nodes:
                     - enp7s0
     nodeLabels:
       talos.klimlive.de/user-namespaces: "true"
+  - hostname: gpu3-remote
+    ipAddress: 123.346.789.321
+    installDisk: /dev/sda
+    controlPlane: false
+    patches:
+      - |-
+        machine:
+          sysctls:
+            user.max_user_namespaces: "11255"
+    nodeLabels:
+      talos.klimlive.de/user-namespaces: "true"
+      topology.kubernetes.io/region: eu-atti
+      topology.kubernetes.io/zone: eu-atti-1
+    nodeTaints:
+      talos.klimlive.de/region: "eu-atti:NoSchedule"
+
