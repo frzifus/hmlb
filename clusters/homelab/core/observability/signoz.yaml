@@ -48,6 +48,23 @@ spec:
         # spanmetrics incident). default ttl is 30d - same leash as above.
         metricLog:
           ttl: 1
+        # remaining default-TTL system logs (2026-10-14): async metric log was
+        # 765MiB/977M rows, several more at 30d. config ttl only applies to
+        # newly-created tables - existing ones need ALTER TABLE ... MODIFY TTL.
+        asynchronousMetricLog:
+          ttl: 1
+        sessionLog:
+          ttl: 1
+        zookeeperLog:
+          ttl: 1
+        blobStorageLog:
+          ttl: 1
+        crashLog:
+          ttl: 1
+        queryThreadLog:
+          ttl: 1
+        queryViewsLog:
+          ttl: 1
       # only general worker nodes (worker1, gpu2) - never control-plane or storage nodes
       affinity:
         nodeAffinity:

@@ -34,6 +34,23 @@ spec:
         - context: resource
           statements:
           - set(attributes["host.name"], attributes["k8s.node.name"]) where attributes["k8s.node.name"] != nil
+      # trim high-churn/high-byte resource attributes from METRICS only (traces
+      # and logs keep them). each attribute multiplies into every series of
+      # every histogram; process.pid/telemetry.sdk.* churn force new
+      # time_series + metadata rows on every rollout. os.version and host.arch
+      # stay as requested. 2026-10-14.
+      transform/trim_metric_attrs:
+        metric_statements:
+        - context: resource
+          statements:
+          - delete_key(attributes, "process.pid")
+          - delete_key(attributes, "process.command_args")
+          - delete_key(attributes, "process.command")
+          - delete_key(attributes, "process.owner")
+          - delete_key(attributes, "process.executable.path")
+          - delete_key(attributes, "telemetry.sdk.name")
+          - delete_key(attributes, "telemetry.sdk.language")
+          - delete_key(attributes, "telemetry.sdk.version")
     receivers:
       otlp:
         protocols:
@@ -60,6 +77,7 @@ spec:
           - memory_limiter
           - resource/cluster
           - transform/host_name
+          - transform/trim_metric_attrs
           - batch
           receivers:
           - otlp
