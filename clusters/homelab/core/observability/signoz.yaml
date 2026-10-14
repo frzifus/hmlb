@@ -149,7 +149,12 @@ spec:
             metrics/meter:
               processors: [memory_limiter, batch/meter]
             traces:
-              processors: [memory_limiter, signozspanmetrics/delta, signozspanmapper, signozllmpricing, batch]
+              # signozspanmetrics/delta removed 2026-10-14: span-derived metrics
+              # (signoz_latency.*) alone held 316k live series and were a major
+              # driver of ClickHouse CPU (insert churn in samples_v4 /
+              # time_series_v4 / metadata). disable via the traces pipeline;
+              # cost is traces->metrics correlation in the SigNoz UI.
+              processors: [memory_limiter, signozspanmapper, signozllmpricing, batch]
     telemetryStoreMigrator:
       # only general worker nodes - never control-plane or storage nodes
       affinity:
