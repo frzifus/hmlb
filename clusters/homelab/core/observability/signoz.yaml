@@ -43,6 +43,11 @@ spec:
           ttl: 1
         partLog:
           ttl: 1
+        # metric_log snapshots every CH table/part hourly-ish; it bloats with
+        # part churn (914MiB, 21/30 active merges during the 2026-10-10
+        # spanmetrics incident). default ttl is 30d - same leash as above.
+        metricLog:
+          ttl: 1
       # only general worker nodes (worker1, gpu2) - never control-plane or storage nodes
       affinity:
         nodeAffinity:
