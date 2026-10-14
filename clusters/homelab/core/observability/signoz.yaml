@@ -80,13 +80,18 @@ spec:
         requests:
           cpu: "1"
           memory: 2Gi
-        # TEMPORARY 2026-10-14: 8Gi caused the TTL materializations to OOM against
-        # the 7.2GiB internal cap (mutation + merges + inserts). bumped to
-        # 12Gi/8cpu to burn through the backlog, REVERT to 8Gi/4 once
-        # `system.mutations WHERE NOT is_done` is empty.
         limits:
-          cpu: "8"
-          memory: 12Gi
+          cpu: "4"
+          # bumped 6Gi -> 8Gi on 2026-10-13: ch was at its 5.4GiB internal cap,
+          # overcommit tracker killed every trace/log insert (code 241) and the
+          # otel collectors crashlooped/OOMKilled retrying. gpu2 has headroom.
+          # a 12Gi/8cpu temporary bump for the 2026-10-14 TTL rewrites was
+          # reverted: the rewrites were replaced by DROP PARTITION (instant,
+          # no mutation) - see runbook note in infra/upgrade-master.md. keep
+          # 8Gi/4 as the steady state now that signoz_latency + bloat attrs
+          # are gone; revisit only if query_log-style huge-text system tables
+          # need rewrites again (they OOM by design, use DROP PARTITION).
+          memory: 8Gi
       zookeeper:
         # only general worker nodes - never control-plane or storage nodes
         affinity:
