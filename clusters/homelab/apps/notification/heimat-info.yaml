@@ -1,0 +1,60 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: heimat-info
+  namespace: notification
+  labels:
+    app: heimat-info
+spec:
+  serviceName: heimat-info
+  replicas: 1
+  selector:
+    matchLabels:
+      app: heimat-info
+  template:
+    metadata:
+      labels:
+        app: heimat-info
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: heimat-info
+          image: ghcr.io/frzifus/heimat-info:latest
+          imagePullPolicy: Always
+          env:
+            - name: HEIMAT_POSTAL_CODE
+              value: "52393"
+            - name: HEIMAT_INTERVAL
+              value: 30m
+            - name: HEIMAT_PAGE_SIZE
+              value: "20"
+            - name: HEIMAT_STATE_FILE
+              value: /data/seen-posts.json
+            - name: HEIMAT_ALERT_API
+              value: http://notification-gateway.llm:8081/heimat-info
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          volumeMounts:
+            - name: heimat-data
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: heimat-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 128Mi

@@ -6,3 +6,4 @@ resources:
   - namespace.yaml
   - instrumentation.yaml
   - signal.yaml
+  - heimat-info.yaml
