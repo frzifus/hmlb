@@ -80,12 +80,13 @@ spec:
         requests:
           cpu: "1"
           memory: 2Gi
+        # TEMPORARY 2026-10-14: 8Gi caused the TTL materializations to OOM against
+        # the 7.2GiB internal cap (mutation + merges + inserts). bumped to
+        # 12Gi/8cpu to burn through the backlog, REVERT to 8Gi/4 once
+        # `system.mutations WHERE NOT is_done` is empty.
         limits:
-          cpu: "4"
-          # bumped 6Gi -> 8Gi on 2026-10-13: ch was at its 5.4GiB internal cap,
-          # overcommit tracker killed every trace/log insert (code 241) and the
-          # otel collectors crashlooped/OOMKilled retrying. gpu2 has headroom.
-          memory: 8Gi
+          cpu: "8"
+          memory: 12Gi
       zookeeper:
         # only general worker nodes - never control-plane or storage nodes
         affinity:
