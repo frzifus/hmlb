@@ -124,7 +124,7 @@ spec:
     runAsNonRoot: true
     seccompProfile:
       type: RuntimeDefault
-  image: otel/opentelemetry-collector-k8s:0.153.0
+  image: otel/opentelemetry-collector-k8s:0.162.0
   ipFamilyPolicy: SingleStack
   affinity:
     nodeAffinity:
