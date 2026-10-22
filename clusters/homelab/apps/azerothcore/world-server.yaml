@@ -4,7 +4,6 @@ kind: Deployment
 metadata:
   name: azerothcore-world
 spec:
-  replicas: 0
   strategy:
     type: Recreate
   selector:
