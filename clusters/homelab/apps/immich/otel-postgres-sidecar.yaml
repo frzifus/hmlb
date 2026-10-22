@@ -6,7 +6,7 @@ metadata:
   namespace: immich
 spec:
   mode: deployment
-  image: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.163.1
+  image: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.163.2
   env:
     - name: DB_USERNAME
       valueFrom:
