@@ -63,13 +63,13 @@ apiVersion: v1
 kind: Service
 metadata:
   name: auth
-#  annotations:
-#    metallb.universe.tf/allow-shared-ip: "key-to-share-192.168.5.111"
-#    tailscale.com/expose: "true"
+  # share 192.168.5.111 with the world service (auth 3724 / world 8085)
+  annotations:
+    metallb.universe.tf/allow-shared-ip: "key-to-share-192.168.5.111"
 spec:
   type: LoadBalancer
-  #loadBalancerIP: 192.168.5.111
-  loadBalancerClass: tailscale
+  loadBalancerIP: 192.168.5.111
+  loadBalancerClass: metallb
   ports:
     - port: 3724
       targetPort: 3724
