@@ -4,9 +4,9 @@ kind: Kustomization
 
 resources:
   - namespace.yaml
-  - secret.yaml
+#  - secret.yaml
   - configmap.yaml
-  - pvc.yaml
+#  - pvc.yaml
   - redis.yaml
   - otel-redis-sidecar.yaml
   - otel-postgres-sidecar.yaml
@@ -15,4 +15,4 @@ resources:
   - immich-machine-learning.yaml
   - httproute.yaml
   - immich-public-proxy.yaml
-  - cloudflared-secret.yaml
+#  - cloudflared-secret.yaml

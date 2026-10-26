@@ -6,20 +6,20 @@ resources:
   # Apps with a committed kustomization.yaml (uncomment to enable):
   # - enshrouded
   # - ext-fewo
-  # - immich
   # - llm
   # - mail
   # - openshift
-  - paperless
   # - steam
   # - workspace
 
   # Apps without a committed kustomization.yaml:
   # - docs (kustomization.yaml is uncommitted)
   # - homeassistant
-  # - jellyfin
 
   # Enabled for reconciliation:
+  - immich
+  - paperless
+  - jellyfin
   - atuin
   - auth
   - azerothcore

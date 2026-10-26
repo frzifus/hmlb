@@ -1,0 +1,22 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - namespace.yaml
+  - fladder.yaml
+# - jellyfin.yaml
+# - jellyseerr-cors.yaml
+# - jellyseerr.yaml
+  - nzbget-oauth2-proxy.yaml
+  - nzbget.yaml
+#   - oauth-secret.yaml
+  - otel-auto-instr.yaml
+#  - pvc.yaml
+  - radarr-oauth2-proxy.yaml
+  - radarr.yaml
+  - sonarr-oauth2-proxy.yaml
+  - sonarr.yaml
+# - transcoding-cache.yaml
+# - vpn-credentials.yaml
+
