@@ -28,7 +28,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
-          image: lasuite/impress-y-provider:v6.0.3
+          image: lasuite/impress-y-provider:v6.0.4
           ports:
             - containerPort: 4444
           env:
