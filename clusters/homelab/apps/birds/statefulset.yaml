@@ -60,7 +60,7 @@ spec:
             - name: state
               mountPath: /data
         - name: cloudflared
-          image: cloudflare/cloudflared:2026.10.6
+          image: cloudflare/cloudflared:2026.10.7
           args:
             - tunnel
             - --no-autoupdate
