@@ -25,6 +25,12 @@ spec:
               - matchExpressions:
                   - key: node-role.kubernetes.io/control-plane
                     operator: DoesNotExist
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: mastodon-web
+              topologyKey: kubernetes.io/hostname
       securityContext:
         seccompProfile:
           type: RuntimeDefault
