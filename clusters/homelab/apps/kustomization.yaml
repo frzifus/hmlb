@@ -6,7 +6,6 @@ resources:
   # Apps with a committed kustomization.yaml (uncomment to enable):
   # - enshrouded
   # - ext-fewo
-  # - llm
   # - mail
   # - openshift
   # - steam
@@ -18,6 +17,7 @@ resources:
 
   # Enabled for reconciliation:
   - immich
+  - llm
   - paperless
   - jellyfin
   - atuin

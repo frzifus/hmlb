@@ -4,13 +4,13 @@ kind: Kustomization
 
 resources:
   - namespace.yaml
-  - huggingface-secret.yaml
+#  - huggingface-secret.yaml
   - otel-sdk-config.yaml
-  - openwebui-secret.yaml
+#  - openwebui-secret.yaml
   - openwebui.yaml
-  - whisper-asr.yaml
-  - chatterbox-nano.yaml
-  - vllm
-  - claude-code-container.yaml
-  - mcp
-  - cronjobs
+#  - whisper-asr.yaml
+#  - chatterbox-nano.yaml
+#  - vllm
+#  - claude-code-container.yaml
+#  - mcp
+#  - cronjobs
