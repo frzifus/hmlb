@@ -10,6 +10,13 @@ spec:
         endpoint: backend-signoz-otel-collector.observability.svc.cluster.local:4317
         tls:
           insecure: true
+        # bound the in-flight backlog: without a cap a downstream outage (e.g.
+        # signoz-otel-collector OOMing under a log flood) lets the queue grow
+        # into GBs of RAM, which then re-floods it on every restart. 2026-10-14.
+        sending_queue:
+          queue_size: 2048
+        retry_on_failure:
+          enabled: true
     processors:
       batch: {}
       memory_limiter:
@@ -116,7 +123,15 @@ spec:
   podDnsConfig: {}
   podManagementPolicy: Parallel
   replicas: 2
-  resources: {}
+  # no limits before => memory_limiter percentages resolved against node
+  # memory (never refused) and the container ballooned to 5GiB hoarding a
+  # 60M-record queue during the audiobookshelf log flood. 4Gi cap makes
+  # limit_percentage: 75 bite at ~3Gi. 2026-10-14.
+  resources:
+    limits:
+      memory: 4Gi
+    requests:
+      memory: 1Gi
   targetAllocator:
     allocationStrategy: consistent-hashing
     collectorNotReadyGracePeriod: 30s
