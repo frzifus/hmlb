@@ -32,6 +32,13 @@ data:
         - name: cosign-key
           secret:
             secretName: cosign-key
+      computeResources:
+        requests:
+          cpu: "2"
+          memory: "4Gi"
+        limits:
+          cpu: "2"
+          memory: "4Gi"
       podTemplate:
         securityContext:
           fsGroup: 65532

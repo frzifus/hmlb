@@ -34,8 +34,8 @@ data:
             secretName: cosign-key
       computeResources:
         requests:
-          cpu: "1"
-          memory: "2Gi"
+          cpu: "3"
+          memory: "14Gi"
         limits:
           cpu: "3"
           memory: "14Gi"

@@ -29,8 +29,8 @@ spec:
         secretName: cosign-key
   computeResources:
     requests:
-      cpu: "500m"
-      memory: "1Gi"
+      cpu: "2"
+      memory: "4Gi"
     limits:
       cpu: "2"
       memory: "4Gi"
