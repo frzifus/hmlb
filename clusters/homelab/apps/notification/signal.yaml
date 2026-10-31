@@ -38,6 +38,17 @@ spec:
           # image: ghcr.io/frzifus/signal-cli-rest-api:0.97
           ports:
             - containerPort: 8080
+          # 0.101 s6 startup race: REST API can read jsonrpc2.yml mid-rewrite and
+          # register no JSON-RPC clients (upstream #893); /v1/accounts then 500s
+          # forever. Probe fails -> kubelet restarts -> race re-rolled.
+          livenessProbe:
+            httpGet:
+              path: /v1/accounts
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
           env:
             - name: MODE
               value: "json-rpc"
