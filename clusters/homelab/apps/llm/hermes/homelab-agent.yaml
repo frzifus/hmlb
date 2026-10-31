@@ -88,6 +88,11 @@ spec:
         env:
         - name: API_SERVER_ENABLED
           value: "true"
+        - name: LLM_MASTER_KEY
+          valueFrom:
+            secretKeyRef:
+              name: litellm-master-key
+              key: LITELLM_MASTER_KEY
         - name: API_SERVER_HOST
           value: "0.0.0.0"
         - name: API_SERVER_PORT
@@ -184,7 +189,7 @@ spec:
 # destination IP, so routing via a gateway that happens to live in
 # 192.168.1.0/24 still works. NOTE: Cilium never matches CIDR rules against
 # in-cluster endpoints, so the cluster dependencies are allowlisted by
-# selector below (DNS, ollama, SearXNG, the MCP servers, SigNoz export).
+# selector below (DNS, inference gateway, SearXNG, the MCP servers, SigNoz export).
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -219,9 +224,9 @@ spec:
           kubernetes.io/metadata.name: llm
       podSelector:
         matchLabels:
-          app: ollama
+          app: inference
     ports:
-    - port: 11434
+    - port: 80
       protocol: TCP
   - to:
     - namespaceSelector:

@@ -42,11 +42,13 @@ spec:
             # One connection per semicolon-separated entry; index order must
             # match OPENAI_API_KEYS and OPENAI_API_CONFIGS.
             - name: OPENAI_API_BASE_URLS
-              value: "http://openwebui-openhands-proxy.llm.svc.cluster.local:8080/v1;http://hermes-research:8642/v1;http://hermes-hass:8642/v1;http://hermes-homelab:8642/v1"
-            # Positional keys: 0 = OpenHands (LOCAL_BACKEND_API_KEY), 1-3 = the
-            # hermes agents (hermes-internal-key). Assembled manually in the
-            # openwebui-secrets Secret (key OPENAI_API_KEYS) — if the OpenHands
-            # key rotates, regenerate that joined string.
+              value: "http://hermes-research:8642/v1;http://hermes-hass:8642/v1;http://hermes-homelab:8642/v1;http://inference:80/v1"
+            # Positional keys: 0-2 = the hermes agents (hermes-internal-key),
+            # 3 = praxis inference gateway (dummy — praxis strips client
+            # credentials and injects its own via credential_injection).
+            # Assembled manually in the openwebui-secrets Secret (key
+            # OPENAI_API_KEYS) — if the hermes key rotates, regenerate that
+            # joined string.
             - name: OPENAI_API_KEYS
               valueFrom:
                 secretKeyRef:
@@ -55,7 +57,7 @@ spec:
             # Per-connection settings; hermes agents use the Responses API so
             # native tool cards render (chat-completions drops them).
             - name: OPENAI_API_CONFIGS
-              value: '{"0": {}, "1": {"api_type": "responses"}, "2": {"api_type": "responses"}, "3": {"api_type": "responses"}}'
+              value: '{"0": {"api_type": "responses"}, "1": {"api_type": "responses"}, "2": {"api_type": "responses"}, "3": {}}'
             # Pin the JWT signing key so API tokens survive restarts (see the
             # openwebui-secret-key Secret above).
             - name: WEBUI_SECRET_KEY
@@ -63,18 +65,16 @@ spec:
                 secretKeyRef:
                   name: openwebui-secret-key
                   key: WEBUI_SECRET_KEY
+            # Background tasks (title/tags/follow-up/query generation). Both
+            # paths run in parallel during the migration: Ollama integration
+            # (TASK_MODEL, :cloud ids via ollama:11434) and the inference
+            # gateway (TASK_MODEL_EXTERNAL, gateway ids via inference:80).
             - name: OLLAMA_BASE_URL
               value: "http://ollama:11434"
-            # Background tasks (title/tags/follow-up/query generation) are routed
-            # to Ollama deepseek directly instead of the chat connection. When the
-            # chat model is external (OpenHands/OpenAI) OpenWebUI uses
-            # TASK_MODEL_EXTERNAL; when it's an Ollama model it uses TASK_MODEL.
-            # The task model is resolved by name across all connections, so an
-            # Ollama model name here routes the task call to Ollama.
             - name: TASK_MODEL
               value: "glm-5.3-flash:cloud"
             - name: TASK_MODEL_EXTERNAL
-              value: "glm-5.3-flash:cloud"
+              value: "glm-5.3-flash"
             - name: ENABLE_OTEL
               value: "true"
             - name: ENABLE_OTEL_TRACES

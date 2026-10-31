@@ -1,0 +1,39 @@
+---
+# LiteLLM gateway config (DB-less mode). The model_list IS the access policy:
+# a model id not listed here does not exist at the gateway. Consumers keep
+# asking for stable, provider-prefixed ids; switching providers is a pure
+# model_list edit and needs no changes in OpenWebUI/hermes.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: inference-config
+  namespace: llm
+data:
+  config.yaml: |
+    model_list:
+      # --- ollama.com cloud (OpenAI-compatible) ---
+      - model_name: "ollama/glm-5.3-flash"
+        litellm_params:
+          model: "openai/glm-5.3-flash"
+          api_base: "https://ollama.com/v1"
+          api_key: "os.environ/OLLAMA_API_KEY"
+      - model_name: "ollama/deepseek-v4.1-flash:1017"
+        litellm_params:
+          model: "openai/deepseek-v4.1-flash:1017"
+          api_base: "https://ollama.com/v1"
+          api_key: "os.environ/OLLAMA_API_KEY"
+
+      # --- local vLLM (uncomment when deployed; prefix keeps ids stable) ---
+      # - model_name: "vllm/glm-5.3-flash-356b-q2"
+      #   litellm_params:
+      #     model: "openai/glm-5.3-flash-356b-q2"
+      #     api_base: "http://vllm.llm.svc.cluster.local:8000/v1"
+
+    general_settings:
+      # Single static shared key (no accounts, no DB). Per-network access is
+      # granted by NetworkPolicies; OpenWebUI/hermes send this key.
+      master_key: "os.environ/LITELLM_MASTER_KEY"
+
+    litellm_settings:
+      # tolerate client params the target backend does not support
+      drop_params: true

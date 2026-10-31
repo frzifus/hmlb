@@ -126,6 +126,9 @@ metadata:
   labels:
     app: github-sigstore-check
 spec:
+  # Disabled: ollama was removed; needs re-pointing at open-webui /api with an
+  # OpenWebUI API key (see inference/README.md) before re-enabling.
+  suspend: true
   # Run daily at 8am CET/CEST (6am UTC = 8am CEST in summer, 7am CET in winter)
   schedule: "0 7 * * *"
   concurrencyPolicy: Forbid

@@ -118,6 +118,11 @@ spec:
         env:
         - name: API_SERVER_ENABLED
           value: "true"
+        - name: LLM_MASTER_KEY
+          valueFrom:
+            secretKeyRef:
+              name: litellm-master-key
+              key: LITELLM_MASTER_KEY
         - name: API_SERVER_HOST
           value: "0.0.0.0"
         - name: API_SERVER_PORT
@@ -204,7 +209,7 @@ spec:
     - port: 8642
       protocol: TCP
 ---
-# Allowlist egress: DNS, model API (ollama), SigNoz export and SearXNG (the
+# Allowlist egress: DNS, model API (inference gateway), SigNoz export and SearXNG (the
 # web_search backend — results themselves come from the WWW) plus the open
 # internet. Local networks, tailscale and the cluster are unreachable. Note:
 # if the data PVC is ever re-created from scratch, the otel init container's
@@ -238,9 +243,9 @@ spec:
           kubernetes.io/metadata.name: llm
       podSelector:
         matchLabels:
-          app: ollama
+          app: inference
     ports:
-    - port: 11434
+    - port: 80
       protocol: TCP
   - to:
     - namespaceSelector:

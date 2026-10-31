@@ -23,9 +23,9 @@ data:
       backend: searxng
     model:
       provider: custom
-      model: glm-5.3-flash:cloud
-      base_url: http://ollama.llm.svc.cluster.local:11434/v1
-      api_key: "none"
+      model: ollama/glm-5.3-flash
+      base_url: http://inference:80/v1
+      api_key: "${LLM_MASTER_KEY}"
     # Streamable-HTTP MCP servers (probed 2026-09-02). ${VAR} in headers
     # resolves from pod env (see MCP_GITHUB_API_KEY in statefulset.yaml).
     mcp_servers:

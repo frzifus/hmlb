@@ -8,6 +8,7 @@ resources:
   - otel-sdk-config.yaml
 #  - openwebui-secret.yaml
   - openwebui.yaml
+  - inference
 #  - whisper-asr.yaml
 #  - chatterbox-nano.yaml
 #  - vllm

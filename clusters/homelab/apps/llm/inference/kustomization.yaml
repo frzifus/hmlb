@@ -1,0 +1,9 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - litellm-config.yaml
+  - litellm.yaml
+  - secret-ollama-cloud.yaml
+  - secret-litellm-master-key.yaml

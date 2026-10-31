@@ -1,0 +1,91 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: inference
+  namespace: llm
+  labels:
+    app: inference
+spec:
+  replicas: 2
+  serviceName: inference
+  selector:
+    matchLabels:
+      app: inference
+  template:
+    metadata:
+      labels:
+        app: inference
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        # pin numerically so runAsNonRoot is enforceable (restricted profile)
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: litellm
+        image: ghcr.io/berriai/litellm-non_root:main-v1.44.6
+        imagePullPolicy: IfNotPresent
+        args: ["--config", "/app/litellm-config.yaml", "--port", "4000"]
+        env:
+        - name: LITELLM_MASTER_KEY
+          valueFrom:
+            secretKeyRef:
+              name: litellm-master-key
+              key: LITELLM_MASTER_KEY
+        - name: OLLAMA_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: ollama-cloud-credentials
+              key: OLLAMA_API_KEY
+        ports:
+        - containerPort: 4000
+          name: http
+        readinessProbe:
+          httpGet:
+            path: /health/readiness
+            port: http
+        livenessProbe:
+          httpGet:
+            path: /health/liveliness
+            port: http
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "512Mi"
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+        volumeMounts:
+        - name: config
+          mountPath: /app/litellm-config.yaml
+          subPath: config.yaml
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: inference-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inference
+  namespace: llm
+  labels:
+    app: inference
+spec:
+  selector:
+    app: inference
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 4000
+  type: ClusterIP
