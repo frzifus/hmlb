@@ -1,24 +1,30 @@
 {
   "env": {
     "ANTHROPIC_API_KEY": "",
-    "ANTHROPIC_BASE_URL": "https://llm.klimlive.de/ollama",
-    "ANTHROPIC_MODEL": "glm-5.3-flash:cloud",
-    "CLAUDE_CODE_MAX_CONTEXT_TOKENS": "1000000"
+    "ANTHROPIC_BASE_URL": "https://llm.klimlive.de/api",
+    "CLAUDE_CODE_MAX_CONTEXT_TOKENS": "1000000",
+    "ANTHROPIC_MODEL": "ollama/glm-5.3-flash",
+    "CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY": "1"
   },
-  "model": "glm-5.3-flash:cloud",
   "modelPicker": {
     "replaceBuiltInOptions": true,
     "options": [
       {
-        "model": "glm-5.3:cloud",
-        "label": "glm 5.3 (klimlive)",
-        "description": "Custom deployment routed through the internal LLM gateway"
+        "model": "ollama/deepseek-v4.1-flash:1017",
+        "label": "deepseek v4.1 flash (klimlive)",
+        "description": "requieres klimlive VPN"
       },
       {
-        "model": "glm-5.3-flash:cloud",
+        "model": "ollama/glm-5.3",
+        "label": "glm 5.3 (klimlive)",
+        "description": "requieres klimlive VPN"
+      },
+      {
+        "model": "ollama/glm-5.3-flash",
         "label": "glm 5.3 flash (klimlive)",
-        "description": "Fast deployment routed through the internal LLM gateway"
+        "description": "requieres klimlive VPN"
       }
     ]
   }
 }
+
