@@ -21,9 +21,9 @@ data:
         - mcp_bootstrap
     model:
       provider: custom
-      model: glm-5.3-flash:cloud
-      base_url: http://ollama.llm.svc.cluster.local:11434/v1
-      api_key: "none"
+      model: ollama/glm-5.3-flash
+      base_url: http://inference:80/v1
+      api_key: "${LLM_MASTER_KEY}"
     mcp_servers:
       homeassistant:
         url: http://mcp-proxy-hass:8080/mcp
@@ -46,6 +46,18 @@ spec:
       labels:
         app: hermes-hass
     spec:
+      # User-namespace pod (KEP-127, GA in k8s 1.36): the container keeps
+      # running as uid 0 *inside* the pod's own userns — which the hermes
+      # image requires (s6 stage2 bootstrap chowns the data volume) — while
+      # being an unprivileged host uid. Volume ownership is mapped
+      # transparently via idmap mounts, so the 10000-owned PVC needs no
+      # chown. Requires kubelet >= 1.33/1.34 with idmap mounts and kernel
+      # >= 6.3 (Talos 1.14 ships 6.12). See research-agent.yaml for the
+      # rationale.
+      hostUsers: false
+      securityContext:
+        runAsNonRoot: false
+        runAsUser: 0
       initContainers:
       - name: install-hermes-otel
         image: nousresearch/hermes-agent:v2026.9.24
@@ -130,6 +142,21 @@ spec:
           value: "hermes-internal-key"
         - name: API_SERVER_MODEL_NAME
           value: "homeassistant-agent"
+        # OTLP export via env-var backend resolution (see homelab-agent.yaml
+        # for why the env var instead of the plugin config.yaml).
+        - name: OTEL_SIGNOZ_ENDPOINT
+          value: "http://backend-collector.observability.svc.cluster.local:4318/v1/traces"
+        - name: HERMES_OTEL_CAPTURE_LOGS
+          value: "true"
+        # Explicit otel plugin config path: plugin >= 2026-08 resolves its
+        # yaml to $HERMES_HOME/{hermes_otel.yaml,plugins/hermes_otel/...},
+        # but the init container writes /opt/data/.hermes/plugins/... — this
+        # override points at that file so logs:true in the backends block
+        # gets honoured (OTLP logs export).
+        - name: HERMES_OTEL_CONFIG
+          value: "/opt/data/.hermes/plugins/hermes_otel/config.yaml"
+        - name: HERMES_GATEWAY_NO_SUPERVISE
+          value: "1"
         ports:
         - containerPort: 8642
           name: api
@@ -241,7 +268,9 @@ spec:
         matchLabels:
           app: inference
     ports:
-    - port: 80
+    # NetPol ports match the destination pod's containerPort (4000), not the
+    # service's port 80 — kube-proxy DNATs pod->service traffic first.
+    - port: 4000
       protocol: TCP
   - to:
     - namespaceSelector:

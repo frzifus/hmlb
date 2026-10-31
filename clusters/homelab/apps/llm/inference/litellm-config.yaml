@@ -37,3 +37,9 @@ data:
     litellm_settings:
       # tolerate client params the target backend does not support
       drop_params: true
+      # OpenTelemetry: one span per LLM call (latency, tokens, model, status)
+      # exported to the SigNoz collector via OTLP/HTTP. Endpoint comes from
+      # OTEL_EXPORTER_OTLP_ENDPOINT in the StatefulSet; litellm appends
+      # /v1/traces itself. Callbacks only take effect at proxy startup.
+      success_callback: ["otel"]
+      failure_callback: ["otel"]

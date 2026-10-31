@@ -40,6 +40,18 @@ spec:
             secretKeyRef:
               name: ollama-cloud-credentials
               key: OLLAMA_API_KEY
+        # OTLP export for the "otel" callbacks in litellm-config.yaml.
+        # litellm v1.44 reads its OWN env names (not the OTel standard ones,
+        # which it ignores): OTEL_EXPORTER picks the exporter type — without
+        # it litellm silently defaults to the console exporter — and
+        # OTEL_ENDPOINT must be the full /v1/traces URL. backend-collector
+        # (service "backend") accepts OTLP/HTTP on 4318.
+        - name: OTEL_EXPORTER
+          value: "otlp_http"
+        - name: OTEL_ENDPOINT
+          value: "http://backend-collector.observability.svc.cluster.local:4318/v1/traces"
+        - name: OTEL_SERVICE_NAME
+          value: "litellm-gateway"
         ports:
         - containerPort: 4000
           name: http

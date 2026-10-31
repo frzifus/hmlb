@@ -17,6 +17,18 @@ spec:
       labels:
         app: hermes-homelab
     spec:
+      # User-namespace pod (KEP-127, GA in k8s 1.36): the container keeps
+      # running as uid 0 *inside* the pod's own userns — which the hermes
+      # image requires (s6 stage2 bootstrap chowns the data volume) — while
+      # being an unprivileged host uid. Volume ownership is mapped
+      # transparently via idmap mounts, so the 10000-owned PVC needs no
+      # chown. Requires kubelet >= 1.33/1.34 with idmap mounts and kernel
+      # >= 6.3 (Talos 1.14 ships 6.12). See research-agent.yaml for the
+      # rationale.
+      hostUsers: false
+      securityContext:
+        runAsNonRoot: false
+        runAsUser: 0
       initContainers:
       - name: install-hermes-otel
         image: nousresearch/hermes-agent:v2026.9.24
@@ -109,6 +121,21 @@ spec:
             secretKeyRef:
               name: github-mcp-token
               key: GITHUB_PERSONAL_ACCESS_TOKEN
+        # OTLP export via the plugin's env-var backend resolution. The
+        # plugin's config.yaml path is resolved via Path.home() at import
+        # time and is unreliable under s6's env scrubbing — the env var is
+        # read directly at resolve time and needs no config file.
+        # backend.observability (service "backend") resolves to the same
+        # backend-collector pods the egress NetPol allows on 4318.
+        - name: OTEL_SIGNOZ_ENDPOINT
+          value: "http://backend-collector.observability.svc.cluster.local:4318/v1/traces"
+        - name: HERMES_OTEL_CAPTURE_LOGS
+          value: "true"
+        # Opt out of in-container s6 supervision: kubelet already restarts
+        # the container, and unsupervised mode logs to stdout instead of
+        # hiding gateway output in /opt/data/logs via s6-log.
+        - name: HERMES_GATEWAY_NO_SUPERVISE
+          value: "1"
         ports:
         - containerPort: 8642
           name: api
@@ -226,7 +253,9 @@ spec:
         matchLabels:
           app: inference
     ports:
-    - port: 80
+    # NetPol ports match the destination pod's containerPort (4000), not the
+    # service's port 80 — kube-proxy DNATs pod->service traffic first.
+    - port: 4000
       protocol: TCP
   - to:
     - namespaceSelector:
