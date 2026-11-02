@@ -12,7 +12,7 @@ spec:
         fleet: desktop
     spec:
       os:
-        image: ghcr.io/frzifus/desktop:2026-10-25
+        image: ghcr.io/frzifus/desktop:2026-11-01
       config:
         - name: tailscale-auth
           secretRef:
