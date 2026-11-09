@@ -9,7 +9,10 @@ resources:
 # - jellyseerr-cors.yaml
 # - jellyseerr.yaml
   - nzbget-oauth2-proxy.yaml
-  - nzbget.yaml
+#  - nzbget.yaml # decommissioned 2026-11-09, replaced by sabnzbd
+  - sabnzbd.yaml
+  - sabnzbd-history-pvc.yaml
+#  - credentials.yaml
 #   - oauth-secret.yaml
   - otel-auto-instr.yaml
 #  - pvc.yaml

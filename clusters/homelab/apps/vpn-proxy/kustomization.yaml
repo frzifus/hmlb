@@ -1,0 +1,9 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - namespace.yaml
+  - gluetun.yaml
+  - firefox.yaml
+  # - vpn-credentials.yaml (created manually, sops-encrypted)
