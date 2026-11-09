@@ -24,6 +24,14 @@ data:
       model: ollama/glm-5.3-flash
       base_url: http://inference:80/v1
       api_key: "${LLM_MASTER_KEY}"
+    # SQLite journal mode: through gVisor's gofer the PVC shows up as 9p in
+    # /proc/mountinfo, and hermes refuses WAL on 9p — shared memory is not
+    # coherent across the gofer boundary (multi-writer corruption risk).
+    # `delete` is upstream's own remedy for cross-VM filesystems; the
+    # sqlite-journal-mode init container converts pre-existing WAL DBs at
+    # boot (hermes never live-downgrades an on-disk WAL database).
+    database:
+      journal_mode: delete
     mcp_servers:
       homeassistant:
         url: http://mcp-proxy-hass:8080/mcp
@@ -46,18 +54,16 @@ spec:
       labels:
         app: hermes-hass
     spec:
-      # User-namespace pod (KEP-127, GA in k8s 1.36): the container keeps
-      # running as uid 0 *inside* the pod's own userns — which the hermes
-      # image requires (s6 stage2 bootstrap chowns the data volume) — while
-      # being an unprivileged host uid. Volume ownership is mapped
-      # transparently via idmap mounts, so the 10000-owned PVC needs no
-      # chown. Requires kubelet >= 1.33/1.34 with idmap mounts and kernel
-      # >= 6.3 (Talos 1.14 ships 6.12). See research-agent.yaml for the
-      # rationale.
-      hostUsers: false
+      # gVisor sandbox (runsc, systrap platform — see core/gvisor.yaml): root
+      # inside the sandbox is an unprivileged user on the host, so the hermes
+      # image can keep running as uid 0 (its s6 stage2 bootstrap chowns the
+      # data volume) without host-level root. Note: hostUsers:false (KEP-127
+      # userns) is NOT combinable with runsc — runsc cannot join the pinned
+      # user namespace; one of the two sandboxes must be dropped.
       securityContext:
         runAsNonRoot: false
         runAsUser: 0
+      runtimeClassName: gvisor
       initContainers:
       - name: install-hermes-otel
         image: nousresearch/hermes-agent:v2026.9.24
@@ -155,8 +161,19 @@ spec:
         # gets honoured (OTLP logs export).
         - name: HERMES_OTEL_CONFIG
           value: "/opt/data/.hermes/plugins/hermes_otel/config.yaml"
-        - name: HERMES_GATEWAY_NO_SUPERVISE
-          value: "1"
+        # Supervised-by-s6 is the image's intended mode: the boot reconciler
+        # (02-reconcile-profiles) reads the persisted gateway_state.json and
+        # auto-starts the s6 gateway slot whenever the last recorded state was
+        # "running" — which it always is after a SIGTERM'd pod shutdown. With
+        # NO_SUPERVISE=1 the container's own `gateway run` then exits 1
+        # ("A gateway is already running under s6") and the pod crash-loops.
+        # (Manually purged gateway_state.json as a stopgap 2026-11-09; that
+        # regress on every restart.) Kubelet restarting the container is fine
+        # here too: s6 restarts the in-container gateway without a new pod.
+        # On a fresh volume BOOTSTRAP_STATE seeds "running" for the first
+        # boot; afterwards the persisted state file wins.
+        - name: HERMES_GATEWAY_BOOTSTRAP_STATE
+          value: "running"
         ports:
         - containerPort: 8642
           name: api

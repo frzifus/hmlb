@@ -26,6 +26,14 @@ data:
       model: ollama/glm-5.3-flash
       base_url: http://inference:80/v1
       api_key: "${LLM_MASTER_KEY}"
+    # SQLite journal mode: through gVisor's gofer the PVC shows up as 9p in
+    # /proc/mountinfo, and hermes refuses WAL on 9p — shared memory is not
+    # coherent across the gofer boundary (multi-writer corruption risk).
+    # `delete` is upstream's own remedy for cross-VM filesystems; the
+    # sqlite-journal-mode init container converts pre-existing WAL DBs at
+    # boot (hermes never live-downgrades an on-disk WAL database).
+    database:
+      journal_mode: delete
     # Streamable-HTTP MCP servers (probed 2026-09-02). ${VAR} in headers
     # resolves from pod env (see MCP_GITHUB_API_KEY in statefulset.yaml).
     mcp_servers:
