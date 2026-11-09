@@ -5,3 +5,8 @@ metadata:
   name: jellyfin
   labels:
     gateway.infra.services/allow-routes: "true"
+    # FIXME: temporary - gvisor test rollouts blocked by cluster-default PSA
+    # "baseline"/"restricted"; remove once nzbget/gluetun runs under gvisor.
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/audit: privileged
+    pod-security.kubernetes.io/warn: privileged

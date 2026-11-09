@@ -384,6 +384,10 @@ spec:
       labels:
         app: nzbget
     spec:
+      # NOTE: no gvisor runtime here - gluetun needs netfilter/iptables, which
+      # gVisor's netstack does not implement (firewall.New() probes iptables
+      # unconditionally even with the firewall disabled and exits fatally).
+      # radarr/sonarr stay under gvisor; they consume the tunnel via services.
       affinity: # NOTE: follow jellyfin due to lack of RWX.
         podAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
