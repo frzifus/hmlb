@@ -21,12 +21,12 @@ spec:
       securityContext:
         fsGroup: 1000 # NOTE: set fsGroup for permission to /data/downloads
       runtimeClassName: gvisor
-      affinity: # NOTE: follow nzbget due to lack of RWX
+      affinity: # NOTE: follow sabnzbd due to lack of RWX
         podAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             - labelSelector:
                 matchLabels:
-                  app: nzbget
+                  app: sabnzbd
               topologyKey: kubernetes.io/hostname
       containers:
         - name: sonarr

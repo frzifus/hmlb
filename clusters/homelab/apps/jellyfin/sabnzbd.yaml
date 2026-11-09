@@ -1,0 +1,298 @@
+---
+# NOTE: testing - parallel rollout of SABnzbd alongside nzbget for the
+# gvisor/shared-VPN-proxy migration evaluation. Not wired into radarr/sonarr
+# yet; configure the SOCKS5/HTTP proxy + mounts in the UI once up.
+# NOTE(eval): config is stateless - rendered from the ConfigMap template +
+# credentials secret on EVERY pod start (no PVC). UI changes and download
+# history are lost on restart; reconsider at prod cutover.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sabnzbd
+  namespace: jellyfin
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: sabnzbd
+  template:
+    metadata:
+      annotations:
+        obi.instrument: "true"
+      labels:
+        app: sabnzbd
+    spec:
+      securityContext:
+        fsGroup: 1000 # NOTE: set fsGroup for permission to /data/downloads
+      runtimeClassName: gvisor
+      affinity: # NOTE: follow jellyfin due to lack of RWX (the *arr apps follow this pod)
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: jellyfin
+              topologyKey: kubernetes.io/hostname
+      # Render sabnzbd.ini fresh on EVERY start from the ConfigMap template
+      # (git-managed, see sabnzbd-template.ini) so config drift is impossible:
+      # UI changes are session-only, the ini always matches git + secret.
+      # /config IS the sabnzbd-history PVC, so queue/history databases
+      # (admin_dir) survive restarts; SAB has no env-var config support, so
+      # server identity fields and API keys are substituted from the
+      # nzbget-server-credentials secret; topology (ports, connections, TLS,
+      # priorities) is static in the template.
+      initContainers:
+        - name: seed-config
+          image: busybox:1.37
+          command:
+            - sh
+            - -c
+            - |
+              sed \
+                -e "s/__SERVER1_NAME__/${SERVER1_NAME}/g" \
+                -e "s/__SERVER1_HOST__/${SERVER1_HOST}/g" \
+                -e "s/__SERVER1_USERNAME__/${SERVER1_USERNAME}/g" \
+                -e "s/__SERVER1_PASSWORD__/${SERVER1_PASSWORD}/g" \
+                -e "s/__SERVER2_NAME__/${SERVER2_NAME}/g" \
+                -e "s/__SERVER2_HOST__/${SERVER2_HOST}/g" \
+                -e "s/__SERVER2_USERNAME__/${SERVER2_USERNAME}/g" \
+                -e "s/__SERVER2_PASSWORD__/${SERVER2_PASSWORD}/g" \
+                -e "s/__SERVER3_NAME__/${SERVER3_NAME}/g" \
+                -e "s/__SERVER3_HOST__/${SERVER3_HOST}/g" \
+                -e "s/__SERVER3_USERNAME__/${SERVER3_USERNAME}/g" \
+                -e "s/__SERVER3_PASSWORD__/${SERVER3_PASSWORD}/g" \
+                -e "s/__SABNZBD_API_KEY__/${SABNZBD_API_KEY}/g" \
+                -e "s/__SABNZBD_NZB_KEY__/${SABNZBD_NZB_KEY}/g" \
+                /seed/sabnzbd.ini > /config/sabnzbd.ini
+              echo "rendered sabnzbd.ini from template"
+          env:
+            - name: SERVER1_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: nzbget-server-credentials
+                  key: SERVER1_NAME
+            - name: SERVER1_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: nzbget-server-credentials
+                  key: SERVER1_HOST
+            - name: SERVER1_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: nzbget-server-credentials
+                  key: SERVER1_USERNAME
+            - name: SERVER1_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: nzbget-server-credentials
+                  key: SERVER1_PASSWORD
+            - name: SERVER2_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: nzbget-server-credentials
+                  key: SERVER2_NAME
+            - name: SERVER2_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: nzbget-server-credentials
+                  key: SERVER2_HOST
+            - name: SERVER2_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: nzbget-server-credentials
+                  key: SERVER2_USERNAME
+            - name: SERVER2_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: nzbget-server-credentials
+                  key: SERVER2_PASSWORD
+            - name: SERVER3_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: nzbget-server-credentials
+                  key: SERVER3_NAME
+            - name: SERVER3_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: nzbget-server-credentials
+                  key: SERVER3_HOST
+            - name: SERVER3_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: nzbget-server-credentials
+                  key: SERVER3_USERNAME
+            - name: SERVER3_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: nzbget-server-credentials
+                  key: SERVER3_PASSWORD
+            - name: SABNZBD_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: nzbget-server-credentials
+                  key: SABNZBD_API_KEY
+            - name: SABNZBD_NZB_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: nzbget-server-credentials
+                  key: SABNZBD_NZB_KEY
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: sabnzbd-config
+              mountPath: /seed
+              readOnly: true
+      containers:
+        # NOTE: ss-local bridges gluetun's Shadowsocks (port 8388) to the
+        # SOCKS5 dialect sabnzbd's socks5_proxy_url expects. Gluetun v3.41
+        # ships no native SOCKS5 server (removed upstream).
+        - name: ss-local
+          image: ghcr.io/shadowsocks/sslocal-rust:v1.21.2
+          command:
+            - sh
+            - -c
+            - |
+              # SIP002 ss:// URL: base64(method:password)@host:port
+              SS_URL="ss://$(printf 'chacha20-ietf-poly1305:%s' "$SHADOWSOCKS_PASSWORD" | base64 -w0 || printf 'chacha20-ietf-poly1305:%s' "$SHADOWSOCKS_PASSWORD" | base64)@gluetun.vpn-proxy.svc.cluster.local:8388"
+              exec sslocal -b "0.0.0.0:1080" --server-url "$SS_URL"
+          env:
+            - name: SHADOWSOCKS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gluetun-shadowsocks
+                  key: SHADOWSOCKS_PASSWORD
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "32Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
+        - name: sabnzbd
+          image: lscr.io/linuxserver/sabnzbd:5.1.3
+          env:
+            - name: TZ
+              value: Etc/UTC
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: nfs-jellyfin-data
+              mountPath: /data/downloads
+            - name: inter-downloads-and-history
+              mountPath: /data/inter
+              subPath: inter
+            # NOTE: /config is a fresh emptyDir rendered by the initContainer
+            # on every start; do NOT direct-mount the ConfigMap here - SAB
+            # rewrites the file in the UI.
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 3
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: sabnzbd-history
+        - name: sabnzbd-config
+          configMap:
+            name: sabnzbd-config
+        - name: inter-downloads-and-history
+          persistentVolumeClaim:
+            claimName: inter-downloads-and-history
+        - name: nfs-jellyfin-data
+          persistentVolumeClaim:
+            claimName: jellyfin-media-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sabnzbd
+  namespace: jellyfin
+spec:
+  selector:
+    app: sabnzbd
+  ports:
+    - protocol: TCP
+      name: http
+      port: 8080
+      targetPort: http
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sabnzbd
+  namespace: jellyfin
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: sabnzbd.homelab
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: sabnzbd
+                port:
+                  number: 8080
+---
+# NOTE: egress lockdown - sabnzbd (incl. its ss-local sidecar) may ONLY
+# talk to the shared gluetun Shadowsocks bridge in vpn-proxy, plus kube-dns.
+# Everything else (cluster ranges, pod ranges, internet) is denied. Traffic
+# leaving the cluster only exists via the gluetun WireGuard tunnel.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: sabnzbd-vpn-proxy-only
+  namespace: jellyfin
+spec:
+  podSelector:
+    matchLabels:
+      app: sabnzbd
+  policyTypes:
+    - Egress
+  egress:
+    # gluetun Shadowsocks bridge across namespaces
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: vpn-proxy
+          podSelector:
+            matchLabels:
+              app: gluetun
+      ports:
+        - protocol: TCP
+          port: 8388
+    # kube-dns (CoreDNS)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53

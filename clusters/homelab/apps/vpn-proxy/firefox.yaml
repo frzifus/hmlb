@@ -1,0 +1,81 @@
+---
+# NOTE: testing
+# NOTE: no gluetun sidecar - firefox rides the shared tunnel in this namespace
+# via gluetun's HTTP proxy (:8888). VPN egress happens in the gluetun pods.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: firefox
+  namespace: vpn-proxy
+spec:
+  selector:
+    matchLabels:
+      app: firefox
+  template:
+    metadata:
+      labels:
+        app: firefox
+    spec:
+      # NOTE: no gvisor runtime - jlesage/firefox SIGSEGVs (exit 139) under
+      # runsc (Xvnc/shm startup path); tested 2026-11-09, crash-looped twice.
+      # User-namespace pod instead (KEP-127, GA in k8s 1.36): s6-overlay keeps
+      # uid 0 *inside* the pod's own userns while mapping to an unprivileged
+      # host uid. Kernel >= 6.3 required (Talos 1.14 ships 6.12).
+      hostUsers: false
+      topologySpreadConstraints: # NOTE: spread across gluetun proxy backends.
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: firefox
+      containers:
+      - name: firefox
+        image: jlesage/firefox:v26.09.1
+        env:
+          # firefox honors proxy env vars; DNS stays local, resolution over
+          # the proxy is done by gluetun's upstream.
+          - name: HTTP_PROXY
+            value: http://gluetun.vpn-proxy.svc.cluster.local:8888
+          - name: HTTPS_PROXY
+            value: http://gluetun.vpn-proxy.svc.cluster.local:8888
+          # keep cluster-internal traffic (and the proxy itself) direct,
+          # otherwise firefox would route through the VPN twice.
+          - name: NO_PROXY
+            value: "localhost,127.0.0.1,.svc.cluster.local,10.0.0.0/8"
+        ports:
+        - containerPort: 5800
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "10m"
+          limits:
+            memory: "2Gi"
+            cpu: "1500m"
+      #   securityContext:
+      #     runAsUser: 1000
+      #     runAsGroup: 1000
+      #     allowPrivilegeEscalation: true
+      #     capabilities:
+      #       drop:
+      #         - ALL
+      #     readOnlyRootFilesystem: true
+      #   volumeMounts:
+      #     - name: config-volume
+      #       mountPath: /config
+      # volumes:
+      #   - name: config-volume
+      #     emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: firefox
+  namespace: vpn-proxy
+spec:
+  selector:
+    app: firefox
+  ports:
+  - protocol: TCP
+    port: 5800
+    targetPort: 5800

@@ -20,6 +20,7 @@ resources:
   - llm
   - paperless
   - jellyfin
+  - vpn-proxy
   - atuin
   - auth
   - azerothcore
