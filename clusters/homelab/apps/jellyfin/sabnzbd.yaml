@@ -44,7 +44,7 @@ spec:
       # priorities) is static in the template.
       initContainers:
         - name: seed-config
-          image: busybox:1.37
+          image: busybox:1.38
           command:
             - sh
             - -c
