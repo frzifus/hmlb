@@ -148,7 +148,7 @@ spec:
         # SOCKS5 dialect sabnzbd's socks5_proxy_url expects. Gluetun v3.41
         # ships no native SOCKS5 server (removed upstream).
         - name: ss-local
-          image: ghcr.io/shadowsocks/sslocal-rust:v1.21.2
+          image: ghcr.io/shadowsocks/sslocal-rust:v1.25.0
           command:
             - sh
             - -c
