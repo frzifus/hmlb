@@ -19,5 +19,6 @@ resources:
   - observability/config.yaml
   - cnpg-system.yaml
   - spegel.yaml
+  - gvisor.yaml
   - tekton-pipeline
   - gpu

@@ -17,6 +17,7 @@ spec:
       labels:
         app: bersch
     spec:
+      runtimeClassName: gvisor
       securityContext:
         seccompProfile:
           type: RuntimeDefault

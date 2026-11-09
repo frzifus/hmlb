@@ -16,6 +16,7 @@ spec:
       labels:
         app: klimlive
     spec:
+      runtimeClassName: gvisor
       securityContext:
         seccompProfile:
           type: RuntimeDefault

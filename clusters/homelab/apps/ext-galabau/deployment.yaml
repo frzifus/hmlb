@@ -16,6 +16,7 @@ spec:
       labels:
         app: galabau
     spec:
+      runtimeClassName: gvisor
       securityContext:
         seccompProfile:
           type: RuntimeDefault
