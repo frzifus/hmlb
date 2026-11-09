@@ -31,6 +31,7 @@ spec:
                 matchLabels:
                   app: mastodon-web
               topologyKey: kubernetes.io/hostname
+      runtimeClassName: gvisor
       securityContext:
         seccompProfile:
           type: RuntimeDefault

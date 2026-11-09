@@ -18,6 +18,7 @@ spec:
       labels:
         app: mastodon-streaming
     spec:
+      runtimeClassName: gvisor
       securityContext:
         seccompProfile:
           type: RuntimeDefault
