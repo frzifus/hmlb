@@ -95,7 +95,7 @@ spec:
         chmod +x /cosign-bin/cosign
 
     - name: build-and-push
-      image: quay.io/buildah/stable:v1.43
+      image: quay.io/buildah/stable:v1.45
       workingDir: /workspace/source
       volumeMounts:
         - name: cosign-bin
