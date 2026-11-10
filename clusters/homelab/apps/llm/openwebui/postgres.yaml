@@ -1,0 +1,39 @@
+---
+# CNPG Postgres cluster for open-webui: main database (DATABASE_URL) and
+# pgvector vector store (VECTOR_DB=pgvector, PGVECTOR_DB_URL defaults to
+# DATABASE_URL) in one database.
+#
+# The stock CNPG image does not ship pgvector; the CloudNativePG Postgres
+# Image Gallery "standard" image bundles pgvector + pgaudit + all locales
+# (minimal does NOT). Fully-qualified tags only — bare "postgresql-pig:<ver>"
+# no longer exists in the gallery.
+#
+# Named "openwebui-postgres": yields pods openwebui-postgres-1/-2/-3, RW
+# service openwebui-postgres-rw, and the app secret openwebui-postgres-app.
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: openwebui-postgres
+  namespace: llm
+spec:
+  instances: 3
+
+  storage:
+    size: 5Gi
+    storageClass: openebs-crucial
+
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.11-standard-trixie
+
+  superuserSecret:
+    name: openwebui-secrets
+
+  bootstrap:
+    initdb:
+      database: openwebui
+      owner: openwebui
+      secret:
+        name: openwebui-secrets
+      postInitApplicationSQL:
+        # vector is not a "trusted" extension: must be created by superuser
+        # during bootstrap, not by the app user at runtime.
+        - CREATE EXTENSION IF NOT EXISTS vector;

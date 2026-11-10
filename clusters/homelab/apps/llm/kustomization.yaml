@@ -7,8 +7,9 @@ resources:
 #  - huggingface-secret.yaml
   - otel-sdk-config.yaml
 #  - openwebui-secret.yaml
-  - openwebui.yaml
+  - openwebui
   - inference
+  - openwebui-secret-openai-keys.yaml
 #  - whisper-asr.yaml
 #  - chatterbox-nano.yaml
 #  - vllm

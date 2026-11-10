@@ -1,36 +1,55 @@
 ---
+# openwebui-web — the open-webui Deployment/Service on the shared stack:
+# CNPG Postgres + pgvector, SeaweedFS (S3) storage, Valkey; emptyDir scratch
+# (durable state entirely external). 2 replicas, RollingUpdate.
 apiVersion: v1
-kind: PersistentVolumeClaim
+kind: Service
 metadata:
-  name: open-webui-data
+  name: openwebui-web
   namespace: llm
 spec:
-  storageClassName: openebs-cache
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 3Gi
+  selector:
+    app: openwebui-web
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 8080
+  type: ClusterIP
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: open-webui
+  name: openwebui-web
   namespace: llm
 spec:
-  replicas: 1
+  # 2 replicas: exercised cross-replica streaming (Valkey) + concurrent S3
+  # buffers while off-traffic during the parallel run.
+  replicas: 2
   strategy:
-    type: Recreate
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
   selector:
     matchLabels:
-      app: open-webui
+      app: openwebui-web
   template:
     metadata:
       labels:
-        app: open-webui
+        app: openwebui-web
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: open-webui
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           image: ghcr.io/open-webui/open-webui:v0.13.3
           ports:
             - containerPort: 8080
@@ -40,35 +59,26 @@ spec:
             - name: JWT_EXPIRES_IN
               value: "-1"
             # One connection per semicolon-separated entry; index order must
-            # match OPENAI_API_KEYS and OPENAI_API_CONFIGS.
+            # match OPENAI_API_KEYS and OPENAI_API_CONFIGS. Same wiring as v1:
+            # 0-2 hermes agents (Responses API), 3 praxis inference gateway.
             - name: OPENAI_API_BASE_URLS
               value: "http://hermes-research:8642/v1;http://hermes-hass:8642/v1;http://hermes-homelab:8642/v1;http://inference:80/v1"
-            # Positional keys: 0-2 = the hermes agents (hermes-internal-key),
-            # 3 = praxis inference gateway (dummy — praxis strips client
-            # credentials and injects its own via credential_injection).
-            # Assembled manually in the openwebui-secrets Secret (key
-            # OPENAI_API_KEYS) — if the hermes key rotates, regenerate that
-            # joined string.
             - name: OPENAI_API_KEYS
               valueFrom:
                 secretKeyRef:
                   name: openwebui-secrets
                   key: OPENAI_API_KEYS
-            # Per-connection settings; hermes agents use the Responses API so
-            # native tool cards render (chat-completions drops them).
             - name: OPENAI_API_CONFIGS
               value: '{"0": {"api_type": "responses"}, "1": {"api_type": "responses"}, "2": {"api_type": "responses"}, "3": {}}'
-            # Pin the JWT signing key so API tokens survive restarts (see the
-            # openwebui-secret-key Secret above).
+            # Pinned JWT signing key, shared with v1 so issued tokens stay
+            # valid across both instances during the parallel run.
             - name: WEBUI_SECRET_KEY
               valueFrom:
                 secretKeyRef:
                   name: openwebui-secret-key
                   key: WEBUI_SECRET_KEY
-            # Background tasks (title/tags/follow-up/query generation). Both
-            # paths run in parallel during the migration: Ollama integration
-            # (TASK_MODEL, :cloud ids via ollama:11434) and the inference
-            # gateway (TASK_MODEL_EXTERNAL, gateway ids via inference:80).
+            # Background tasks (title/tags/follow-up/query generation) — same
+            # dual config as v1.
             - name: OLLAMA_BASE_URL
               value: "http://ollama:11434"
             - name: TASK_MODEL
@@ -105,6 +115,8 @@ spec:
               value: "fake"
             - name: AUDIO_STT_MODEL
               value: "whisper-1"
+            # Env-driven config so both replicas (and v1 during the parallel
+            # run) cannot drift: admin config stays out of the database.
             - name: ENABLE_PERSISTENT_CONFIG
               value: "false"
             - name: ENABLE_OAUTH_PERSISTENT_CONFIG
@@ -141,9 +153,52 @@ spec:
                 secretKeyRef:
                   name: openwebui-secrets
                   key: OAUTH_CLIENT_SECRET
+            # --- shared new stack (v2 only; v1 stays on PVC/SQlite) ---
+            # CNPG uses the user-provided initdb secret (openwebui-secrets) as
+            # the owner credentials, so no auto-generated openwebui-postgres-app
+            # secret exists. The uri key in openwebui-secrets assembles
+            # postgresql://<username>:<password>@openwebui-postgres-rw.../openwebui.
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: openwebui-secrets
+                  key: uri
+            - name: VECTOR_DB
+              value: "pgvector"
+            # PGVECTOR_DB_URL defaults to DATABASE_URL — nothing to set.
+            # The vector extension is created by CNPG bootstrap (superuser),
+            # so the app must not try (and fail) to create it itself:
+            - name: PGVECTOR_CREATE_EXTENSION
+              value: "False"
+            - name: REDIS_URL
+              value: "redis://openwebui-valkey.llm.svc.cluster.local:6379/0"
+            - name: WEBSOCKET_MANAGER
+              value: "redis"
+            - name: STORAGE_PROVIDER
+              value: "s3"
+            - name: S3_ENDPOINT_URL
+              value: "http://openwebui-seaweedfs.llm.svc.cluster.local:8333"
+            - name: S3_ADDRESSING_STYLE
+              value: "path"
+            - name: S3_BUCKET_NAME
+              value: "openwebui"
+            - name: S3_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: openwebui-seaweedfs-s3-credentials
+                  key: access-key
+            - name: S3_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: openwebui-seaweedfs-s3-credentials
+                  key: secret-key
+            # Drop local copies after S3 push / on download so the emptyDir
+            # stays small (transfer buffers + cache dirs only).
+            - name: STORAGE_LOCAL_CACHE
+              value: "False"
           volumeMounts:
             - mountPath: /app/backend/data
-              name: open-webui-data
+              name: data
           resources:
             requests:
               cpu: "250m"
@@ -152,42 +207,6 @@ spec:
               cpu: "1000m"
               memory: "2Gi"
       volumes:
-        - name: open-webui-data
-          persistentVolumeClaim:
-            claimName: open-webui-data
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: open-webui
-  namespace: llm
-spec:
-  selector:
-    app: open-webui
-  ports:
-    - protocol: TCP
-      port: 3000
-      targetPort: 8080
-  type: ClusterIP
----
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: llm
-  namespace: llm
-  # labels:
-  #   external-dns: "true"
-spec:
-  parentRefs:
-    - name: services
-      namespace: infra
-      sectionName: main
-  hostnames: [
-    "llm.klimlive.de"
-  ]
-  rules:
-    - backendRefs:
-        - group: ""
-          kind: Service
-          name: open-webui
-          port: 3000
+        - name: data
+          emptyDir:
+            sizeLimit: 2Gi
