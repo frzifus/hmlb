@@ -8,6 +8,8 @@ metadata:
     app: meilisearch
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: meilisearch

@@ -8,6 +8,8 @@ metadata:
     app: karakeep-web
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: karakeep-web
@@ -16,6 +18,7 @@ spec:
       labels:
         app: karakeep-web
     spec:
+      runtimeClassName: gvisor
       securityContext:
         fsGroup: 1000
         seccompProfile:
@@ -26,8 +29,11 @@ spec:
           imagePullPolicy: Always
           securityContext:
             allowPrivilegeEscalation: false
+            # s6-overlay init needs namespace-scoped caps to chown /run and
+            # setuid to 1000; under gvisor they grant nothing on the host
             capabilities:
               drop: ["ALL"]
+              add: ["CHOWN", "FOWNER", "SETUID", "SETGID", "DAC_OVERRIDE"]
           ports:
             - containerPort: 3000
               name: http
