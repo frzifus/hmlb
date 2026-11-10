@@ -248,7 +248,7 @@ spec:
           kubernetes.io/metadata.name: llm
       podSelector:
         matchLabels:
-          app: open-webui
+          app: openwebui-web
     ports:
     - port: 8642
       protocol: TCP
