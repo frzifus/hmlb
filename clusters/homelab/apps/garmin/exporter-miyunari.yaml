@@ -26,7 +26,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: garmin-exporter
-          image: ghcr.io/barnes-c/garmin_exporter:1.1.7
+          image: ghcr.io/barnes-c/garmin_exporter:2.0.0
           args:
             - --token-file=/data/garmin_token.json
           env:
