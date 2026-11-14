@@ -256,6 +256,30 @@ spec:
                 port:
                   number: 8080
 ---
+# NOTE: public route reuses the old nzbget hostname; proxy already points
+# at sabnzbd:8080 (see nzbget-oauth2-proxy.yaml). Auth via auth.klimlive.de.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: sabnzbd
+  namespace: jellyfin
+  # labels:
+  #   external-dns: "true"
+spec:
+  parentRefs:
+    - name: services
+      namespace: infra
+      sectionName: main
+  hostnames: [
+    "nzbget.klimlive.de"
+  ]
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: nzbget-oauth2-proxy
+          port: 4180
+---
 # NOTE: egress lockdown - sabnzbd (incl. its ss-local sidecar) may ONLY
 # talk to the shared gluetun Shadowsocks bridge in vpn-proxy, plus kube-dns.
 # Everything else (cluster ranges, pod ranges, internet) is denied. Traffic
