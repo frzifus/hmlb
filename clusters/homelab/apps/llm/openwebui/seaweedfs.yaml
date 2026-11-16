@@ -32,7 +32,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
-          image: chrislusf/seaweedfs:4.53
+          image: chrislusf/seaweedfs:4.54
           args:
             - "server"
             - "-dir=/data"
