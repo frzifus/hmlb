@@ -50,7 +50,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
-          image: ghcr.io/open-webui/open-webui:v0.13.3
+          image: ghcr.io/open-webui/open-webui:v0.13.4
           ports:
             - containerPort: 8080
           env:
