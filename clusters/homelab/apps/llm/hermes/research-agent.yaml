@@ -129,6 +129,35 @@ spec:
         volumeMounts:
         - name: data
           mountPath: /opt/data
+      # The api_server platform hard-codes MAX_REQUEST_BYTES = 10_000_000 (10 MB)
+      # with no env/config override (gateway/platforms/api_server.py:221, mirror in
+      # hermes_cli/proxy/server.py:42), so long conversations 413 with
+      # "Request body too large" through /v1/chat/completions. Overlay-rewrite the
+      # constant to 20 MB and bind-mount the patched copies back over the image.
+      # NOTE: whole directories are overlaid, not individual files — per-file
+      # subPath mounts produce a mounts JSON that gVisor (runsc) cannot unmarshal
+      # ("reading mounts file: unexpected end of JSON input") and the container
+      # dies before python starts. The grep guard fails the pod loudly instead of
+      # silently serving the unpatched 10 MB limit if a future image renames the
+      # constant.
+      - name: patch-request-limit
+        image: nousresearch/hermes-agent:v2026.9.24
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          set -e
+          mkdir -p /overlay/gateway /overlay/hermes_cli
+          cp -a /opt/hermes/gateway/platforms /overlay/gateway/
+          cp -a /opt/hermes/hermes_cli/proxy /overlay/hermes_cli/
+          sed -i 's/MAX_REQUEST_BYTES = 10_000_000/MAX_REQUEST_BYTES = 20_000_000/' \
+            /overlay/gateway/platforms/api_server.py
+          sed -i 's/MAX_REQUEST_BYTES = 10_000_000/MAX_REQUEST_BYTES = 20_000_000/' \
+            /overlay/hermes_cli/proxy/server.py
+          grep -q 'MAX_REQUEST_BYTES = 20_000_000' /overlay/gateway/platforms/api_server.py
+          grep -q 'MAX_REQUEST_BYTES = 20_000_000' /overlay/hermes_cli/proxy/server.py
+        volumeMounts:
+        - name: code-overlay
+          mountPath: /overlay
       containers:
       - name: hermes
         image: nousresearch/hermes-agent:v2026.9.24
@@ -195,6 +224,12 @@ spec:
           subPath: config.yaml
         - name: logs
           mountPath: /opt/data/logs
+        - name: code-overlay
+          mountPath: /opt/hermes/gateway/platforms
+          subPath: gateway/platforms
+        - name: code-overlay
+          mountPath: /opt/hermes/hermes_cli/proxy
+          subPath: hermes_cli/proxy
       volumes:
       - name: config
         configMap:
@@ -202,6 +237,8 @@ spec:
       - name: logs
         emptyDir:
           medium: Memory
+      - name: code-overlay
+        emptyDir: {}
   volumeClaimTemplates:
   - metadata:
       name: data
@@ -210,7 +247,7 @@ spec:
       - ReadWriteOnce
       resources:
         requests:
-          storage: 2Gi
+          storage: 5Gi
 ---
 apiVersion: v1
 kind: Service

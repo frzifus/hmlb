@@ -17,20 +17,37 @@ spec:
       labels:
         app: hermes-homelab
     spec:
-      # gVisor sandbox (runsc, systrap platform — see core/gvisor.yaml): root
-      # inside the sandbox is an unprivileged user on the host, so the hermes
-      # image can keep running as uid 0 (its s6 stage2 bootstrap chowns the
-      # data volume) without host-level root. Note: hostUsers:false (KEP-127
-      # userns) is NOT combinable with runsc — runsc cannot join the pinned
-      # user namespace; one of the two sandboxes must be dropped.
+      # Runs fully non-root as the image's built-in `hermes` user (uid 10000,
+      # home /opt/data) — satisfies PSA restricted for real, not by warning
+      # suppression. Combined with the gVisor runsc RuntimeClass
+      # (core/gvisor.yaml) the workload is double-sandboxed: uid 10000 on the
+      # pod AND root-in-sandbox mapping to an unprivileged host user. NOTE:
+      # hostUsers:false (KEP-127 userns) is NOT combinable with runsc — runsc
+      # cannot join the pinned user namespace. The image's s6 stage2 chown of
+      # the data volume is a no-op when it is already owned by uid 10000 (it
+      # always is on this PVC; pre-existing root-owned dirs were chown'd once
+      # on the live volume before this change landed).
       securityContext:
-        runAsNonRoot: false
-        runAsUser: 0
+        runAsNonRoot: true
+        runAsUser: 10000
+        runAsGroup: 10000
+        fsGroup: 10000
+        seccompProfile:
+          type: RuntimeDefault
       runtimeClassName: gvisor
       initContainers:
       - name: install-hermes-otel
         image: nousresearch/hermes-agent:v2026.9.24
         command: ["/bin/sh", "-c"]
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 10000
+          runAsGroup: 10000
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
+          seccompProfile:
+            type: RuntimeDefault
         args:
         - |
           set -e
@@ -95,6 +112,15 @@ spec:
       - name: hermes
         image: nousresearch/hermes-agent:v2026.9.24
         args: ["gateway", "run"]
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 10000
+          runAsGroup: 10000
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
+          seccompProfile:
+            type: RuntimeDefault
         env:
         - name: API_SERVER_ENABLED
           value: "true"
@@ -160,11 +186,26 @@ spec:
           subPath: config.yaml
         - name: logs
           mountPath: /opt/data/logs
+        - name: run
+          mountPath: /run
+        - name: tmp
+          mountPath: /tmp
       volumes:
       - name: config
         configMap:
           name: hermes-config
       - name: logs
+        emptyDir:
+          medium: Memory
+      # s6-overlay preinit runs as the container user in non-root mode and
+      # refuses to start when the image's root-owned /run can't be corrected.
+      # Shadowing it with an fsGroup-owned emptyDir gives preinit a writable,
+      # correctly-owned runtime dir (same pattern for /tmp, which the agent
+      # and Playwright write to).
+      - name: run
+        emptyDir:
+          medium: Memory
+      - name: tmp
         emptyDir:
           medium: Memory
   volumeClaimTemplates:
