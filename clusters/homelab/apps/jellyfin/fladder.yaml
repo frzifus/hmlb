@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: fladder
-          image: ghcr.io/donutware/fladder-rootless:v0.12.0
+          image: ghcr.io/donutware/fladder-rootless:v0.12.1
           env:
             - name: BASE_URL
               value: "https://jellyfin.klimlive.de"
