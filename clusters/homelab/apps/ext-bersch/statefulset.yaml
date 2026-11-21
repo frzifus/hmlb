@@ -83,7 +83,7 @@ spec:
             drop:
               - ALL
       - name: nginx
-        image: nginxinc/nginx-unprivileged:1.31.7-alpine-slim
+        image: nginx/nginx-unprivileged:1.31.9-alpine-slim
         ports:
         - containerPort: 8080
         volumeMounts:
