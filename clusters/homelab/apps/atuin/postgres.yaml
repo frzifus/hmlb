@@ -19,7 +19,7 @@ spec:
       containers:
         - name: postgresql
           # renovate: pinned to 17 — on-disk data is PG 17; v18 needs pg_upgrade
-          image: postgres:17
+          image: postgres:19
           ports:
             - containerPort: 5432
           env:
