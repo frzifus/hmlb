@@ -31,7 +31,7 @@ spec:
               app: firefox
       containers:
       - name: firefox
-        image: jlesage/firefox:v26.09.1
+        image: jlesage/firefox:v26.11.1
         env:
           # firefox honors proxy env vars; DNS stays local, resolution over
           # the proxy is done by gluetun's upstream.
