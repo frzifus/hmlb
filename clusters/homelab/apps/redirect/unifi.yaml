@@ -37,7 +37,7 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: nginx/nginx-unprivileged:1.31.9-alpine-perl
+        image: nginx/nginx-unprivileged:1.31.10-alpine-perl
         ports:
         - containerPort: 80
         volumeMounts:
